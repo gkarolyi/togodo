@@ -27,7 +27,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-
+var TodoTxtPath = "todo.txt"
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -64,5 +64,3 @@ func init() {
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
-
-
