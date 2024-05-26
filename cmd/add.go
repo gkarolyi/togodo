@@ -6,6 +6,7 @@ package cmd
 
 import (
 	"fmt"
+	"togodo/internal/todolib"
 
 	"github.com/spf13/cobra"
 )
@@ -22,6 +23,10 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("add called")
+		repo := todolib.TodoRepository{}
+		repo.ReadFile("../testdata/todo.txt")
+		todo := repo.Add("(B) here's another important todo +togodo")
+		fmt.Println(todo.Text)
 	},
 }
 

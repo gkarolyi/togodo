@@ -27,7 +27,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var TodoTxtPath = "todo.txt"
+var TodoTxtPath = "/Users/gergely/Code/misc/togodo/todo.txt"
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
