@@ -25,7 +25,7 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("list called")
 		repo := todolib.TodoRepository{}
-		err := repo.ReadFile("/Users/gergely/Documents/todo.txt")
+		err := repo.ReadFile(TodoTxtPath)
 
 		if err != nil {
 			log.Fatal(err)

@@ -27,7 +27,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var TodoTxtPath = "/Users/gergely/Code/misc/togodo/todo.txt"
+var TodoTxtPath = os.Getenv("TODO_TXT_PATH")
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{

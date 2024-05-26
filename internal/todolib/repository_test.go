@@ -2,6 +2,8 @@ package todolib
 
 import "testing"
 
+var TestTodoTxtPath = "../../testdata/todo.txt"
+
 func TestAdd(t *testing.T) {
 	repo := TodoRepository{}
 	todo := repo.Add("(B) random fake task with a +project and @context")
@@ -27,7 +29,7 @@ func TestAdd(t *testing.T) {
 
 func TestReadFile(t *testing.T) {
 	repo := TodoRepository{}
-	err := repo.ReadFile("../../testdata/todo.txt")
+	err := repo.ReadFile(TestTodoTxtPath)
 
 	if err != nil {
 		t.Fatal(err)
@@ -45,7 +47,7 @@ func TestReadFile(t *testing.T) {
 
 func TestFind(t *testing.T) {
 	repo := TodoRepository{}
-	err := repo.ReadFile("../../testdata/todo.txt")
+	err := repo.ReadFile(TestTodoTxtPath)
 
 	if err != nil {
 		t.Fatal(err)
@@ -63,7 +65,7 @@ func TestFind(t *testing.T) {
 
 func TestDo(t *testing.T) {
 	repo := TodoRepository{}
-	err := repo.ReadFile("../../testdata/todo.txt")
+	err := repo.ReadFile(TestTodoTxtPath)
 
 	if err != nil {
 		t.Fatal(err)
