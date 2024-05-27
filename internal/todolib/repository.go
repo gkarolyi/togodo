@@ -6,13 +6,35 @@ import (
 )
 
 type TodoRepository struct {
-	Todos []Todo
-	Done  []Todo
+	Todos     []Todo
+	Done      []Todo
+	todoCount int
+}
+
+func (t *TodoRepository) TodoCount() int {
+	t.todoCount++
+	return t.todoCount
 }
 
 func (t *TodoRepository) Add(line string) Todo {
-	todo := Todo{line}
+	todo := Todo{Number: t.TodoCount(), Text: line}
+
+	if doneRe.MatchString(line) {
+		todo.Done = true
+	} else {
+		if priorityRe.MatchString(line) {
+			todo.Priority = priorityRe.FindStringSubmatch(line)[1]
+		}
+		if projectRe.MatchString(line) {
+			todo.Projects = projectRe.FindAllString(line, -1)
+		}
+		if contextRe.MatchString(line) {
+			todo.Contexts = contextRe.FindAllString(line, -1)
+		}
+	}
+
 	t.Todos = append(t.Todos, todo)
+
 	return todo
 }
 

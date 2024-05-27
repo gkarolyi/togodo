@@ -32,7 +32,7 @@ to quickly create a Cobra application.`,
 		}
 
 		for _, todo := range repo.Todos {
-			fmt.Println(todo.Text)
+			todolib.Render(todo)
 		}
 	},
 }

@@ -1,23 +1,33 @@
 package todolib
 
-import "regexp"
-
 type Todo struct {
-	Text string
+	Text     string
+	Done     bool
+	Priority string
+	Projects []string
+	Contexts []string
+	Number   int
 }
 
-var projectRe = regexp.MustCompile(`\+\w+`)
-var contextRe = regexp.MustCompile(`@\w+`)
-var priorityRe = regexp.MustCompile(`\([A-Z]\)`)
-
-func (t Todo) Project() string {
-	return projectRe.FindString(t.Text)
+func (t *Todo) Prioritised() bool {
+	return t.Priority != ""
 }
 
-func (t Todo) Context() string {
-	return contextRe.FindString(t.Text)
-}
+// func (t Todo) Project() string {
+// 	return projectRe.FindString(t.Text)
+// }
 
-func (t Todo) Priority() string {
-	return priorityRe.FindString(t.Text)
-}
+// func (t Todo) Context() string {
+// 	return contextRe.FindString(t.Text)
+// }
+
+// func (t Todo) Priority() string {
+// 	return priorityRe.FindString(t.Text)
+// }
+
+// func (t Todo) Description() string {
+// 	noProj := projectRe.ReplaceAllString(t.Text, "")
+// 	noCon := contextRe.ReplaceAllString(noProj, "")
+// 	noPri := priorityRe.ReplaceAllString(noCon, "")
+// 	return spacingRe.ReplaceAllString(noPri, " ")
+// }
