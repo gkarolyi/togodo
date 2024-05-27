@@ -1,5 +1,7 @@
 package todolib
 
+import "strings"
+
 type Todo struct {
 	Text     string
 	Done     bool
@@ -7,10 +9,21 @@ type Todo struct {
 	Projects []string
 	Contexts []string
 	Number   int
+	Index    int
 }
 
 func (t *Todo) Prioritised() bool {
 	return t.Priority != ""
+}
+
+func (t *Todo) ToggleDone() {
+	if t.Done {
+		t.Done = false
+		t.Text = strings.TrimPrefix(t.Text, "x ")
+	} else {
+		t.Done = true
+		t.Text = strings.Join([]string{"x ", t.Text}, "")
+	}
 }
 
 // func (t Todo) Project() string {

@@ -31,8 +31,8 @@ to quickly create a Cobra application.`,
 			log.Fatal(err)
 		}
 
-		for _, todo := range repo.Todos {
-			todolib.Render(todo)
+		for number, todo := range repo.List() {
+			todolib.Render(number, todo)
 		}
 	},
 }

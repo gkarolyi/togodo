@@ -20,8 +20,8 @@ var priorityStyle = lipgloss.NewStyle().
 	Bold(true).
 	Foreground(lipgloss.Color("#fc1c03"))
 
-func Render(todo Todo) {
-	fmt.Printf("%d ", todo.Number)
+func Render(number int, todo Todo) {
+	fmt.Printf("%d ", number+1)
 	words := strings.Fields(todo.Text)
 
 	if todo.Done {

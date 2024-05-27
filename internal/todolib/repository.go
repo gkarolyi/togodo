@@ -3,6 +3,7 @@ package todolib
 import (
 	"bufio"
 	"os"
+	"sort"
 )
 
 type TodoRepository struct {
@@ -21,7 +22,12 @@ func (t *TodoRepository) Add(line string) Todo {
 
 	if doneRe.MatchString(line) {
 		todo.Done = true
+		t.Done = append(t.Done, todo)
+
+		return todo
+
 	} else {
+
 		if priorityRe.MatchString(line) {
 			todo.Priority = priorityRe.FindStringSubmatch(line)[1]
 		}
@@ -62,5 +68,20 @@ func (t *TodoRepository) Find(lineNumber int) Todo {
 }
 
 func (t *TodoRepository) Do(lineNumber int) {
-	t.Done = append(t.Done, t.Find(lineNumber))
+	todo := t.Find(lineNumber)
+	if !todo.Done {
+		t.Done = append(t.Done, todo)
+		t.Todos = removeIndex(t.Todos, lineNumber-1)
+	}
+}
+
+func (t *TodoRepository) List() (todos []Todo) {
+	sort.SliceStable(t.Todos, func(i, j int) bool {
+		return t.Todos[i].Priority > t.Todos[j].Priority
+	})
+	return append(t.Todos, t.Done...)
+}
+
+func removeIndex(s []Todo, index int) []Todo {
+	return append(s[:index], s[index+1:]...)
 }
