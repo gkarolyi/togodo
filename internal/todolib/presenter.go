@@ -26,26 +26,24 @@ func Render(todo Todo) {
 
 	if todo.Done {
 		renderStyle(todo.Text, doneStyle)
-	} else if todo.Prioritised() {
-		renderStyle(todo.Text, priorityStyle)
 	} else {
-		renderWords(words)
+		for _, word := range words {
+			if IsProject(word) {
+				renderStyle(word, projectStyle)
+			} else if IsContext(word) {
+				renderStyle(word, contextStyle)
+			} else {
+				if todo.Prioritised() {
+					renderStyle(word, priorityStyle)
+				} else {
+					fmt.Print(word)
+				}
+			}
+			fmt.Print(" ")
+		}
 	}
 
 	fmt.Println()
-}
-
-func renderWords(words []string) {
-	for _, word := range words {
-		if IsProject(word) {
-			renderStyle(word, projectStyle)
-		} else if IsContext(word) {
-			renderStyle(word, contextStyle)
-		} else {
-			fmt.Print(word)
-		}
-		fmt.Print(" ")
-	}
 }
 
 func renderStyle(word string, style lipgloss.Style) {
