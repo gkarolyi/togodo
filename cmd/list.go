@@ -5,8 +5,8 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
 	"log"
+	"strings"
 	"togodo/internal/todolib"
 
 	"github.com/spf13/cobra"
@@ -23,15 +23,22 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("list called")
 		repo := todolib.TodoRepository{}
 		err := repo.ReadFile(TodoTxtPath)
+		var todos []todolib.Todo
 
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		for number, todo := range repo.List() {
+		if len(args) == 0 {
+			todos = repo.All()
+		} else {
+			query := strings.Join(args, " ")
+			todos = repo.Filter(query)
+		}
+
+		for number, todo := range todos {
 			todolib.Render(number, todo)
 		}
 	},

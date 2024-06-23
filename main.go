@@ -21,8 +21,34 @@ THE SOFTWARE.
 */
 package main
 
-import "togodo/cmd"
+import (
+	"fmt"
+	"os"
+	"os/exec"
+	"togodo/cmd"
+)
 
 func main() {
-	cmd.Execute()
+	args := os.Args
+	if len(args) > 1 {
+		switch args[1] {
+		case "list":
+			cmd.Execute()
+		default:
+			passthrough(args[1:])
+		}
+	} else {
+		cmd.Execute()
+	}
+}
+
+func passthrough(args []string) {
+	cmd := exec.Command("todo.sh", args...)
+	out, err := cmd.Output()
+	output := string(out[:])
+	fmt.Println(output)
+
+	if err != nil {
+		os.Exit(1)
+	}
 }

@@ -12,7 +12,7 @@ type Todo struct {
 	Index    int
 }
 
-func (t *Todo) Prioritised() bool {
+func (t Todo) Prioritised() bool {
 	return t.Priority != ""
 }
 

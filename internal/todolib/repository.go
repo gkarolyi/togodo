@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"os"
 	"sort"
+	"strings"
 )
 
 type TodoRepository struct {
@@ -62,7 +63,7 @@ func (t *TodoRepository) ReadFile(path string) error {
 	return nil
 }
 
-func (t *TodoRepository) Find(lineNumber int) Todo {
+func (t TodoRepository) Find(lineNumber int) Todo {
 	todo := t.Todos[lineNumber-1]
 	return todo
 }
@@ -75,11 +76,31 @@ func (t *TodoRepository) Do(lineNumber int) {
 	}
 }
 
-func (t *TodoRepository) List() (todos []Todo) {
+func (t TodoRepository) All() (todos []Todo) {
 	sort.SliceStable(t.Todos, func(i, j int) bool {
-		return t.Todos[i].Priority > t.Todos[j].Priority
+		iPrioritised := t.Todos[i].Prioritised()
+		jPrioritised := t.Todos[j].Prioritised()
+
+		if jPrioritised && !iPrioritised {
+			return false
+		} else if iPrioritised && !jPrioritised {
+			return true
+		} else {
+			return t.Todos[i].Priority < t.Todos[j].Priority
+		}
 	})
+
 	return append(t.Todos, t.Done...)
+}
+
+func (t TodoRepository) Filter(query string) (matched []Todo) {
+	for _, todo := range t.All() {
+		if strings.Contains(todo.Text, query) {
+			matched = append(matched, todo)
+		}
+	}
+
+	return matched
 }
 
 func removeIndex(s []Todo, index int) []Todo {

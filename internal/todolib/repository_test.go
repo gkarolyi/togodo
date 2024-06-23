@@ -8,6 +8,16 @@ import (
 
 var TestTodoTxtPath = "../../testdata/todo.txt"
 
+// New API design:
+// ONLY one export: a func .New which returns a TodoTxtRepository
+// the TodoTxtRepository has these exported methods:
+// .Add(text string)
+// .All()
+// .Filter(query string)
+// .Find(lineNumber int)
+// .Update(attribute, value string) or maybe a new Todo object altogether?
+// exported func .New(path string) TodoTxtRepository
+
 func TestAdd(t *testing.T) {
 	is := is.New(t)
 
@@ -185,13 +195,13 @@ func TestDo(t *testing.T) {
 	// })
 }
 
-func TestList(t *testing.T) {
+func TestAll(t *testing.T) {
 	is := is.New(t)
 	repo := TodoRepository{}
 	err := repo.ReadFile(TestTodoTxtPath)
 
 	is.NoErr(err)
-	todos := repo.List()
+	todos := repo.All()
 
 	t.Run("number of items correct", func(t *testing.T) {
 		is.Equal(len(todos), 7) // should contain 7 todos
@@ -205,5 +215,28 @@ func TestList(t *testing.T) {
 	t.Run("sort by priority", func(t *testing.T) {
 		topTodo := todos[0]
 		is.Equal(topTodo.Priority, "A") // highest priority should be first
+	})
+}
+
+func TestFilter(t *testing.T) {
+	is := is.New(t)
+	repo := TodoRepository{}
+	err := repo.ReadFile(TestTodoTxtPath)
+
+	is.NoErr(err)
+
+	t.Run("number of items correct", func(t *testing.T) {
+		todos := repo.Filter("@basement")
+		is.Equal(len(todos), 1) // should contain 1 matching todo
+	})
+
+	t.Run("number of items correct", func(t *testing.T) {
+		todos := repo.Filter("@shop")
+		is.Equal(len(todos), 1) // should contain 1 matching todo
+	})
+
+	t.Run("number of items correct", func(t *testing.T) {
+		todos := repo.Filter("(A)")
+		is.Equal(len(todos), 1) // should contain 1 matching todo
 	})
 }
