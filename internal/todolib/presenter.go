@@ -15,7 +15,7 @@ var contextStyle = lipgloss.NewStyle().
 	Foreground(lipgloss.Color("#04B575"))
 var doneStyle = lipgloss.NewStyle().
 	Strikethrough(true).
-	Foreground(lipgloss.Color("#3C3C3C"))
+	Foreground(lipgloss.Color("#7F98AF"))
 var priorityAStyle = lipgloss.NewStyle().
 	Bold(true).
 	Foreground(lipgloss.Color("#D40B23"))
@@ -30,7 +30,7 @@ var tagStyle = lipgloss.NewStyle().
 	Foreground(lipgloss.Color("#96C5B0"))
 
 func Render(number int, todo Todo) {
-	fmt.Printf("%d ", number+1)
+	fmt.Printf("%d ", todo.Number)
 	words := strings.Fields(todo.Text)
 	stdStyle := priorityStyle(todo.Priority)
 

@@ -43,12 +43,18 @@ func main() {
 }
 
 func passthrough(args []string) {
-	cmd := exec.Command("todo.sh", args...)
+	cmd := todoCmd(args)
 	out, err := cmd.Output()
+
 	output := string(out[:])
 	fmt.Println(output)
 
 	if err != nil {
 		os.Exit(1)
 	}
+}
+
+func todoCmd(args []string) *exec.Cmd {
+	args = append([]string{"-a"}, args...)
+	return exec.Command("todo.sh", args...)
 }

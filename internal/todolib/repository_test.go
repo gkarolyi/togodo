@@ -15,7 +15,7 @@ var TestTodoTxtPath = "../../testdata/todo.txt"
 // .All()
 // .Filter(query string)
 // .Find(lineNumber int)
-// .Update(attribute, value string) or maybe a new Todo object altogether?
+// .Update(attribute, value string) or maybe a new Todo object altogether? ie. (lineNumber int, text string)
 // exported func .New(path string) TodoTxtRepository
 
 func TestAdd(t *testing.T) {

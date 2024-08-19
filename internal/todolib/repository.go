@@ -95,7 +95,7 @@ func (t TodoRepository) All() (todos []Todo) {
 
 func (t TodoRepository) Filter(query string) (matched []Todo) {
 	for _, todo := range t.All() {
-		if strings.Contains(todo.Text, query) {
+		if strings.Contains(strings.ToLower(todo.Text), strings.ToLower(query)) {
 			matched = append(matched, todo)
 		}
 	}
