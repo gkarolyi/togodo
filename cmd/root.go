@@ -27,8 +27,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var TodoTxtPath = os.Getenv("TODO_TXT_PATH")
-
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "togodo",
@@ -53,12 +51,20 @@ func Execute() {
 	}
 }
 
+var TodoTxtPath string
 func init() {
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
 	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.togodo.yaml)")
+	// var TodoTxtPath string
+	if _, err := os.Stat("todo.txt"); err == nil {
+	    TodoTxtPath = "todo.txt"
+	} else if TodoTxtPath == "" {
+			TodoTxtPath = os.Getenv("TODO_TXT_PATH")
+	    // TodoTxtPath = "default/path/to/todo.txt" // Provide a default path if TODO_TXT_PATH is not set
+	}
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.

@@ -1,0 +1,6 @@
+implement recursive flag to list todo.txts from subdirectories
+might be faster to just use text operations rather than classes
+add tui for browsing and acting on todos
+add quick entry interface?
+support setting priorities with !! shortcuts
+x (A) list todos from current directory by default
