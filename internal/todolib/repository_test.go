@@ -2,11 +2,21 @@ package todolib
 
 import (
 	"testing"
-
-	"github.com/matryer/is"
 )
 
 var TestTodoTxtPath = "../../testdata/todo.txt"
+
+func equalSlices(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // New API design:
 // ONLY one export: a func .New which returns a TodoTxtRepository
@@ -19,48 +29,67 @@ var TestTodoTxtPath = "../../testdata/todo.txt"
 // exported func .New(path string) TodoTxtRepository
 
 func TestAdd(t *testing.T) {
-	is := is.New(t)
-
 	t.Run("when todo is not done", func(t *testing.T) {
 		repo := TodoRepository{}
 		todo := repo.Add("(B) random fake task with a +projectName and @contextName @home")
 
 		t.Run("adding to Todos", func(t *testing.T) {
 			length := len(repo.Todos)
-			is.Equal(length, 1) // repo should contain one todo
+			if length != 1 {
+				t.Errorf("expected 1 todo, got %d", length)
+			}
 		})
 
 		t.Run("adding to Done", func(t *testing.T) {
 			doneLength := len(repo.Done)
-			is.Equal(doneLength, 0) // repo should contain no done todos
+			if doneLength != 0 {
+				t.Errorf("expected 0 done todos, got %d", doneLength)
+			}
 		})
 
 		t.Run("last Todo matches", func(t *testing.T) {
 			got := repo.Todos[len(repo.Todos)-1]
-			is.Equal(got, todo) // last todo should be the same todo
+			if !got.Equals(todo) {
+				t.Errorf("expected last todo to be %v, got %v", todo, got)
+			}
 		})
 
 		t.Run("priority", func(t *testing.T) {
-			is.Equal(todo.Priority, "B") // priority should be B
+			if todo.Priority != "B" {
+				t.Errorf("expected priority to be B, got %s", todo.Priority)
+			}
 		})
 
 		t.Run("projects", func(t *testing.T) {
-			is.Equal(todo.Projects, []string{"+projectName"}) // projects should be ["+projectName"]
+			expectedProjects := []string{"+projectName"}
+			if !equalSlices(todo.Projects, expectedProjects) {
+				t.Errorf("expected projects to be %v, got %v", expectedProjects, todo.Projects)
+			}
 		})
 
 		t.Run("contexts", func(t *testing.T) {
-			is.Equal(todo.Contexts, []string{"@contextName", "@home"}) // contexts should be ["@contextName", "@home"]
+			expectedContexts := []string{"@contextName", "@home"}
+			if !equalSlices(todo.Contexts, expectedContexts) {
+				t.Errorf("expected contexts to be %v, got %v", expectedContexts, todo.Contexts)
+			}
 		})
 
 		t.Run("done status", func(t *testing.T) {
-			is.Equal(todo.Done, false) // done should be false
+			if todo.Done != false {
+				t.Errorf("expected done to be false, got %v", todo.Done)
+			}
 		})
 
 		t.Run("line number", func(t *testing.T) {
-			is.Equal(todo.Number, 1) // first todo should have line number 1
+			if todo.Number != 1 {
+				t.Errorf("expected line number to be 1, got %d", todo.Number)
+			}
 			todo = repo.Add("another todo item to increment number")
-			is.Equal(todo.Number, 2) // second todo should have line number 2
+			if todo.Number != 2 {
+				t.Errorf("expected line number to be 2, got %d", todo.Number)
+			}
 		})
+
 	})
 
 	t.Run("when todo is done", func(t *testing.T) {
@@ -69,73 +98,99 @@ func TestAdd(t *testing.T) {
 
 		t.Run("adding to Todos", func(t *testing.T) {
 			todosLength := len(repo.Todos)
-			is.Equal(todosLength, 0) // repo should contain no todos
+			if todosLength != 0 {
+				t.Errorf("expected 0 todos, got %d", todosLength)
+			}
 		})
 
 		t.Run("adding to Done", func(t *testing.T) {
 			doneLength := len(repo.Done)
-			is.Equal(doneLength, 1) // repo should contain one done todo
+			if doneLength != 1 {
+				t.Errorf("expected 1 done todo, got %d", doneLength)
+			}
 		})
 
 		t.Run("last Todo matches", func(t *testing.T) {
 			got := repo.Done[len(repo.Done)-1]
-			is.Equal(got, todo) // last todo should be the same todo
+			if !got.Equals(todo) {
+				t.Errorf("expected last todo to be %v, got %v", todo, got)
+			}
 		})
 
 		t.Run("priority", func(t *testing.T) {
-			is.Equal(todo.Priority, "") // priority should be empty
+			if todo.Priority != "" {
+				t.Errorf("expected priority to be empty, got %s", todo.Priority)
+			}
 		})
 
 		t.Run("projects", func(t *testing.T) {
-			is.Equal(todo.Projects, nil) // projects should be nil
+			if todo.Projects != nil {
+				t.Errorf("expected projects to be nil, got %v", todo.Projects)
+			}
 		})
 
 		t.Run("contexts", func(t *testing.T) {
-			is.Equal(todo.Contexts, nil) // contexts should be nil
+			if todo.Contexts != nil {
+				t.Errorf("expected contexts to be nil, got %v", todo.Contexts)
+			}
 		})
 
 		t.Run("done status", func(t *testing.T) {
-			is.Equal(todo.Done, true) // done should be true
+			if todo.Done != true {
+				t.Errorf("expected done to be true, got %v", todo.Done)
+			}
 		})
 
 		t.Run("line number", func(t *testing.T) {
-			is.Equal(todo.Number, 1) // first todo should have line number 1
+			if todo.Number != 1 {
+				t.Errorf("expected line number to be 1, got %d", todo.Number)
+			}
 			todo = repo.Add("another todo item to increment number")
-			is.Equal(todo.Number, 2) // second todo should have line number 2
+			if todo.Number != 2 {
+				t.Errorf("expected line number to be 2, got %d", todo.Number)
+			}
 		})
 	})
 }
 
 func TestReadFile(t *testing.T) {
-	is := is.New(t)
 	repo := TodoRepository{}
 	err := repo.ReadFile(TestTodoTxtPath)
 
-	is.NoErr(err)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
 
 	t.Run("Todos length", func(t *testing.T) {
 		length := len(repo.Todos)
 
-		is.Equal(length, 5) // repo should contain 5 todos
+		if length != 5 {
+			t.Errorf("expected 5 todos, got %d", length)
+		}
 	})
 
 	t.Run("index", func(t *testing.T) {
 		lastNumber := repo.Todos[len(repo.Todos)-1].Number
-		is.Equal(lastNumber, 7) // index of last todo should be 6
+		if lastNumber != 7 {
+			t.Errorf("expected last todo number to be 7, got %d", lastNumber)
+		}
 	})
 
 	// t.Run("sort done items at the bottom", func(t *testing.T) {
 	// 	lastTodo := repo.Todos[len(repo.Todos)-1]
-	// 	is.Equal(lastTodo.Done, true) // last todo status should be done
+	// 	if !lastTodo.Done {
+	// 		t.Errorf("expected last todo to be done")
+	// 	}
 	// })
 }
 
 func TestFind(t *testing.T) {
-	is := is.New(t)
 	repo := TodoRepository{}
 	err := repo.ReadFile(TestTodoTxtPath)
 
-	is.NoErr(err)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
 
 	t.Run("find correct item", func(t *testing.T) {
 		got := repo.Find(1)
@@ -143,18 +198,20 @@ func TestFind(t *testing.T) {
 			Text: "do some super cool hacker stuff +hacking @basement",
 		}
 
-		is.Equal(got.Text, want.Text)
+		if got.Text != want.Text {
+			t.Errorf("expected %v, got %v", want.Text, got.Text)
+		}
 	})
 }
 
 func TestDo(t *testing.T) {
-	is := is.New(t)
-
 	t.Run("toggling not done item", func(t *testing.T) {
 		repo := TodoRepository{}
 		err := repo.ReadFile(TestTodoTxtPath)
 
-		is.NoErr(err)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
 
 		initialDoneLength := len(repo.Done)
 		initialTodosLength := len(repo.Todos)
@@ -162,12 +219,16 @@ func TestDo(t *testing.T) {
 
 		t.Run("item in done", func(t *testing.T) {
 			doneLength := len(repo.Done)
-			is.Equal(doneLength, initialDoneLength+1) // item should be moved to done
+			if doneLength != initialDoneLength+1 {
+				t.Errorf("expected %d done items, got %d", initialDoneLength+1, doneLength)
+			}
 		})
 
 		t.Run("item not in todos", func(t *testing.T) {
 			todosLength := len(repo.Todos)
-			is.Equal(todosLength, initialTodosLength-1) // item should be removed from todos
+			if todosLength != initialTodosLength-1 {
+				t.Errorf("expected %d todos, got %d", initialTodosLength-1, todosLength)
+			}
 		})
 	})
 
@@ -175,68 +236,92 @@ func TestDo(t *testing.T) {
 	// 	repo := TodoRepository{}
 	// 	err := repo.ReadFile(TestTodoTxtPath)
 
-	// 	is.NoErr(err)
+	// 	if err != nil {
+	// 		t.Fatalf("expected no error, got %v", err)
+	// 	}
 
 	// 	initialDoneLength := len(repo.Done)
-	// 	is.Equal(initialDoneLength, 2)
+	// 	if initialDoneLength != 2 {
+	// 		t.Errorf("expected 2 done items, got %d", initialDoneLength)
+	// 	}
 	// 	initialTodosLength := len(repo.Todos)
-	// 	is.Equal(initialTodosLength, 5)
+	// 	if initialTodosLength != 5 {
+	// 		t.Errorf("expected 5 todos, got %d", initialTodosLength)
+	// 	}
 	// 	repo.Toggle(4)
 
 	// 	t.Run("item not in done", func(t *testing.T) {
 	// 		doneLength := len(repo.Done)
-	// 		is.Equal(doneLength, initialDoneLength-1) // item should be removed from done
+	// 		if doneLength != initialDoneLength-1 {
+	// 			t.Errorf("expected %d done items, got %d", initialDoneLength-1, doneLength)
+	// 		}
 	// 	})
 
 	// t.Run("item back in todos", func(t *testing.T) {
 	// 	todosLength := len(repo.Todos)
-	// 	is.Equal(todosLength, initialTodosLength+1) // item should be moved to todos
+	// 	if todosLength != initialTodosLength+1 {
+	// 		t.Errorf("expected %d todos, got %d", initialTodosLength+1, todosLength)
+	// 	}
 	// })
 	// })
 }
 
 func TestAll(t *testing.T) {
-	is := is.New(t)
 	repo := TodoRepository{}
 	err := repo.ReadFile(TestTodoTxtPath)
 
-	is.NoErr(err)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
 	todos := repo.All()
 
 	t.Run("number of items correct", func(t *testing.T) {
-		is.Equal(len(todos), 7) // should contain 7 todos
+		if len(todos) != 7 {
+			t.Errorf("expected 7 todos, got %d", len(todos))
+		}
 	})
 
 	t.Run("sort done to the bottom", func(t *testing.T) {
 		lastTodo := todos[len(todos)-1]
-		is.Equal(lastTodo.Text, "x and here is another done todo") // text should match last done todo
+		if lastTodo.Text != "x and here is another done todo" {
+			t.Errorf("expected last todo text to be 'x and here is another done todo', got %v", lastTodo.Text)
+		}
 	})
 
 	t.Run("sort by priority", func(t *testing.T) {
 		topTodo := todos[0]
-		is.Equal(topTodo.Priority, "A") // highest priority should be first
+		if topTodo.Priority != "A" {
+			t.Errorf("expected top todo priority to be 'A', got %v", topTodo.Priority)
+		}
 	})
 }
 
 func TestFilter(t *testing.T) {
-	is := is.New(t)
 	repo := TodoRepository{}
 	err := repo.ReadFile(TestTodoTxtPath)
 
-	is.NoErr(err)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
 
 	t.Run("number of items correct", func(t *testing.T) {
 		todos := repo.Filter("@basement")
-		is.Equal(len(todos), 1) // should contain 1 matching todo
+		if len(todos) != 1 {
+			t.Errorf("expected 1 matching todo, got %d", len(todos))
+		}
 	})
 
 	t.Run("number of items correct", func(t *testing.T) {
 		todos := repo.Filter("@shop")
-		is.Equal(len(todos), 1) // should contain 1 matching todo
+		if len(todos) != 1 {
+			t.Errorf("expected 1 matching todo, got %d", len(todos))
+		}
 	})
 
 	t.Run("number of items correct", func(t *testing.T) {
 		todos := repo.Filter("(A)")
-		is.Equal(len(todos), 1) // should contain 1 matching todo
+		if len(todos) != 1 {
+			t.Errorf("expected 1 matching todo, got %d", len(todos))
+		}
 	})
 }

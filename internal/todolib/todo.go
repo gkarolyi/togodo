@@ -26,6 +26,10 @@ func (t *Todo) ToggleDone() {
 	}
 }
 
+func (t Todo) Equals(other Todo) bool {
+	return t.Text == other.Text
+}
+
 // func (t Todo) Project() string {
 // 	return projectRe.FindString(t.Text)
 // }
