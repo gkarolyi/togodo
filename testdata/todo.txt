@@ -4,4 +4,4 @@ other random fake task with a +project and @context
 x this is a done todo
 (A) don't forget about priorities!!! +GTD @everywhere
 x and here is another done todo
-finish amazing todo.txt project due:someday
+(B) finish amazing todo.txt project due:someday

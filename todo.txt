@@ -1,6 +1,12 @@
-implement recursive flag to list todo.txts from subdirectories
-might be faster to just use text operations rather than classes
-add tui for browsing and acting on todos
-add quick entry interface?
-support setting priorities with !! shortcuts
+(A) test the saving setup to make sure content isn't lost +test
 x (A) list todos from current directory by default
+(B) make saving work and save on add, complete etc +feature
+(B) add Add command to CLI +feature
+(C) add Do command to CLI +feature
+add tui for browsing and acting on todos +feature
+add quick entry interface? +idea
+support setting priorities with !! shortcuts +idea
+create TodoRepository with a todo.txt path +refactor
+(A) change TodoRepository API to only export New() and automatically read the right file +refactor
+implement recursive flag to list todo.txts from subdirectories +idea
+might be faster to just use text operations rather than classes +idea

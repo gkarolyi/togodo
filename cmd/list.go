@@ -1,6 +1,5 @@
 /*
 Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
@@ -23,8 +22,7 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		repo := todolib.TodoRepository{}
-		err := repo.ReadFile(TodoTxtPath)
+		repo, err := todolib.New(TodoTxtPath)
 		var todos []todolib.Todo
 
 		if err != nil {
