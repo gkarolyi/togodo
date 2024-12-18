@@ -104,27 +104,10 @@ func (t *TodoRepository) Do(index int) {
 	}
 }
 
-func (t TodoRepository) All() (todos []Todo) {
-	sort.SliceStable(t.Todos, func(i, j int) bool {
-		iPrioritised := t.Todos[i].Prioritised()
-		jPrioritised := t.Todos[j].Prioritised()
-
-		if iPrioritised && jPrioritised {
-			return t.Todos[i].Priority < t.Todos[j].Priority
-		} else if iPrioritised {
-			return true
-		} else if jPrioritised {
-			return false
-		} else {
-			return false
-		}
-	})
-
-	sort.SliceStable(t.Done, func(i, j int) bool {
-		return t.Done[i].Priority < t.Done[j].Priority
-	})
-
-	return append(t.Todos, t.Done...)
+func (t *TodoRepository) All() (todos []Todo) {
+	t.Todos = sortByPriority(t.Todos, t.Done)
+	t.reassignNumbers()
+	return t.Todos
 }
 
 func (t TodoRepository) Filter(query string) (matched []Todo) {
@@ -137,6 +120,35 @@ func (t TodoRepository) Filter(query string) (matched []Todo) {
 	return matched
 }
 
+func (t *TodoRepository) reassignNumbers() {
+	for i := range t.Todos {
+		t.Todos[i].Number = i + 1
+	}
+}
+
 func removeIndex(s []Todo, index int) []Todo {
 	return append(s[:index], s[index+1:]...)
+}
+
+func sortByPriority(todos, done []Todo) []Todo {
+	sort.SliceStable(todos, func(i, j int) bool {
+		iPrioritised := todos[i].Prioritised()
+		jPrioritised := todos[j].Prioritised()
+
+		if iPrioritised && jPrioritised {
+			return todos[i].Priority < todos[j].Priority
+		} else if iPrioritised {
+			return true
+		} else if jPrioritised {
+			return false
+		} else {
+			return false
+		}
+	})
+
+	sort.SliceStable(done, func(i, j int) bool {
+		return done[i].Priority < done[j].Priority
+	})
+
+	return append(todos, done...)
 }

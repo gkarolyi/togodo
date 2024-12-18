@@ -1,12 +1,16 @@
-(A) test the saving setup to make sure content isn't lost +test
-x (A) list todos from current directory by default
-(B) make saving work and save on add, complete etc +feature
-(B) add Add command to CLI +feature
-(C) add Do command to CLI +feature
+(A) make saving work and save on add, complete etc +feature @must
+(A) add Add command to CLI +feature @must
+(A) add Do command to CLI +feature @must
+(B) film the project video and upload somewhere @must
+(B) fill out README with a couple of paragraphs about the project @must
+(B) submit @must
+(C) test the saving setup to make sure content isn't lost +test
 add tui for browsing and acting on todos +feature
 add quick entry interface? +idea
 support setting priorities with !! shortcuts +idea
-create TodoRepository with a todo.txt path +refactor
-(A) change TodoRepository API to only export New() and automatically read the right file +refactor
 implement recursive flag to list todo.txts from subdirectories +idea
 might be faster to just use text operations rather than classes +idea
+x sort file by priority by default and fix line numbers @must
+x create TodoRepository with a todo.txt path +refactor
+x change TodoRepository API to only export New() and automatically read the right file +refactor
+x list todos from current directory by default

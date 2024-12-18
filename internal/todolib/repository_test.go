@@ -368,6 +368,14 @@ func TestAll(t *testing.T) {
 			t.Errorf("expected second todo priority to be 'B', got %v", todos[1].Priority)
 		}
 	})
+
+	t.Run("line numbers are in order", func(t *testing.T) {
+		for i, todo := range todos {
+			if todo.Number != i+1 {
+				t.Errorf("expected todo number to be %d, got %d", i+1, todo.Number)
+			}
+		}
+	})
 }
 
 func TestFilter(t *testing.T) {
