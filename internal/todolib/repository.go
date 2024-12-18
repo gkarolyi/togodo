@@ -8,9 +8,37 @@ import (
 )
 
 type TodoRepository struct {
-	Todos     []Todo
-	Done      []Todo
-	todoCount int
+	Todos       []Todo
+	Done        []Todo
+	todoCount   int
+	todoTxtPath string
+}
+
+func New(todoTxtPath string) (TodoRepository, error) {
+	repo := TodoRepository{todoTxtPath: todoTxtPath}
+	err := repo.Read(todoTxtPath)
+	if err != nil {
+		return TodoRepository{}, err
+	}
+	return repo, nil
+}
+
+func (t *TodoRepository) Save() error {
+	file, err := os.Create(t.todoTxtPath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	writer := bufio.NewWriter(file)
+	for _, todo := range append(t.Todos, t.Done...) {
+		_, err := writer.WriteString(todo.Text + "\n")
+		if err != nil {
+			return err
+		}
+	}
+	writer.Flush()
+	return nil
 }
 
 func (t *TodoRepository) TodoCount() int {
@@ -18,17 +46,13 @@ func (t *TodoRepository) TodoCount() int {
 	return t.todoCount
 }
 
-func (t *TodoRepository) Add(line string) Todo {
+func (t *TodoRepository) Add(line string) (Todo, error) {
 	todo := Todo{Number: t.TodoCount(), Text: line}
 
 	if doneRe.MatchString(line) {
 		todo.Done = true
 		t.Done = append(t.Done, todo)
-
-		return todo
-
 	} else {
-
 		if priorityRe.MatchString(line) {
 			todo.Priority = priorityRe.FindStringSubmatch(line)[1]
 		}
@@ -38,14 +62,18 @@ func (t *TodoRepository) Add(line string) Todo {
 		if contextRe.MatchString(line) {
 			todo.Contexts = contextRe.FindAllString(line, -1)
 		}
+		t.Todos = append(t.Todos, todo)
 	}
 
-	t.Todos = append(t.Todos, todo)
+	err := t.Save()
+	if err != nil {
+		return Todo{}, err
+	}
 
-	return todo
+	return todo, nil
 }
 
-func (t *TodoRepository) ReadFile(path string) error {
+func (t *TodoRepository) Read(path string) error {
 	f, err := os.Open(path)
 
 	if err != nil {
@@ -63,34 +91,23 @@ func (t *TodoRepository) ReadFile(path string) error {
 	return nil
 }
 
-func (t TodoRepository) Find(lineNumber int) Todo {
-	todo := t.Todos[lineNumber-1]
+func (t TodoRepository) Find(index int) Todo {
+	todo := t.Todos[index-1]
 	return todo
 }
 
-func (t *TodoRepository) Do(lineNumber int) {
-	todo := t.Find(lineNumber)
+func (t *TodoRepository) Do(index int) {
+	todo := t.Find(index)
 	if !todo.Done {
 		t.Done = append(t.Done, todo)
-		t.Todos = removeIndex(t.Todos, lineNumber-1)
+		t.Todos = removeIndex(t.Todos, index-1)
 	}
 }
 
-func (t TodoRepository) All() (todos []Todo) {
-	sort.SliceStable(t.Todos, func(i, j int) bool {
-		iPrioritised := t.Todos[i].Prioritised()
-		jPrioritised := t.Todos[j].Prioritised()
-
-		if jPrioritised && !iPrioritised {
-			return false
-		} else if iPrioritised && !jPrioritised {
-			return true
-		} else {
-			return t.Todos[i].Priority < t.Todos[j].Priority
-		}
-	})
-
-	return append(t.Todos, t.Done...)
+func (t *TodoRepository) All() (todos []Todo) {
+	t.Todos = sortByPriority(t.Todos, t.Done)
+	t.reassignNumbers()
+	return t.Todos
 }
 
 func (t TodoRepository) Filter(query string) (matched []Todo) {
@@ -103,6 +120,35 @@ func (t TodoRepository) Filter(query string) (matched []Todo) {
 	return matched
 }
 
+func (t *TodoRepository) reassignNumbers() {
+	for i := range t.Todos {
+		t.Todos[i].Number = i + 1
+	}
+}
+
 func removeIndex(s []Todo, index int) []Todo {
 	return append(s[:index], s[index+1:]...)
+}
+
+func sortByPriority(todos, done []Todo) []Todo {
+	sort.SliceStable(todos, func(i, j int) bool {
+		iPrioritised := todos[i].Prioritised()
+		jPrioritised := todos[j].Prioritised()
+
+		if iPrioritised && jPrioritised {
+			return todos[i].Priority < todos[j].Priority
+		} else if iPrioritised {
+			return true
+		} else if jPrioritised {
+			return false
+		} else {
+			return false
+		}
+	})
+
+	sort.SliceStable(done, func(i, j int) bool {
+		return done[i].Priority < done[j].Priority
+	})
+
+	return append(todos, done...)
 }
