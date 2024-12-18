@@ -65,10 +65,10 @@ func (t *TodoRepository) Add(line string) (Todo, error) {
 		t.Todos = append(t.Todos, todo)
 	}
 
-	// err := t.Save()
-	// if err != nil {
-	// 	return Todo{}, err
-	// }
+	err := t.Save()
+	if err != nil {
+		return Todo{}, err
+	}
 
 	return todo, nil
 }

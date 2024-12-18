@@ -1,7 +1,7 @@
 do some super cool hacker stuff +hacking @basement
 buy some carrots and potatoes for +dinner @shop
 other random fake task with a +project and @context
-x this is a done todo
 (A) don't forget about priorities!!! +GTD @everywhere
-x and here is another done todo
 (B) finish amazing todo.txt project due:someday
+x this is a done todo
+x and here is another done todo

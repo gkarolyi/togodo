@@ -48,7 +48,16 @@ func TestNew(t *testing.T) {
 
 func TestAdd(t *testing.T) {
 	t.Run("when todo is not done", func(t *testing.T) {
-		repo := TodoRepository{todoTxtPath: TestTodoTxtPath}
+		tmpfile, err := os.CreateTemp("", "test_todo.txt")
+		if err != nil {
+			t.Fatalf("failed to create temp file: %v", err)
+		}
+		defer os.Remove(tmpfile.Name())
+
+		repo, err := New(tmpfile.Name())
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
 		todo, err := repo.Add("(B) random fake task with a +projectName and @contextName @home")
 
 		if err != nil {
@@ -111,11 +120,31 @@ func TestAdd(t *testing.T) {
 				t.Errorf("expected line number to be 2, got %d", todo.Number)
 			}
 		})
+
+		t.Run("adding to file", func(t *testing.T) {
+			content, err := os.ReadFile(tmpfile.Name())
+			if err != nil {
+				t.Fatalf("failed to read temp file: %v", err)
+			}
+
+			expectedContent := "(B) random fake task with a +projectName and @contextName @home\nanother todo item to increment number\n"
+			if string(content) != expectedContent {
+				t.Errorf("expected content to be %s, got %s", expectedContent, string(content))
+			}
+		})
 	})
 
 	t.Run("when todo is done", func(t *testing.T) {
-		repo := TodoRepository{todoTxtPath: TestTodoTxtPath}
+		tmpfile, err := os.CreateTemp("", "test_todo.txt")
+		if err != nil {
+			t.Fatalf("failed to create temp file: %v", err)
+		}
+		defer os.Remove(tmpfile.Name())
 
+		repo, err := New(tmpfile.Name())
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
 		todo, err := repo.Add("x (B) random fake task with a +projectName and @contextName @home")
 
 		if err != nil {
@@ -195,19 +224,13 @@ func TestRead(t *testing.T) {
 		}
 	})
 
-	t.Run("index", func(t *testing.T) {
-		lastNumber := repo.Todos[len(repo.Todos)-1].Number
-		if lastNumber != 7 {
-			t.Errorf("expected last todo number to be 7, got %d", lastNumber)
+	t.Run("Done length", func(t *testing.T) {
+		length := len(repo.Done)
+
+		if length != 2 {
+			t.Errorf("expected 2 done, got %d", length)
 		}
 	})
-
-	// t.Run("sort done items at the bottom", func(t *testing.T) {
-	// 	lastTodo := repo.Todos[len(repo.Todos)-1]
-	// 	if !lastTodo.Done {
-	// 		t.Errorf("expected last todo to be done")
-	// 	}
-	// })
 }
 
 func TestSave(t *testing.T) {
