@@ -12,24 +12,26 @@
 #       tags: backend security
 #       run: bundle audit
 #
-# pre-commit:
-#   parallel: true
-#   commands:
-#     eslint:
-#       glob: "*.{js,ts,jsx,tsx}"
-#       run: yarn eslint {staged_files}
-#     rubocop:
-#       tags: backend style
-#       glob: "*.rb"
-#       exclude: '(^|/)(application|routes)\.rb$'
-#       run: bundle exec rubocop --force-exclusion {all_files}
-#     govet:
-#       tags: backend style
-#       files: git ls-files -m
-#       glob: "*.go"
-#       run: go vet {files}
-#   scripts:
-#     "hello.js":
-#       runner: node
-#     "any.go":
-#       runner: go run
+pre-commit:
+  parallel: true
+  commands:
+    govet:
+      tags: check package consistency
+      files: git ls-files -m
+      glob: '*.go'
+      run: go vet ./...
+    gofmt:
+      tags: go style
+      files: git ls-files -m
+      glob: '*.go'
+      run: gofmt -w {all_files}
+    gotest:
+      tags: go test
+      files: git ls-files -m
+      glob: '*'
+      run: go test ./...
+    gobuild:
+      tags: go build
+      files: git ls-files -m
+      glob: '*'
+      run: go build
