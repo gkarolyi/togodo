@@ -22,39 +22,9 @@ THE SOFTWARE.
 package main
 
 import (
-	"fmt"
-	"os"
-	"os/exec"
 	"togodo/cmd"
 )
 
 func main() {
-	args := os.Args
-	if len(args) > 1 {
-		switch args[1] {
-		case "list", "add", "do":
-			cmd.Execute()
-		default:
-			passthrough(args[1:])
-		}
-	} else {
-		cmd.Execute()
-	}
-}
-
-func passthrough(args []string) {
-	cmd := todoCmd(args)
-	out, err := cmd.Output()
-
-	output := string(out[:])
-	fmt.Println(output)
-
-	if err != nil {
-		os.Exit(1)
-	}
-}
-
-func todoCmd(args []string) *exec.Cmd {
-	args = append([]string{"-a"}, args...)
-	return exec.Command("todo.sh", args...)
+	cmd.Execute()
 }

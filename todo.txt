@@ -9,12 +9,11 @@ might be faster to just use text operations rather than classes +idea
 remove priority from todos when toggling done @idea
 save priority with shorthand so todo can be restored? @idea
 add tidy command to remove done todos
-x trying a brand new command
+support adding todos without wrapping them in quotes
 x sort file by priority by default and fix line numbers @must
 x create TodoRepository with a todo.txt path +refactor
 x change TodoRepository API to only export New() and automatically read the right file +refactor
 x list todos from current directory by default
-x 13
 x (A) make saving work and save on add, complete etc +feature @must
 x (A) add Add command to CLI +feature @must
 x (C) test the saving setup to make sure content isn't lost +test
