@@ -340,7 +340,10 @@ func TestToggle(t *testing.T) {
 		initialDoneLength := repo.DoneCount()
 		initialTodosLength := repo.TodoCount()
 
-		todo := repo.Toggle(1)
+		todos, err := repo.Toggle([]int{1})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
 
 		t.Run("item added to done", func(t *testing.T) {
 			doneLength := repo.DoneCount()
@@ -357,8 +360,8 @@ func TestToggle(t *testing.T) {
 		})
 
 		t.Run("item marked as done", func(t *testing.T) {
-			if !todo.Done {
-				t.Errorf("expected todo to be done, got %v", todo.Done)
+			if !todos[0].Done {
+				t.Errorf("expected todo to be done, got %v", todos[0].Done)
 			}
 		})
 
@@ -386,7 +389,10 @@ x (A) don't forget about priorities!!! +GTD @everywhere
 		initialDoneLength := repo.DoneCount()
 		initialTodosLength := repo.TodoCount()
 
-		todo := repo.Toggle(6)
+		todos, err := repo.Toggle([]int{6})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
 
 		t.Run("item not in done", func(t *testing.T) {
 			doneLength := repo.DoneCount()
@@ -403,8 +409,8 @@ x (A) don't forget about priorities!!! +GTD @everywhere
 		})
 
 		t.Run("item marked as not done", func(t *testing.T) {
-			if todo.Done {
-				t.Errorf("expected todo to be not done, got %v", todo.Done)
+			if todos[0].Done {
+				t.Errorf("expected todo to be not done, got %v", todos[0].Done)
 			}
 		})
 
@@ -424,6 +430,46 @@ x (A) don't forget about priorities!!! +GTD @everywhere
 
 			if string(content) != expectedContent {
 				t.Errorf("expected content to be: \n%s\n -------\n Got: \n%s", expectedContent, string(content))
+			}
+		})
+	})
+
+	t.Run("toggling non-existent item", func(t *testing.T) {
+		_, err := repo.Toggle([]int{100})
+
+		if err == nil {
+			t.Errorf("expected an error, got nil")
+		}
+	})
+
+	t.Run("toggling multiple items", func(t *testing.T) {
+		initialDoneLength := repo.DoneCount()
+		initialTodosLength := repo.TodoCount()
+
+		todos, err := repo.Toggle([]int{1, 2, 3})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		t.Run("items added to done", func(t *testing.T) {
+			doneLength := repo.DoneCount()
+			if doneLength != initialDoneLength+3 {
+				t.Errorf("expected %d done items, got %d", initialDoneLength+3, doneLength)
+			}
+		})
+
+		t.Run("items removed from todos", func(t *testing.T) {
+			todosLength := repo.TodoCount()
+			if todosLength != initialTodosLength-3 {
+				t.Errorf("expected %d todos, got %d", initialTodosLength-3, todosLength)
+			}
+		})
+
+		t.Run("items marked as done", func(t *testing.T) {
+			for _, todo := range todos {
+				if !todo.Done {
+					t.Errorf("expected todo to be done, got %v", todo.Done)
+				}
 			}
 		})
 	})

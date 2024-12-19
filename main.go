@@ -32,7 +32,7 @@ func main() {
 	args := os.Args
 	if len(args) > 1 {
 		switch args[1] {
-		case "list", "add":
+		case "list", "add", "do":
 			cmd.Execute()
 		default:
 			passthrough(args[1:])

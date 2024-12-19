@@ -2,6 +2,7 @@ package todolib
 
 import (
 	"bufio"
+	"errors"
 	"os"
 	"sort"
 	"strings"
@@ -129,11 +130,23 @@ func (t TodoRepository) Find(lineNumber int) Todo {
 	return todo
 }
 
-func (t *TodoRepository) Toggle(lineNumber int) Todo {
-	t.get(lineNumber).ToggleDone()
-	todo := t.Find(lineNumber)
-	t.Save()
-	return todo
+func (t *TodoRepository) Toggle(lineNumbers []int) ([]Todo, error) {
+	var todos []Todo
+	for _, lineNumber := range lineNumbers {
+		todo, err := t.get(lineNumber)
+		if err != nil {
+			return nil, err
+		}
+		todo.ToggleDone()
+		todos = append(todos, *todo)
+	}
+
+	err := t.Save()
+	if err != nil {
+		return nil, err
+	}
+
+	return todos, nil
 }
 
 func (t *TodoRepository) All() (todos []Todo) {
@@ -152,8 +165,11 @@ func (t TodoRepository) Filter(query string) (matched []Todo) {
 	return matched
 }
 
-func (t *TodoRepository) get(lineNumber int) *Todo {
-	return &t.items[lineNumber-1]
+func (t *TodoRepository) get(lineNumber int) (*Todo, error) {
+	if lineNumber < 1 || lineNumber > len(t.items) {
+		return nil, errorInvalidLineNumber
+	}
+	return &t.items[lineNumber-1], nil
 }
 
 func (t *TodoRepository) reassignNumbers() {
@@ -184,3 +200,5 @@ func sortByPriority(todos, done []Todo) []Todo {
 
 	return append(todos, done...)
 }
+
+var errorInvalidLineNumber = errors.New("invalid line number")
