@@ -2,7 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"togodo/internal/todolib"
+
+	"github.com/gkarolyi/togodo/internal/todolib"
 
 	"github.com/spf13/cobra"
 )

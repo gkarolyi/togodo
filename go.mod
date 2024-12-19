@@ -1,4 +1,4 @@
-module togodo
+module github.com/gkarolyi/togodo
 
 go 1.23
 

@@ -3,7 +3,8 @@ package cmd
 import (
 	"log"
 	"strings"
-	"togodo/internal/todolib"
+
+	"github.com/gkarolyi/togodo/internal/todolib"
 
 	"github.com/spf13/cobra"
 )
