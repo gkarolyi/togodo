@@ -1,11 +1,11 @@
 # togodo
+![GitHub branch status](https://img.shields.io/github/checks-status/gkarolyi/togodo/master)
+
 
 A simple TUI task management client based on the [todo.txt format](http://todotxt.org/).
 
 The idea is simple: tasks are written in plain text (in a file named `todo.txt` by default), and each line represents one task.
 Tasks can have various attributes, all written in plain text.
-
-
 
 ## Usage/Examples
 
