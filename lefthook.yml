@@ -1,24 +1,8 @@
-# EXAMPLE USAGE:
-#
-#   Refer for explanation to following link:
-#   https://github.com/evilmartians/lefthook/blob/master/docs/configuration.md
-#
-# pre-push:
-#   commands:
-#     packages-audit:
-#       tags: frontend security
-#       run: yarn audit
-#     gems-audit:
-#       tags: backend security
-#       run: bundle audit
-#
 pre-commit:
   parallel: true
   commands:
     govet:
       tags: check package consistency
-      files: git ls-files -m
-      glob: '*.go'
       run: go vet ./...
     gofmt:
       tags: go style
@@ -27,11 +11,7 @@ pre-commit:
       run: gofmt -w {all_files}
     gotest:
       tags: go test
-      files: git ls-files -m
-      glob: '*'
       run: go test ./...
     gobuild:
       tags: go build
-      files: git ls-files -m
-      glob: '*'
       run: go build
