@@ -68,7 +68,7 @@ func (t *TodoRepository) Save() error {
 	defer file.Close()
 
 	writer := bufio.NewWriter(file)
-	for _, todo := range append(t.Todos(), t.Done()...) {
+	for _, todo := range t.All() {
 		_, err := writer.WriteString(todo.Text + "\n")
 		if err != nil {
 			return err
@@ -124,13 +124,16 @@ func (t *TodoRepository) Read(path string) error {
 	return nil
 }
 
-func (t TodoRepository) Find(index int) Todo {
-	todo := t.Items()[index-1]
+func (t TodoRepository) Find(lineNumber int) Todo {
+	todo := t.Items()[lineNumber-1]
 	return todo
 }
 
-func (t *TodoRepository) Do(index int) {
-	t.items[index-1].ToggleDone()
+func (t *TodoRepository) Toggle(lineNumber int) Todo {
+	t.get(lineNumber).ToggleDone()
+	todo := t.Find(lineNumber)
+	t.Save()
+	return todo
 }
 
 func (t *TodoRepository) All() (todos []Todo) {
@@ -147,6 +150,10 @@ func (t TodoRepository) Filter(query string) (matched []Todo) {
 	}
 
 	return matched
+}
+
+func (t *TodoRepository) get(lineNumber int) *Todo {
+	return &t.items[lineNumber-1]
 }
 
 func (t *TodoRepository) reassignNumbers() {

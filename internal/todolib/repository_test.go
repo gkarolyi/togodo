@@ -5,7 +5,32 @@ import (
 	"testing"
 )
 
-var TestTodoTxtPath = "../../testdata/todo.txt"
+func tempTodoTxtFile(t *testing.T) string {
+	tmpfile, err := os.CreateTemp("", "test_todo.txt")
+	if err != nil {
+		t.Fatalf("failed to create temp file: %v", err)
+	}
+	content := `do some super cool hacker stuff +hacking @basement
+buy some carrots and potatoes for +dinner @shop
+other random fake task with a +project and @context
+(A) don't forget about priorities!!! +GTD @everywhere
+(B) finish amazing todo.txt project due:someday
+x this is a done todo
+x and here is another done todo
+`
+	if _, err := tmpfile.Write([]byte(content)); err != nil {
+		t.Fatalf("failed to write to temp file: %v", err)
+	}
+	if err := tmpfile.Close(); err != nil {
+		t.Fatalf("failed to close temp file: %v", err)
+	}
+
+	t.Cleanup(func() {
+		os.Remove(tmpfile.Name())
+	})
+
+	return tmpfile.Name()
+}
 
 func equalSlices(a, b []string) bool {
 	if len(a) != len(b) {
@@ -20,15 +45,16 @@ func equalSlices(a, b []string) bool {
 }
 
 func TestNew(t *testing.T) {
-	repo, err := New(TestTodoTxtPath)
+	todoTxtPath := tempTodoTxtFile(t)
+	repo, err := New(todoTxtPath)
 
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
 	t.Run("setting the corrext todoTxtPath", func(t *testing.T) {
-		if repo.todoTxtPath != TestTodoTxtPath {
-			t.Errorf("expected todoTxtPath to be %s, got %s", TestTodoTxtPath, repo.todoTxtPath)
+		if repo.todoTxtPath != todoTxtPath {
+			t.Errorf("expected todoTxtPath to be %s, got %s", todoTxtPath, repo.todoTxtPath)
 		}
 	})
 
@@ -209,8 +235,9 @@ func TestAdd(t *testing.T) {
 }
 
 func TestRead(t *testing.T) {
-	repo := TodoRepository{todoTxtPath: TestTodoTxtPath}
-	err := repo.Read(TestTodoTxtPath)
+	todoTxtPath := tempTodoTxtFile(t)
+	repo := TodoRepository{todoTxtPath: todoTxtPath}
+	err := repo.Read(todoTxtPath)
 
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
@@ -271,9 +298,9 @@ x and here is a done todo
 		t.Fatalf("failed to read saved todo.txt file: %v", err)
 	}
 
-	expectedContent := `do some super cool hacker stuff +hacking @basement
+	expectedContent := `(A) here's a new task to be saved @home +testing
 (B) here's an existing task +project @shop
-(A) here's a new task to be saved @home +testing
+do some super cool hacker stuff +hacking @basement
 x and here is a done todo
 `
 
@@ -283,14 +310,15 @@ x and here is a done todo
 }
 
 func TestFind(t *testing.T) {
-	repo, err := New(TestTodoTxtPath)
+	todoTxtPath := tempTodoTxtFile(t)
+	repo, err := New(todoTxtPath)
 
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
 	t.Run("find correct item", func(t *testing.T) {
-		got := repo.Find(1)
+		got := repo.Find(3)
 		want := Todo{
 			Text: "do some super cool hacker stuff +hacking @basement",
 		}
@@ -301,69 +329,109 @@ func TestFind(t *testing.T) {
 	})
 }
 
-func TestDo(t *testing.T) {
+func TestToggle(t *testing.T) {
+	todoTxtPath := tempTodoTxtFile(t)
+	repo, err := New(todoTxtPath)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+
 	t.Run("toggling not done item", func(t *testing.T) {
-		repo, err := New(TestTodoTxtPath)
-
-		if err != nil {
-			t.Fatalf("expected no error, got %v", err)
-		}
-
 		initialDoneLength := repo.DoneCount()
 		initialTodosLength := repo.TodoCount()
-		repo.Do(1)
 
-		t.Run("item in done", func(t *testing.T) {
+		todo := repo.Toggle(1)
+
+		t.Run("item added to done", func(t *testing.T) {
 			doneLength := repo.DoneCount()
 			if doneLength != initialDoneLength+1 {
 				t.Errorf("expected %d done items, got %d", initialDoneLength+1, doneLength)
 			}
 		})
 
-		t.Run("item not in todos", func(t *testing.T) {
+		t.Run("item removed from todos", func(t *testing.T) {
 			todosLength := repo.TodoCount()
 			if todosLength != initialTodosLength-1 {
 				t.Errorf("expected %d todos, got %d", initialTodosLength-1, todosLength)
 			}
 		})
+
+		t.Run("item marked as done", func(t *testing.T) {
+			if !todo.Done {
+				t.Errorf("expected todo to be done, got %v", todo.Done)
+			}
+		})
+
+		t.Run("saving change to file", func(t *testing.T) {
+			content, err := os.ReadFile(todoTxtPath)
+			if err != nil {
+				t.Fatalf("failed to read todo.txt file: %v", err)
+			}
+			expectedContent := `(B) finish amazing todo.txt project due:someday
+do some super cool hacker stuff +hacking @basement
+buy some carrots and potatoes for +dinner @shop
+other random fake task with a +project and @context
+x this is a done todo
+x and here is another done todo
+x (A) don't forget about priorities!!! +GTD @everywhere
+`
+
+			if string(content) != expectedContent {
+				t.Errorf("expected content to be: \n%s\n -------\n Got: \n%s", expectedContent, string(content))
+			}
+		})
 	})
 
-	// t.Run("toggling done item", func(t *testing.T) {
-	// 	repo := TodoRepository{todoTxtPath: TestTodoTxtPath}}
-	// 	err := repo.Read(TestTodoTxtPath)
+	t.Run("toggling done item", func(t *testing.T) {
+		initialDoneLength := repo.DoneCount()
+		initialTodosLength := repo.TodoCount()
 
-	// 	if err != nil {
-	// 		t.Fatalf("expected no error, got %v", err)
-	// 	}
+		todo := repo.Toggle(6)
 
-	// 	initialDoneLength := len(repo.Done())
-	// 	if initialDoneLength != 2 {
-	// 		t.Errorf("expected 2 done items, got %d", initialDoneLength)
-	// 	}
-	// 	initialTodosLength := len(repo.Todos())
-	// 	if initialTodosLength != 5 {
-	// 		t.Errorf("expected 5 todos, got %d", initialTodosLength)
-	// 	}
-	// 	repo.Toggle(4)
+		t.Run("item not in done", func(t *testing.T) {
+			doneLength := repo.DoneCount()
+			if doneLength != initialDoneLength-1 {
+				t.Errorf("expected %d done items, got %d", initialDoneLength-1, doneLength)
+			}
+		})
 
-	// 	t.Run("item not in done", func(t *testing.T) {
-	// 		doneLength := len(repo.Done())
-	// 		if doneLength != initialDoneLength-1 {
-	// 			t.Errorf("expected %d done items, got %d", initialDoneLength-1, doneLength)
-	// 		}
-	// 	})
+		t.Run("item back in todos", func(t *testing.T) {
+			todosLength := repo.TodoCount()
+			if todosLength != initialTodosLength+1 {
+				t.Errorf("expected %d todos, got %d", initialTodosLength+1, todosLength)
+			}
+		})
 
-	// t.Run("item back in todos", func(t *testing.T) {
-	// 	todosLength := len(repo.Todos())
-	// 	if todosLength != initialTodosLength+1 {
-	// 		t.Errorf("expected %d todos, got %d", initialTodosLength+1, todosLength)
-	// 	}
-	// })
-	// })
+		t.Run("item marked as not done", func(t *testing.T) {
+			if todo.Done {
+				t.Errorf("expected todo to be not done, got %v", todo.Done)
+			}
+		})
+
+		t.Run("saving change to file", func(t *testing.T) {
+			content, err := os.ReadFile(todoTxtPath)
+			if err != nil {
+				t.Fatalf("failed to read todo.txt file: %v", err)
+			}
+			expectedContent := `(B) finish amazing todo.txt project due:someday
+do some super cool hacker stuff +hacking @basement
+buy some carrots and potatoes for +dinner @shop
+other random fake task with a +project and @context
+and here is another done todo
+x this is a done todo
+x (A) don't forget about priorities!!! +GTD @everywhere
+`
+
+			if string(content) != expectedContent {
+				t.Errorf("expected content to be: \n%s\n -------\n Got: \n%s", expectedContent, string(content))
+			}
+		})
+	})
 }
 
 func TestAll(t *testing.T) {
-	repo, err := New(TestTodoTxtPath)
+	todoTxtPath := tempTodoTxtFile(t)
+	repo, err := New(todoTxtPath)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -402,7 +470,8 @@ func TestAll(t *testing.T) {
 }
 
 func TestFilter(t *testing.T) {
-	repo, err := New(TestTodoTxtPath)
+	todoTxtPath := tempTodoTxtFile(t)
+	repo, err := New(todoTxtPath)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
