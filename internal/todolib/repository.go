@@ -165,6 +165,18 @@ func (t TodoRepository) Filter(query string) (matched []Todo) {
 	return matched
 }
 
+// Tidy removes all done items from the repository.
+func (t *TodoRepository) Tidy() ([]Todo, error) {
+	done := t.Done()
+	t.items = t.Todos()
+	err := t.Save()
+	if err != nil {
+		return nil, err
+	}
+
+	return done, nil
+}
+
 func (t *TodoRepository) get(lineNumber int) (*Todo, error) {
 	if lineNumber < 1 || lineNumber > len(t.items) {
 		return nil, errorInvalidLineNumber

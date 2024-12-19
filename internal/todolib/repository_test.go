@@ -543,3 +543,38 @@ func TestFilter(t *testing.T) {
 		}
 	})
 }
+
+func TestTidy(t *testing.T) {
+	todoTxtPath := tempTodoTxtFile(t)
+	repo, err := New(todoTxtPath)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+
+	t.Run("removes done items from the list", func(t *testing.T) {
+		removedTodos, err := repo.Tidy()
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		if repo.DoneCount() != 0 {
+			t.Errorf("expected 0 done items, got %d", repo.DoneCount())
+		}
+
+		if repo.TodoCount() != 5 {
+			t.Errorf("expected 5 todos, got %d", repo.TodoCount())
+		}
+
+		for _, todo := range removedTodos {
+			if !todo.Done {
+				t.Errorf("expected all removed todos to be done, got %v", todo.Text)
+			}
+		}
+
+		for _, todo := range repo.Items() {
+			if todo.Done {
+				t.Errorf("expected all done items to be removed, got %v", todo.Text)
+			}
+		}
+	})
+}
