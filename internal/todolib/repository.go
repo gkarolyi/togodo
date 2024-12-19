@@ -8,12 +8,48 @@ import (
 )
 
 type TodoRepository struct {
-	Todos       []Todo
-	Done        []Todo
-	todoCount   int
+	items       []Todo
 	todoTxtPath string
 }
 
+// Items returns all items in the repository.
+func (t TodoRepository) Items() []Todo {
+	return t.items
+}
+
+// Todos returns all items that are not done.
+func (t TodoRepository) Todos() []Todo {
+	var todos []Todo
+	for _, item := range t.Items() {
+		if !item.Done {
+			todos = append(todos, item)
+		}
+	}
+	return todos
+}
+
+// Done returns all items that are done.
+func (t TodoRepository) Done() []Todo {
+	var done []Todo
+	for _, item := range t.Items() {
+		if item.Done {
+			done = append(done, item)
+		}
+	}
+	return done
+}
+
+// TodoCount returns the number of items that are not done.
+func (t TodoRepository) TodoCount() int {
+	return len(t.Todos())
+}
+
+// DoneCount returns the number of items that are done.
+func (t TodoRepository) DoneCount() int {
+	return len(t.Done())
+}
+
+// New reads the items from the todo.txt file and returns a new repository.
 func New(todoTxtPath string) (TodoRepository, error) {
 	repo := TodoRepository{todoTxtPath: todoTxtPath}
 	err := repo.Read(todoTxtPath)
@@ -23,6 +59,7 @@ func New(todoTxtPath string) (TodoRepository, error) {
 	return repo, nil
 }
 
+// Save writes the items to the todo.txt file.
 func (t *TodoRepository) Save() error {
 	file, err := os.Create(t.todoTxtPath)
 	if err != nil {
@@ -31,7 +68,7 @@ func (t *TodoRepository) Save() error {
 	defer file.Close()
 
 	writer := bufio.NewWriter(file)
-	for _, todo := range append(t.Todos, t.Done...) {
+	for _, todo := range append(t.Todos(), t.Done()...) {
 		_, err := writer.WriteString(todo.Text + "\n")
 		if err != nil {
 			return err
@@ -41,17 +78,12 @@ func (t *TodoRepository) Save() error {
 	return nil
 }
 
-func (t *TodoRepository) TodoCount() int {
-	t.todoCount++
-	return t.todoCount
-}
-
+// Add creates a new item from the given line and appends it to the repository.
 func (t *TodoRepository) Add(line string) (Todo, error) {
-	todo := Todo{Number: t.TodoCount(), Text: line}
+	todo := Todo{Number: len(t.items) + 1, Text: line}
 
 	if doneRe.MatchString(line) {
 		todo.Done = true
-		t.Done = append(t.Done, todo)
 	} else {
 		if priorityRe.MatchString(line) {
 			todo.Priority = priorityRe.FindStringSubmatch(line)[1]
@@ -62,8 +94,8 @@ func (t *TodoRepository) Add(line string) (Todo, error) {
 		if contextRe.MatchString(line) {
 			todo.Contexts = contextRe.FindAllString(line, -1)
 		}
-		t.Todos = append(t.Todos, todo)
 	}
+	t.items = append(t.items, todo)
 
 	err := t.Save()
 	if err != nil {
@@ -73,6 +105,7 @@ func (t *TodoRepository) Add(line string) (Todo, error) {
 	return todo, nil
 }
 
+// Read adds the items from the given file to the repository.
 func (t *TodoRepository) Read(path string) error {
 	f, err := os.Open(path)
 
@@ -92,22 +125,18 @@ func (t *TodoRepository) Read(path string) error {
 }
 
 func (t TodoRepository) Find(index int) Todo {
-	todo := t.Todos[index-1]
+	todo := t.Items()[index-1]
 	return todo
 }
 
 func (t *TodoRepository) Do(index int) {
-	todo := t.Find(index)
-	if !todo.Done {
-		t.Done = append(t.Done, todo)
-		t.Todos = removeIndex(t.Todos, index-1)
-	}
+	t.items[index-1].ToggleDone()
 }
 
 func (t *TodoRepository) All() (todos []Todo) {
-	t.Todos = sortByPriority(t.Todos, t.Done)
+	t.items = sortByPriority(t.Todos(), t.Done())
 	t.reassignNumbers()
-	return t.Todos
+	return t.Items()
 }
 
 func (t TodoRepository) Filter(query string) (matched []Todo) {
@@ -121,13 +150,9 @@ func (t TodoRepository) Filter(query string) (matched []Todo) {
 }
 
 func (t *TodoRepository) reassignNumbers() {
-	for i := range t.Todos {
-		t.Todos[i].Number = i + 1
+	for i := range t.items {
+		t.items[i].Number = i + 1
 	}
-}
-
-func removeIndex(s []Todo, index int) []Todo {
-	return append(s[:index], s[index+1:]...)
 }
 
 func sortByPriority(todos, done []Todo) []Todo {

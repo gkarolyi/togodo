@@ -33,8 +33,8 @@ func TestNew(t *testing.T) {
 	})
 
 	t.Run("initialising Todos", func(t *testing.T) {
-		if len(repo.Todos) != 5 {
-			t.Errorf("expected 5 todos, got %d", len(repo.Todos))
+		if len(repo.Todos()) != 5 {
+			t.Errorf("expected 5 todos, got %d", len(repo.Todos()))
 		}
 	})
 
@@ -65,21 +65,21 @@ func TestAdd(t *testing.T) {
 		}
 
 		t.Run("adding to Todos", func(t *testing.T) {
-			length := len(repo.Todos)
+			length := len(repo.Todos())
 			if length != 1 {
 				t.Errorf("expected 1 todo, got %d", length)
 			}
 		})
 
 		t.Run("adding to Done", func(t *testing.T) {
-			doneLength := len(repo.Done)
+			doneLength := len(repo.Done())
 			if doneLength != 0 {
 				t.Errorf("expected 0 done todos, got %d", doneLength)
 			}
 		})
 
 		t.Run("last Todo matches", func(t *testing.T) {
-			got := repo.Todos[len(repo.Todos)-1]
+			got := repo.Todos()[len(repo.Todos())-1]
 			if !got.Equals(todo) {
 				t.Errorf("expected last todo to be %v, got %v", todo, got)
 			}
@@ -152,21 +152,21 @@ func TestAdd(t *testing.T) {
 		}
 
 		t.Run("adding to Todos", func(t *testing.T) {
-			todosLength := len(repo.Todos)
+			todosLength := len(repo.Todos())
 			if todosLength != 0 {
 				t.Errorf("expected 0 todos, got %d", todosLength)
 			}
 		})
 
 		t.Run("adding to Done", func(t *testing.T) {
-			doneLength := len(repo.Done)
+			doneLength := len(repo.Done())
 			if doneLength != 1 {
 				t.Errorf("expected 1 done todo, got %d", doneLength)
 			}
 		})
 
 		t.Run("last Todo matches", func(t *testing.T) {
-			got := repo.Done[len(repo.Done)-1]
+			got := repo.Done()[len(repo.Done())-1]
 			if !got.Equals(todo) {
 				t.Errorf("expected last todo to be %v, got %v", todo, got)
 			}
@@ -200,7 +200,7 @@ func TestAdd(t *testing.T) {
 			if todo.Number != 1 {
 				t.Errorf("expected line number to be 1, got %d", todo.Number)
 			}
-			todo, err = repo.Add("another todo item to increment number")
+			todo, err = repo.Add("x another done todo item to increment number")
 			if todo.Number != 2 {
 				t.Errorf("expected line number to be 2, got %d", todo.Number)
 			}
@@ -217,7 +217,7 @@ func TestRead(t *testing.T) {
 	}
 
 	t.Run("Todos length", func(t *testing.T) {
-		length := len(repo.Todos)
+		length := len(repo.Todos())
 
 		if length != 5 {
 			t.Errorf("expected 5 todos, got %d", length)
@@ -225,7 +225,7 @@ func TestRead(t *testing.T) {
 	})
 
 	t.Run("Done length", func(t *testing.T) {
-		length := len(repo.Done)
+		length := len(repo.Done())
 
 		if length != 2 {
 			t.Errorf("expected 2 done, got %d", length)
@@ -309,19 +309,19 @@ func TestDo(t *testing.T) {
 			t.Fatalf("expected no error, got %v", err)
 		}
 
-		initialDoneLength := len(repo.Done)
-		initialTodosLength := len(repo.Todos)
+		initialDoneLength := repo.DoneCount()
+		initialTodosLength := repo.TodoCount()
 		repo.Do(1)
 
 		t.Run("item in done", func(t *testing.T) {
-			doneLength := len(repo.Done)
+			doneLength := repo.DoneCount()
 			if doneLength != initialDoneLength+1 {
 				t.Errorf("expected %d done items, got %d", initialDoneLength+1, doneLength)
 			}
 		})
 
 		t.Run("item not in todos", func(t *testing.T) {
-			todosLength := len(repo.Todos)
+			todosLength := repo.TodoCount()
 			if todosLength != initialTodosLength-1 {
 				t.Errorf("expected %d todos, got %d", initialTodosLength-1, todosLength)
 			}
@@ -336,25 +336,25 @@ func TestDo(t *testing.T) {
 	// 		t.Fatalf("expected no error, got %v", err)
 	// 	}
 
-	// 	initialDoneLength := len(repo.Done)
+	// 	initialDoneLength := len(repo.Done())
 	// 	if initialDoneLength != 2 {
 	// 		t.Errorf("expected 2 done items, got %d", initialDoneLength)
 	// 	}
-	// 	initialTodosLength := len(repo.Todos)
+	// 	initialTodosLength := len(repo.Todos())
 	// 	if initialTodosLength != 5 {
 	// 		t.Errorf("expected 5 todos, got %d", initialTodosLength)
 	// 	}
 	// 	repo.Toggle(4)
 
 	// 	t.Run("item not in done", func(t *testing.T) {
-	// 		doneLength := len(repo.Done)
+	// 		doneLength := len(repo.Done())
 	// 		if doneLength != initialDoneLength-1 {
 	// 			t.Errorf("expected %d done items, got %d", initialDoneLength-1, doneLength)
 	// 		}
 	// 	})
 
 	// t.Run("item back in todos", func(t *testing.T) {
-	// 	todosLength := len(repo.Todos)
+	// 	todosLength := len(repo.Todos())
 	// 	if todosLength != initialTodosLength+1 {
 	// 		t.Errorf("expected %d todos, got %d", initialTodosLength+1, todosLength)
 	// 	}
