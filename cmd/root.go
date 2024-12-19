@@ -30,15 +30,12 @@ import (
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "togodo",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+	Short: "A CLI tool for managing your todo.txt",
+	Long: `togodo is a CLI tool for managing your todo.txt file, created as a final project
+for CS50. It supports listing, adding, and tidying up todo items.
+Try running 'togodo help' to get started.`,
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
+	// This is where the TUI will be called from eventually
 	// Run: func(cmd *cobra.Command, args []string) { },
 }
 
@@ -54,11 +51,35 @@ func Execute() {
 var TodoTxtPath string
 
 func init() {
-	if _, err := os.Stat("todo.txt"); err == nil {
-		TodoTxtPath = "todo.txt"
-	} else if TodoTxtPath == "" {
-		TodoTxtPath = os.Getenv("TODO_TXT_PATH")
-		// TodoTxtPath = "default/path/to/todo.txt" // Provide a default path if TODO_TXT_PATH is not set
+	// Try to open a todo.txt file in the current directory first
+	if TodoTxtPath == "" {
+		if _, err := os.Stat("todo.txt"); os.IsNotExist(err) {
+			os.Exit(1)
+		} else {
+			TodoTxtPath = "todo.txt"
+		}
+	}
+
+	// If that fails, try to open a todo.txt file in the directory specified by the TODO_TXT_PATH environment variable
+	if TodoTxtPath == "" {
+		envTodoTxtPath := os.Getenv("TODO_TXT_PATH")
+		if _, err := os.Stat(envTodoTxtPath); os.IsNotExist(err) {
+			os.Exit(1)
+		} else {
+			TodoTxtPath = envTodoTxtPath
+		}
+	}
+
+	// Finally, try to open a todo.txt file in the user's home directory
+	if TodoTxtPath == "" {
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			os.Exit(1)
+		}
+		TodoTxtPath = homeDir + "/todo.txt"
+		if _, err := os.Stat(TodoTxtPath); os.IsNotExist(err) {
+			os.Exit(1)
+		}
 	}
 
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")

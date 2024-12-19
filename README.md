@@ -1,5 +1,5 @@
 # togodo
-![GitHub branch status](https://img.shields.io/github/checks-status/gkarolyi/togodo/master)
+![GitHub branch check runs](https://img.shields.io/github/check-runs/gkarolyi/togodo/master)
 
 
 A simple TUI task management client based on the [todo.txt format](http://todotxt.org/).
