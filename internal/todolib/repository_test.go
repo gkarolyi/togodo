@@ -339,7 +339,6 @@ func TestToggle(t *testing.T) {
 	t.Run("toggling not done item", func(t *testing.T) {
 		initialDoneLength := repo.DoneCount()
 		initialTodosLength := repo.TodoCount()
-
 		todos, err := repo.Toggle([]int{1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
@@ -374,9 +373,9 @@ func TestToggle(t *testing.T) {
 do some super cool hacker stuff +hacking @basement
 buy some carrots and potatoes for +dinner @shop
 other random fake task with a +project and @context
+x (A) don't forget about priorities!!! +GTD @everywhere
 x this is a done todo
 x and here is another done todo
-x (A) don't forget about priorities!!! +GTD @everywhere
 `
 
 			if string(content) != expectedContent {
@@ -423,9 +422,9 @@ x (A) don't forget about priorities!!! +GTD @everywhere
 do some super cool hacker stuff +hacking @basement
 buy some carrots and potatoes for +dinner @shop
 other random fake task with a +project and @context
-and here is another done todo
-x this is a done todo
+this is a done todo
 x (A) don't forget about priorities!!! +GTD @everywhere
+x and here is another done todo
 `
 
 			if string(content) != expectedContent {

@@ -150,7 +150,7 @@ func (t *TodoRepository) Toggle(lineNumbers []int) ([]Todo, error) {
 }
 
 func (t *TodoRepository) All() (todos []Todo) {
-	t.items = sortByPriority(t.Todos(), t.Done())
+	t.items = sortByPriority(t.Items())
 	t.reassignNumbers()
 	return t.Items()
 }
@@ -168,6 +168,7 @@ func (t TodoRepository) Filter(query string) (matched []Todo) {
 // Tidy removes all done items from the repository.
 func (t *TodoRepository) Tidy() ([]Todo, error) {
 	done := t.Done()
+	// t.items = sortByPriority(t.Todos())
 	t.items = t.Todos()
 	err := t.Save()
 	if err != nil {
@@ -190,27 +191,25 @@ func (t *TodoRepository) reassignNumbers() {
 	}
 }
 
-func sortByPriority(todos, done []Todo) []Todo {
+// sortByPriority sorts the todos by priority, with done items last.
+func sortByPriority(todos []Todo) []Todo {
 	sort.SliceStable(todos, func(i, j int) bool {
-		iPrioritised := todos[i].Prioritised()
-		jPrioritised := todos[j].Prioritised()
-
-		if iPrioritised && jPrioritised {
-			return todos[i].Priority < todos[j].Priority
-		} else if iPrioritised {
-			return true
-		} else if jPrioritised {
-			return false
-		} else {
-			return false
+		if todos[i].Done != todos[j].Done {
+			return !todos[i].Done
 		}
+		if todos[i].Priority != todos[j].Priority {
+			if todos[i].Priority == "" {
+				return false
+			}
+			if todos[j].Priority == "" {
+				return true
+			}
+			return todos[i].Priority < todos[j].Priority
+		}
+		return false
 	})
 
-	sort.SliceStable(done, func(i, j int) bool {
-		return done[i].Priority < done[j].Priority
-	})
-
-	return append(todos, done...)
+	return todos
 }
 
 var errorInvalidLineNumber = errors.New("invalid line number")
