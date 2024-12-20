@@ -11,11 +11,17 @@ import (
 
 // addCmd represents the add command
 var doCmd = &cobra.Command{
-	Use:   "do",
+	Use:   "do [LINE NUMBER]...",
 	Short: "Toggle the done status of a todo item",
-	Long: `Toggle the done status of one or more todo items using their line numbers. For example:
+	Long: `Marks a task as done or not done depending on its current status, and prints the toggled task.
+If [LINE_NUMBER] contains multiple line numbers, each todo will be toggled.
 
-	togodo do 1 2 3`,
+# toggle the done status of the task on line 1
+togodo do 1
+
+# toggle the done status of the tasks on lines 1, 2, and 3
+togodo do 1 2 3
+`,
 
 	Args:    cobra.MinimumNArgs(1),
 	Aliases: []string{"x"},
@@ -38,13 +44,11 @@ var doCmd = &cobra.Command{
 			fmt.Println(err)
 		}
 		for _, todo := range todos {
-			fmt.Println(todo.Text)
+			todolib.Render(todo)
 		}
 	},
 }
-var xCmd = doCmd
 
 func init() {
 	rootCmd.AddCommand(doCmd)
-	rootCmd.AddCommand(xCmd)
 }

@@ -31,9 +31,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "togodo",
 	Short: "A CLI tool for managing your todo.txt",
-	Long: `togodo is a CLI tool for managing your todo.txt file, created as a final project
-for CS50. It supports listing, adding, and tidying up todo items.
-Try running 'togodo help' to get started.`,
+	Long:  `togodo is a CLI tool for managing your todo.txt file.`,
 
 	// This is where the TUI will be called from eventually
 	// Run: func(cmd *cobra.Command, args []string) { },

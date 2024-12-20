@@ -29,7 +29,7 @@ var tagStyle = lipgloss.NewStyle().
 	Underline(true).
 	Foreground(lipgloss.Color("#96C5B0"))
 
-func Render(number int, todo Todo) {
+func Render(todo Todo) {
 	fmt.Printf("%d ", todo.Number)
 	words := strings.Fields(todo.Text)
 	stdStyle := priorityStyle(todo.Priority)

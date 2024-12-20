@@ -11,11 +11,11 @@ import (
 // tidyCmd represents the add command
 var tidyCmd = &cobra.Command{
 	Use:   "tidy",
-	Short: "Tidy up the todo list",
-	Long: `Removes all done items from the list. For example:
+	Short: "Tidy up your todo.txt.",
+	Long: `Cleans up your todo.txt by removing done tasks, and prints the tasks that were removed.
 
-	togodo tidy`,
-
+# tidy up your todo.txt
+togodo tidy`,
 	Args:    cobra.NoArgs,
 	Aliases: []string{"clean"},
 	Run: func(cmd *cobra.Command, args []string) {
