@@ -1,16 +1,11 @@
-(A) fill out README with a couple of paragraphs about the project @must
 (A) submit @must
-(A) film the project video and upload somewhere @must
 add tui for browsing and acting on todos +feature
 add quick entry interface? +idea
 support setting priorities with !! shortcuts +idea
 implement recursive flag to list todo.txts from subdirectories +idea
 might be faster to just use text operations rather than classes +idea
-remove priority from todos when toggling done @idea
 save priority with shorthand so todo can be restored? @idea
-support saving a file path in config @idea
 gracefully handle missing todo.txt file
 write tests for commands as well
 move done to done.txt instead of just deleting
 tidy should remove blank lines and duplicates
-x update all the cli arguments and descriptions
