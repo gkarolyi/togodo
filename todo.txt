@@ -1,4 +1,3 @@
-(A) submit @must
 add tui for browsing and acting on todos +feature
 add quick entry interface? +idea
 support setting priorities with !! shortcuts +idea

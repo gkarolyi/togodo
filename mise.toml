@@ -1,6 +1,2 @@
 [tools]
-go = "latest"
-python = "3.12"
-
-[env]
-_.python.venv = ".venv"
+go = "1.23"
