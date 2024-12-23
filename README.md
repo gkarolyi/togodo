@@ -5,6 +5,8 @@
 A simple TUI task management client based on the [todo.txt format](http://todotxt.org/), created as a final project
 for [CS50](https://www.edx.org/learn/computer-science/harvard-university-cs50-s-introduction-to-computer-science).
 
+[Watch demo video](https://github.com/user-attachments/assets/2e6e5453-d7b1-40b8-b696-a2dc375f1d7a)
+
 The idea is simple: tasks are written in plain text (in a file named `todo.txt` by default), and each line represents one task.
 Tasks can have various attributes, all written in plain text.
 A done task is simply denoted with an "x" at the beginning of the line.
