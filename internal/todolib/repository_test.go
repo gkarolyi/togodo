@@ -205,14 +205,16 @@ func TestAdd(t *testing.T) {
 		})
 
 		t.Run("projects", func(t *testing.T) {
-			if todo.Projects != nil {
-				t.Errorf("expected projects to be nil, got %v", todo.Projects)
+			expectedProjects := []string{"+projectName"}
+			if !equalSlices(todo.Projects, expectedProjects) {
+				t.Errorf("expected projects to be %v, got %v", expectedProjects, todo.Projects)
 			}
 		})
 
 		t.Run("contexts", func(t *testing.T) {
-			if todo.Contexts != nil {
-				t.Errorf("expected contexts to be nil, got %v", todo.Contexts)
+			expectedContexts := []string{"@contextName", "@home"}
+			if !equalSlices(todo.Contexts, expectedContexts) {
+				t.Errorf("expected contexts to be %v, got %v", expectedContexts, todo.Contexts)
 			}
 		})
 

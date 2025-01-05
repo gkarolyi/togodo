@@ -14,16 +14,15 @@ type Todo struct {
 
 func NewTodo(text string, index int) Todo {
 	todo := Todo{
-		Text:   text,
-		Done:   IsDone(text),
-		Index:  index,
-		Number: index + 1,
+		Text:     text,
+		Done:     IsDone(text),
+		Priority: FindPriority(text),
+		Projects: FindProjects(text),
+		Contexts: FindContexts(text),
+		Index:    index,
+		Number:   index + 1,
 	}
-	if !todo.Done {
-		todo.Priority = FindPriority(text)
-		todo.Projects = FindProjects(text)
-		todo.Contexts = FindContexts(text)
-	}
+
 	return todo
 }
 
