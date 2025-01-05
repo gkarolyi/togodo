@@ -9,7 +9,22 @@ type Todo struct {
 	Projects []string
 	Contexts []string
 	Number   int
-	Index    int
+	Index    int // TODO: is this needed?
+}
+
+func NewTodo(text string, index int) Todo {
+	todo := Todo{
+		Text:   text,
+		Done:   IsDone(text),
+		Index:  index,
+		Number: index + 1,
+	}
+	if !todo.Done {
+		todo.Priority = FindPriority(text)
+		todo.Projects = FindProjects(text)
+		todo.Contexts = FindContexts(text)
+	}
+	return todo
 }
 
 func (t Todo) Prioritised() bool {
@@ -29,22 +44,3 @@ func (t *Todo) ToggleDone() {
 func (t Todo) Equals(other Todo) bool {
 	return t.Text == other.Text
 }
-
-// func (t Todo) Project() string {
-// 	return projectRe.FindString(t.Text)
-// }
-
-// func (t Todo) Context() string {
-// 	return contextRe.FindString(t.Text)
-// }
-
-// func (t Todo) Priority() string {
-// 	return priorityRe.FindString(t.Text)
-// }
-
-// func (t Todo) Description() string {
-// 	noProj := projectRe.ReplaceAllString(t.Text, "")
-// 	noCon := contextRe.ReplaceAllString(noProj, "")
-// 	noPri := priorityRe.ReplaceAllString(noCon, "")
-// 	return spacingRe.ReplaceAllString(noPri, " ")
-// }

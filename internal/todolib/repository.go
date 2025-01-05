@@ -81,21 +81,7 @@ func (t *TodoRepository) Save() error {
 
 // Add creates a new item from the given line and appends it to the repository.
 func (t *TodoRepository) Add(line string) (Todo, error) {
-	todo := Todo{Number: len(t.items) + 1, Text: line}
-
-	if doneRe.MatchString(line) {
-		todo.Done = true
-	} else {
-		if priorityRe.MatchString(line) {
-			todo.Priority = priorityRe.FindStringSubmatch(line)[1]
-		}
-		if projectRe.MatchString(line) {
-			todo.Projects = projectRe.FindAllString(line, -1)
-		}
-		if contextRe.MatchString(line) {
-			todo.Contexts = contextRe.FindAllString(line, -1)
-		}
-	}
+	todo := NewTodo(line, len(t.items))
 	t.items = append(t.items, todo)
 
 	err := t.Save()
