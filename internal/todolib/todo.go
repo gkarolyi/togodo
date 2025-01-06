@@ -14,14 +14,11 @@ type Todo struct {
 
 func NewTodo(text string, index int) Todo {
 	todo := Todo{
-		Text:     text,
-		Done:     IsDone(text),
-		Priority: FindPriority(text),
-		Projects: FindProjects(text),
-		Contexts: FindContexts(text),
-		Index:    index,
-		Number:   index + 1,
+		Text:   text,
+		Index:  index,
+		Number: index + 1,
 	}
+	todo.reloadProperties()
 
 	return todo
 }
@@ -32,12 +29,18 @@ func (t Todo) Prioritised() bool {
 
 func (t *Todo) ToggleDone() {
 	if t.Done {
-		t.Done = false
 		t.Text = strings.TrimPrefix(t.Text, "x ")
 	} else {
-		t.Done = true
 		t.Text = strings.Join([]string{"x ", t.Text}, "")
 	}
+	t.reloadProperties()
+}
+
+func (t *Todo) reloadProperties() {
+	t.Done = IsDone(t.Text)
+	t.Priority = FindPriority(t.Text)
+	t.Projects = FindProjects(t.Text)
+	t.Contexts = FindContexts(t.Text)
 }
 
 func (t Todo) Equals(other Todo) bool {

@@ -364,6 +364,10 @@ func TestToggle(t *testing.T) {
 			if !todos[0].Done {
 				t.Errorf("expected todo to be done, got %v", todos[0].Done)
 			}
+
+			if todos[0].Prioritised() {
+				t.Errorf("expected todo.Prioritised() to be false, got %v", todos[0].Prioritised())
+			}
 		})
 
 		t.Run("saving change to file", func(t *testing.T) {
@@ -412,6 +416,10 @@ x and here is another done todo
 		t.Run("item marked as not done", func(t *testing.T) {
 			if todos[0].Done {
 				t.Errorf("expected todo to be not done, got %v", todos[0].Done)
+			}
+
+			if todos[0].Prioritised() {
+				t.Errorf("expected todo.Prioritised() to be false, got %v", todos[0].Prioritised())
 			}
 		})
 
@@ -523,24 +531,36 @@ func TestFilter(t *testing.T) {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	t.Run("number of items correct", func(t *testing.T) {
-		todos := repo.Filter("@basement")
+	t.Run("filtering by a project", func(t *testing.T) {
+		todos := repo.Filter("+project")
 		if len(todos) != 1 {
 			t.Errorf("expected 1 matching todo, got %d", len(todos))
 		}
 	})
 
-	t.Run("number of items correct", func(t *testing.T) {
+	t.Run("filtering by a context", func(t *testing.T) {
 		todos := repo.Filter("@shop")
 		if len(todos) != 1 {
 			t.Errorf("expected 1 matching todo, got %d", len(todos))
 		}
 	})
 
-	t.Run("number of items correct", func(t *testing.T) {
+	t.Run("filtering by a priority", func(t *testing.T) {
 		todos := repo.Filter("(A)")
 		if len(todos) != 1 {
 			t.Errorf("expected 1 matching todo, got %d", len(todos))
+		}
+	})
+	t.Run("filtered todos have the correct line numbers", func(t *testing.T) {
+		todos := repo.Filter("todo")
+
+		if len(todos) != 3 {
+			t.Errorf("expected 3 matching todos, got %d", len(todos))
+		}
+
+		if todos[0].Number != 2 || todos[1].Number != 6 || todos[2].Number != 7 {
+			t.Errorf("expected todo numbers to be 2, 6, 7, got %d, %d, %d",
+				todos[0].Number, todos[1].Number, todos[2].Number)
 		}
 	})
 }
