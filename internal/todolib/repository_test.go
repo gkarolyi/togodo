@@ -481,6 +481,13 @@ x and here is another done todo
 				}
 			}
 		})
+
+		t.Run("line numbers of toggled todos", func(t *testing.T) {
+			if todos[0].Number != 3 || todos[1].Number != 4 || todos[2].Number != 5 {
+				t.Errorf("expected todo numbers to be 5, 6, 7, got %d, %d, %d",
+					todos[0].Number, todos[1].Number, todos[2].Number)
+			}
+		})
 	})
 }
 

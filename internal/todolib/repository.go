@@ -117,14 +117,26 @@ func (t TodoRepository) Find(lineNumber int) Todo {
 }
 
 func (t *TodoRepository) Toggle(lineNumbers []int) ([]Todo, error) {
-	var todos []Todo
+	var toggledTodos []Todo
 	for _, lineNumber := range lineNumbers {
 		todo, err := t.get(lineNumber)
 		if err != nil {
 			return nil, err
 		}
 		todo.ToggleDone()
-		todos = append(todos, *todo)
+		toggledTodos = append(toggledTodos, *todo)
+	}
+	t.items = sortByPriority(t.Items())
+	t.reassignNumbers()
+
+	result := make([]Todo, 0, len(toggledTodos))
+	for _, modifiedTodo := range toggledTodos {
+		for _, todo := range t.items {
+			if todo.Equals(modifiedTodo) {
+				result = append(result, todo)
+				break
+			}
+		}
 	}
 
 	err := t.Save()
@@ -132,7 +144,7 @@ func (t *TodoRepository) Toggle(lineNumbers []int) ([]Todo, error) {
 		return nil, err
 	}
 
-	return todos, nil
+	return result, nil
 }
 
 func (t *TodoRepository) All() (todos []Todo) {
