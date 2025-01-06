@@ -9,21 +9,27 @@ import (
 )
 
 type TodoRepository struct {
-	items       []Todo
+	itemsTable  map[string]Todo
+	order       []string
 	todoTxtPath string
 }
 
 // Items returns all items in the repository.
 func (t TodoRepository) Items() []Todo {
-	return t.items
+	var items []Todo
+	for _, text := range t.order {
+		items = append(items, t.itemsTable[text])
+	}
+	return items
 }
 
 // Todos returns all items that are not done.
 func (t TodoRepository) Todos() []Todo {
 	var todos []Todo
-	for _, item := range t.Items() {
-		if !item.Done {
-			todos = append(todos, item)
+	for _, text := range t.order {
+		todo := t.itemsTable[text]
+		if !todo.Done {
+			todos = append(todos, todo)
 		}
 	}
 	return todos
@@ -32,9 +38,10 @@ func (t TodoRepository) Todos() []Todo {
 // Done returns all items that are done.
 func (t TodoRepository) Done() []Todo {
 	var done []Todo
-	for _, item := range t.Items() {
-		if item.Done {
-			done = append(done, item)
+	for _, text := range t.order {
+		todo := t.itemsTable[text]
+		if todo.Done {
+			done = append(done, todo)
 		}
 	}
 	return done
@@ -52,7 +59,11 @@ func (t TodoRepository) DoneCount() int {
 
 // New reads the items from the todo.txt file and returns a new repository.
 func New(todoTxtPath string) (TodoRepository, error) {
-	repo := TodoRepository{todoTxtPath: todoTxtPath}
+	repo := TodoRepository{
+		todoTxtPath: todoTxtPath,
+		itemsTable:  make(map[string]Todo),
+		order:       make([]string, 0),
+	}
 	err := repo.Read(todoTxtPath)
 	if err != nil {
 		return TodoRepository{}, err
@@ -81,8 +92,9 @@ func (t *TodoRepository) Save() error {
 
 // Add creates a new item from the given line and appends it to the repository.
 func (t *TodoRepository) Add(line string) (Todo, error) {
-	todo := NewTodo(line, len(t.items))
-	t.items = append(t.items, todo)
+	todo := NewTodo(line, len(t.itemsTable))
+	t.itemsTable[todo.hash()] = todo
+	t.order = append(t.order, todo.hash())
 
 	err := t.Save()
 	if err != nil {
@@ -112,28 +124,52 @@ func (t *TodoRepository) Read(path string) error {
 }
 
 func (t TodoRepository) Find(lineNumber int) Todo {
-	todo := t.Items()[lineNumber-1]
-	return todo
+	return t.itemsTable[t.order[lineNumber-1]]
 }
 
 func (t *TodoRepository) Toggle(lineNumbers []int) ([]Todo, error) {
-	var toggledTodos []Todo
-	for _, lineNumber := range lineNumbers {
-		todo, err := t.get(lineNumber)
-		if err != nil {
-			return nil, err
-		}
-		todo.ToggleDone()
-		toggledTodos = append(toggledTodos, *todo)
-	}
-	t.items = sortByPriority(t.Items())
-	t.reassignNumbers()
+	var modifiedTodos []Todo
 
-	result := make([]Todo, 0, len(toggledTodos))
-	for _, modifiedTodo := range toggledTodos {
-		for _, todo := range t.items {
-			if todo.Equals(modifiedTodo) {
-				result = append(result, todo)
+	// Get all texts before modification
+	todoHashes := make([]string, 0, len(lineNumbers))
+	for _, ln := range lineNumbers {
+		if ln < 1 || ln > len(t.order) {
+			return nil, errorInvalidLineNumber
+		}
+		todoHashes = append(todoHashes, t.order[ln-1])
+	}
+
+	for _, hash := range todoHashes {
+		todo := t.itemsTable[hash]
+		oldHash := todo.hash()
+		todo.ToggleDone()
+
+		// Update itemsTable with new text
+		t.itemsTable[todo.hash()] = todo
+		delete(t.itemsTable, oldHash)
+
+		// Update order slice with new text
+		for i, orderText := range t.order {
+			if orderText == oldHash {
+				t.order[i] = todo.hash()
+				break
+			}
+		}
+
+		modifiedTodos = append(modifiedTodos, todo)
+	}
+
+	// Update order and numbers
+	t.updateOrder()
+
+	// Get final numbers for modified todos
+	result := make([]Todo, len(modifiedTodos))
+	for i, modifiedTodo := range modifiedTodos {
+		for j, hash := range t.order {
+			if hash == modifiedTodo.hash() { // Match by new text
+				todo := t.itemsTable[hash]
+				todo.Number = j + 1
+				result[i] = todo
 				break
 			}
 		}
@@ -148,8 +184,7 @@ func (t *TodoRepository) Toggle(lineNumbers []int) ([]Todo, error) {
 }
 
 func (t *TodoRepository) All() (todos []Todo) {
-	t.items = sortByPriority(t.Items())
-	t.reassignNumbers()
+	t.updateOrder()
 	return t.Items()
 }
 
@@ -166,8 +201,12 @@ func (t TodoRepository) Filter(query string) (matched []Todo) {
 // Tidy removes all done items from the repository.
 func (t *TodoRepository) Tidy() ([]Todo, error) {
 	done := t.Done()
-	// t.items = sortByPriority(t.Todos())
-	t.items = t.Todos()
+	for _, todo := range done {
+		delete(t.itemsTable, todo.Text)
+	}
+
+	t.updateOrder()
+
 	err := t.Save()
 	if err != nil {
 		return nil, err
@@ -176,34 +215,49 @@ func (t *TodoRepository) Tidy() ([]Todo, error) {
 	return done, nil
 }
 
-func (t *TodoRepository) get(lineNumber int) (*Todo, error) {
-	if lineNumber < 1 || lineNumber > len(t.items) {
-		return nil, errorInvalidLineNumber
+// updateOrder sorts the items by priority and updates the order slice.
+func (t *TodoRepository) updateOrder() {
+	// First, build a slice maintaining original order from t.order
+	var todos []Todo
+	for _, text := range t.order {
+		if todo, exists := t.itemsTable[text]; exists {
+			todos = append(todos, todo)
+		}
 	}
-	return &t.items[lineNumber-1], nil
+
+	// Sort todos while maintaining relative order within same priority groups
+	todos = sortByPriority(todos)
+
+	// Rebuild order slice and update numbers
+	t.order = make([]string, len(todos))
+	for i, todo := range todos {
+		todo.Number = i + 1
+		t.order[i] = todo.Text
+		t.itemsTable[todo.Text] = todo
+	}
 }
 
-func (t *TodoRepository) reassignNumbers() {
-	for i := range t.items {
-		t.items[i].Number = i + 1
-	}
-}
-
-// sortByPriority sorts the todos by priority, with done items last.
 func sortByPriority(todos []Todo) []Todo {
 	sort.SliceStable(todos, func(i, j int) bool {
+		// First separate done and not done
 		if todos[i].Done != todos[j].Done {
 			return !todos[i].Done
 		}
+
+		// Then sort by priority within each group
 		if todos[i].Priority != todos[j].Priority {
+			// If one has priority and other doesn't
 			if todos[i].Priority == "" {
 				return false
 			}
 			if todos[j].Priority == "" {
 				return true
 			}
+			// Both have priorities, sort by priority
 			return todos[i].Priority < todos[j].Priority
 		}
+
+		// If same done status and same priority, maintain original order
 		return false
 	})
 

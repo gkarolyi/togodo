@@ -9,13 +9,11 @@ type Todo struct {
 	Projects []string
 	Contexts []string
 	Number   int
-	Index    int // TODO: is this needed?
 }
 
 func NewTodo(text string, index int) Todo {
 	todo := Todo{
 		Text:   text,
-		Index:  index,
 		Number: index + 1,
 	}
 	todo.reloadProperties()
@@ -45,4 +43,8 @@ func (t *Todo) reloadProperties() {
 
 func (t Todo) Equals(other Todo) bool {
 	return t.Text == other.Text
+}
+
+func (t Todo) hash() string {
+	return t.Text
 }

@@ -4,7 +4,7 @@ import "regexp"
 
 var projectRe = regexp.MustCompile(`\+(\w+)`)
 var contextRe = regexp.MustCompile(`@\w+`)
-var priorityRe = regexp.MustCompile(`^\(([A-Z])\)`)
+var priorityRe = regexp.MustCompile(`^(?:x )?(\(([A-Z])\))`)
 var doneRe = regexp.MustCompile(`^x `)
 var tagRe = regexp.MustCompile(`\w+:\S+`)
 
@@ -18,7 +18,7 @@ func FindContexts(text string) []string {
 
 func FindPriority(text string) string {
 	if priorityRe.MatchString(text) {
-		return priorityRe.FindStringSubmatch(text)[1]
+		return priorityRe.FindStringSubmatch(text)[2]
 	}
 	return ""
 }

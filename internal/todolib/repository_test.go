@@ -199,8 +199,8 @@ func TestAdd(t *testing.T) {
 		})
 
 		t.Run("priority", func(t *testing.T) {
-			if todo.Priority != "" {
-				t.Errorf("expected priority to be empty, got %s", todo.Priority)
+			if todo.Priority != "B" {
+				t.Errorf("expected priority to be B, got %s", todo.Priority)
 			}
 		})
 
@@ -238,7 +238,11 @@ func TestAdd(t *testing.T) {
 
 func TestRead(t *testing.T) {
 	todoTxtPath := tempTodoTxtFile(t)
-	repo := TodoRepository{todoTxtPath: todoTxtPath}
+	repo := TodoRepository{
+		todoTxtPath: todoTxtPath,
+		itemsTable:  make(map[string]Todo),
+		order:       make([]string, 0),
+	}
 	err := repo.Read(todoTxtPath)
 
 	if err != nil {
@@ -364,10 +368,6 @@ func TestToggle(t *testing.T) {
 			if !todos[0].Done {
 				t.Errorf("expected todo to be done, got %v", todos[0].Done)
 			}
-
-			if todos[0].Prioritised() {
-				t.Errorf("expected todo.Prioritised() to be false, got %v", todos[0].Prioritised())
-			}
 		})
 
 		t.Run("saving change to file", func(t *testing.T) {
@@ -416,10 +416,6 @@ x and here is another done todo
 		t.Run("item marked as not done", func(t *testing.T) {
 			if todos[0].Done {
 				t.Errorf("expected todo to be not done, got %v", todos[0].Done)
-			}
-
-			if todos[0].Prioritised() {
-				t.Errorf("expected todo.Prioritised() to be false, got %v", todos[0].Prioritised())
 			}
 		})
 
@@ -483,8 +479,8 @@ x and here is another done todo
 		})
 
 		t.Run("line numbers of toggled todos", func(t *testing.T) {
-			if todos[0].Number != 3 || todos[1].Number != 4 || todos[2].Number != 5 {
-				t.Errorf("expected todo numbers to be 5, 6, 7, got %d, %d, %d",
+			if todos[0].Number != 4 || todos[1].Number != 5 || todos[2].Number != 6 {
+				t.Errorf("expected todo numbers to be 4, 5, 6, got %d, %d, %d",
 					todos[0].Number, todos[1].Number, todos[2].Number)
 			}
 		})
@@ -586,11 +582,11 @@ func TestTidy(t *testing.T) {
 		}
 
 		if repo.DoneCount() != 0 {
-			t.Errorf("expected 0 done items, got %d", repo.DoneCount())
+			t.Errorf("expected 0 done items left, got %d", repo.DoneCount())
 		}
 
 		if repo.TodoCount() != 5 {
-			t.Errorf("expected 5 todos, got %d", repo.TodoCount())
+			t.Errorf("expected 5 todos left, got %d", repo.TodoCount())
 		}
 
 		for _, todo := range removedTodos {
