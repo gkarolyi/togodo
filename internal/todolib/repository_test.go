@@ -199,20 +199,22 @@ func TestAdd(t *testing.T) {
 		})
 
 		t.Run("priority", func(t *testing.T) {
-			if todo.Priority != "" {
-				t.Errorf("expected priority to be empty, got %s", todo.Priority)
+			if todo.Priority != "B" {
+				t.Errorf("expected priority to be B, got %s", todo.Priority)
 			}
 		})
 
 		t.Run("projects", func(t *testing.T) {
-			if todo.Projects != nil {
-				t.Errorf("expected projects to be nil, got %v", todo.Projects)
+			expectedProjects := []string{"+projectName"}
+			if !equalSlices(todo.Projects, expectedProjects) {
+				t.Errorf("expected projects to be %v, got %v", expectedProjects, todo.Projects)
 			}
 		})
 
 		t.Run("contexts", func(t *testing.T) {
-			if todo.Contexts != nil {
-				t.Errorf("expected contexts to be nil, got %v", todo.Contexts)
+			expectedContexts := []string{"@contextName", "@home"}
+			if !equalSlices(todo.Contexts, expectedContexts) {
+				t.Errorf("expected contexts to be %v, got %v", expectedContexts, todo.Contexts)
 			}
 		})
 
@@ -236,7 +238,11 @@ func TestAdd(t *testing.T) {
 
 func TestRead(t *testing.T) {
 	todoTxtPath := tempTodoTxtFile(t)
-	repo := TodoRepository{todoTxtPath: todoTxtPath}
+	repo := TodoRepository{
+		todoTxtPath: todoTxtPath,
+		itemsTable:  make(map[string]Todo),
+		order:       make([]string, 0),
+	}
 	err := repo.Read(todoTxtPath)
 
 	if err != nil {
@@ -471,6 +477,13 @@ x and here is another done todo
 				}
 			}
 		})
+
+		t.Run("line numbers of toggled todos", func(t *testing.T) {
+			if todos[0].Number != 4 || todos[1].Number != 5 || todos[2].Number != 6 {
+				t.Errorf("expected todo numbers to be 4, 5, 6, got %d, %d, %d",
+					todos[0].Number, todos[1].Number, todos[2].Number)
+			}
+		})
 	})
 }
 
@@ -521,24 +534,36 @@ func TestFilter(t *testing.T) {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	t.Run("number of items correct", func(t *testing.T) {
-		todos := repo.Filter("@basement")
+	t.Run("filtering by a project", func(t *testing.T) {
+		todos := repo.Filter("+project")
 		if len(todos) != 1 {
 			t.Errorf("expected 1 matching todo, got %d", len(todos))
 		}
 	})
 
-	t.Run("number of items correct", func(t *testing.T) {
+	t.Run("filtering by a context", func(t *testing.T) {
 		todos := repo.Filter("@shop")
 		if len(todos) != 1 {
 			t.Errorf("expected 1 matching todo, got %d", len(todos))
 		}
 	})
 
-	t.Run("number of items correct", func(t *testing.T) {
+	t.Run("filtering by a priority", func(t *testing.T) {
 		todos := repo.Filter("(A)")
 		if len(todos) != 1 {
 			t.Errorf("expected 1 matching todo, got %d", len(todos))
+		}
+	})
+	t.Run("filtered todos have the correct line numbers", func(t *testing.T) {
+		todos := repo.Filter("todo")
+
+		if len(todos) != 3 {
+			t.Errorf("expected 3 matching todos, got %d", len(todos))
+		}
+
+		if todos[0].Number != 2 || todos[1].Number != 6 || todos[2].Number != 7 {
+			t.Errorf("expected todo numbers to be 2, 6, 7, got %d, %d, %d",
+				todos[0].Number, todos[1].Number, todos[2].Number)
 		}
 	})
 }
@@ -557,11 +582,11 @@ func TestTidy(t *testing.T) {
 		}
 
 		if repo.DoneCount() != 0 {
-			t.Errorf("expected 0 done items, got %d", repo.DoneCount())
+			t.Errorf("expected 0 done items left, got %d", repo.DoneCount())
 		}
 
 		if repo.TodoCount() != 5 {
-			t.Errorf("expected 5 todos, got %d", repo.TodoCount())
+			t.Errorf("expected 5 todos left, got %d", repo.TodoCount())
 		}
 
 		for _, todo := range removedTodos {
