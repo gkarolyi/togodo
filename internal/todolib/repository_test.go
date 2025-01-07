@@ -2,7 +2,12 @@ package todolib
 
 import (
 	"os"
+	"slices"
+	"sort"
+	"strconv"
 	"testing"
+
+	"golang.org/x/exp/rand"
 )
 
 func tempTodoTxtFile(t *testing.T) string {
@@ -585,4 +590,115 @@ func TestTidy(t *testing.T) {
 			}
 		}
 	})
+}
+
+// Helper function for the old implementation
+func sortByPriorityOld(todos []Todo) []Todo {
+	sort.SliceStable(todos, func(i, j int) bool {
+		if todos[i].Done != todos[j].Done {
+			return !todos[i].Done
+		}
+		if todos[i].Priority != todos[j].Priority {
+			if todos[i].Priority == "" {
+				return false
+			}
+			if todos[j].Priority == "" {
+				return true
+			}
+			return todos[i].Priority < todos[j].Priority
+		}
+		return false
+	})
+	return todos
+}
+
+// Helper function for the new implementation
+func sortByPriorityNew(todos []Todo) []Todo {
+	slices.SortStableFunc(todos, func(a, b Todo) int {
+		if a.Done != b.Done {
+			if a.Done {
+				return 1
+			}
+			return -1
+		}
+		if a.Priority != b.Priority {
+			if a.Priority == "" {
+				return 1
+			}
+			if b.Priority == "" {
+				return -1
+			}
+			if a.Priority < b.Priority {
+				return -1
+			}
+			return 1
+		}
+		return 0
+	})
+	return todos
+}
+
+// Helper function to generate test data
+func generateTestTodos(n int) []Todo {
+	priorities := []string{"A", "B", "C", "D", "", ""}
+	todos := make([]Todo, n)
+	for i := 0; i < n; i++ {
+		todos[i] = Todo{
+			Text:     "Test todo",
+			Done:     rand.Float32() < 0.3, // 30% chance of being done
+			Priority: priorities[rand.Intn(len(priorities))],
+			Number:   i + 1,
+		}
+	}
+	return todos
+}
+
+func BenchmarkSortByPriority(b *testing.B) {
+	sizes := []int{10, 100, 1000, 10000}
+
+	for _, size := range sizes {
+		testData := generateTestTodos(size)
+
+		b.Run("Old-"+strconv.Itoa(size), func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				// Create a fresh copy for each iteration
+				todos := make([]Todo, len(testData))
+				copy(todos, testData)
+				sortByPriorityOld(todos)
+			}
+		})
+
+		b.Run("New-"+strconv.Itoa(size), func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				// Create a fresh copy for each iteration
+				todos := make([]Todo, len(testData))
+				copy(todos, testData)
+				sortByPriorityNew(todos)
+			}
+		})
+	}
+}
+
+// Additional test to verify both implementations sort identically
+func TestSortByPriorityEquivalence(t *testing.T) {
+	testData := generateTestTodos(1000)
+
+	oldResult := make([]Todo, len(testData))
+	copy(oldResult, testData)
+	sortByPriorityOld(oldResult)
+
+	newResult := make([]Todo, len(testData))
+	copy(newResult, testData)
+	sortByPriorityNew(newResult)
+
+	if len(oldResult) != len(newResult) {
+		t.Errorf("Different lengths: old=%d, new=%d", len(oldResult), len(newResult))
+		return
+	}
+
+	for i := range oldResult {
+		if !oldResult[i].Equals(newResult[i]) {
+			t.Errorf("Mismatch at position %d:\nold: %+v\nnew: %+v", i, oldResult[i], newResult[i])
+		}
+	}
 }
