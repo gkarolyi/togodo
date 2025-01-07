@@ -32,12 +32,13 @@ Buy bread"
 			fmt.Println(err)
 		}
 
-		todo, err := repo.Add(args[0])
+		todos, err := repo.Add(args[0])
 		if err != nil {
 			fmt.Println(err)
 		}
-
-		todolib.Render(todo)
+		for _, todo := range todos {
+			todolib.Render(todo)
+		}
 	},
 }
 

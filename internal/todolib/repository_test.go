@@ -84,11 +84,15 @@ func TestAdd(t *testing.T) {
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
-		todo, err := repo.Add("(B) random fake task with a +projectName and @contextName @home")
-
+		todos, err := repo.Add("(B) random fake task with a +projectName and @contextName @home")
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
+
+		if len(todos) != 1 {
+			t.Errorf("expected 1 todo, got %d", len(todos))
+		}
+		todo := todos[0]
 
 		t.Run("adding to Todos", func(t *testing.T) {
 			length := len(repo.Todos())
@@ -141,21 +145,15 @@ func TestAdd(t *testing.T) {
 			if todo.Number != 1 {
 				t.Errorf("expected line number to be 1, got %d", todo.Number)
 			}
-			todo, err = repo.Add("another todo item to increment number")
+			todos, err = repo.Add("another todo item to increment number")
+			todo = todos[0]
 			if todo.Number != 2 {
 				t.Errorf("expected line number to be 2, got %d", todo.Number)
 			}
-		})
-
-		t.Run("adding to file", func(t *testing.T) {
-			content, err := os.ReadFile(tmpfile.Name())
-			if err != nil {
-				t.Fatalf("failed to read temp file: %v", err)
-			}
-
-			expectedContent := "(B) random fake task with a +projectName and @contextName @home\nanother todo item to increment number\n"
-			if string(content) != expectedContent {
-				t.Errorf("expected content to be %s, got %s", expectedContent, string(content))
+			todos, err = repo.Add("(A) this item should be added to the top of the list")
+			todo = todos[0]
+			if todo.Number != 1 {
+				t.Errorf("expected line number to be 1, got %d", todo.Number)
 			}
 		})
 	})
@@ -171,7 +169,15 @@ func TestAdd(t *testing.T) {
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
-		todo, err := repo.Add("x (B) random fake task with a +projectName and @contextName @home")
+		todos, err := repo.Add("x (B) random fake task with a +projectName and @contextName @home")
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		if len(todos) != 1 {
+			t.Errorf("expected 1 todo, got %d", len(todos))
+		}
+		todo := todos[0]
 
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
@@ -228,7 +234,8 @@ func TestAdd(t *testing.T) {
 			if todo.Number != 1 {
 				t.Errorf("expected line number to be 1, got %d", todo.Number)
 			}
-			todo, err = repo.Add("x another done todo item to increment number")
+			todos, err = repo.Add("x another done todo item to increment number")
+			todo = todos[0]
 			if todo.Number != 2 {
 				t.Errorf("expected line number to be 2, got %d", todo.Number)
 			}

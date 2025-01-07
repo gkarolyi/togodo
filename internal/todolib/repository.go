@@ -80,16 +80,39 @@ func (t *TodoRepository) Save() error {
 }
 
 // Add creates a new item from the given line and appends it to the repository.
-func (t *TodoRepository) Add(line string) (Todo, error) {
-	todo := NewTodo(line, len(t.items))
-	t.items = append(t.items, todo)
+func (t *TodoRepository) Add(line string) ([]Todo, error) {
+	var newTodos []Todo
+	// Handle multi-line input
+	for _, todoText := range strings.Split(line, "\n") {
+		if strings.TrimSpace(todoText) == "" {
+			continue
+		}
+		// Create new todo with temporary index/number
+		todo := NewTodo(todoText, len(t.items))
+		t.items = append(t.items, todo)
+		newTodos = append(newTodos, todo)
+	}
+
+	// Sort all items and update numbers
+	t.items = sortByPriority(t.items)
+	t.reassignNumbers()
+
+	// Update the numbers in our newTodos slice to match their sorted position
+	for i := range newTodos {
+		for _, todo := range t.items {
+			if newTodos[i].Text == todo.Text {
+				newTodos[i].Number = todo.Number
+				break
+			}
+		}
+	}
 
 	err := t.Save()
 	if err != nil {
-		return Todo{}, err
+		return nil, err
 	}
 
-	return todo, nil
+	return newTodos, nil
 }
 
 // Read adds the items from the given file to the repository.
@@ -117,14 +140,31 @@ func (t TodoRepository) Find(lineNumber int) Todo {
 }
 
 func (t *TodoRepository) Toggle(lineNumbers []int) ([]Todo, error) {
-	var todos []Todo
+	var toggledTodos []Todo
+
+	// First, toggle the specified todos
 	for _, lineNumber := range lineNumbers {
 		todo, err := t.get(lineNumber)
 		if err != nil {
 			return nil, err
 		}
 		todo.ToggleDone()
-		todos = append(todos, *todo)
+		// Store the original text for matching later
+		toggledTodos = append(toggledTodos, *todo)
+	}
+
+	// Sort all items and update numbers
+	t.items = sortByPriority(t.items)
+	t.reassignNumbers()
+
+	// Update the numbers in our toggledTodos slice to match their new sorted position
+	for i := range toggledTodos {
+		for _, todo := range t.items {
+			if toggledTodos[i].Text == todo.Text {
+				toggledTodos[i].Number = todo.Number
+				break
+			}
+		}
 	}
 
 	err := t.Save()
@@ -132,7 +172,7 @@ func (t *TodoRepository) Toggle(lineNumbers []int) ([]Todo, error) {
 		return nil, err
 	}
 
-	return todos, nil
+	return toggledTodos, nil
 }
 
 func (t *TodoRepository) All() (todos []Todo) {
