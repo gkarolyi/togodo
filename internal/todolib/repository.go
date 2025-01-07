@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"os"
-	"sort"
+	"slices"
 	"strings"
 )
 
@@ -219,20 +219,28 @@ func (t *TodoRepository) reassignNumbers() {
 
 // sortByPriority sorts the todos by priority, with done items last.
 func sortByPriority(todos []Todo) []Todo {
-	sort.SliceStable(todos, func(i, j int) bool {
-		if todos[i].Done != todos[j].Done {
-			return !todos[i].Done
-		}
-		if todos[i].Priority != todos[j].Priority {
-			if todos[i].Priority == "" {
-				return false
+	slices.SortStableFunc(todos, func(a, b Todo) int {
+		// If done status differs, not-done items come first
+		if a.Done != b.Done {
+			if a.Done {
+				return 1
 			}
-			if todos[j].Priority == "" {
-				return true
-			}
-			return todos[i].Priority < todos[j].Priority
+			return -1
 		}
-		return false
+		// If priorities differ, handle empty priorities and compare
+		if a.Priority != b.Priority {
+			if !a.Prioritised() {
+				return 1
+			}
+			if !b.Prioritised() {
+				return -1
+			}
+			if a.Priority < b.Priority {
+				return -1
+			}
+			return 1
+		}
+		return 0
 	})
 
 	return todos
