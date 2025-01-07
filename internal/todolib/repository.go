@@ -4,8 +4,9 @@ import (
 	"bufio"
 	"errors"
 	"os"
-	"slices"
 	"strings"
+
+	"golang.org/x/exp/slices"
 )
 
 type TodoRepository struct {

@@ -5,6 +5,7 @@ go 1.23
 require (
 	github.com/charmbracelet/lipgloss v1.0.0
 	github.com/spf13/cobra v1.8.1
+	golang.org/x/exp v0.0.0-20250106191152-7588d65b2ba8
 )
 
 require (
