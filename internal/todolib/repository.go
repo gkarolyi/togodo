@@ -19,6 +19,11 @@ func (t TodoRepository) Items() []Todo {
 	return t.items
 }
 
+// Path returns the path to the todo.txt file.
+func (t TodoRepository) Path() string {
+	return t.todoTxtPath
+}
+
 // Todos returns all items that are not done.
 func (t TodoRepository) Todos() []Todo {
 	var todos []Todo

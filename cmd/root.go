@@ -22,8 +22,11 @@ THE SOFTWARE.
 package cmd
 
 import (
+	"fmt"
 	"os"
 
+	todolib "github.com/gkarolyi/togodo/internal/todolib"
+	tui "github.com/gkarolyi/togodo/internal/tui"
 	"github.com/spf13/cobra"
 )
 
@@ -34,7 +37,19 @@ var rootCmd = &cobra.Command{
 	Long:  `togodo is a CLI tool for managing your todo.txt file.`,
 
 	// This is where the TUI will be called from eventually
-	// Run: func(cmd *cobra.Command, args []string) { },
+	Run: func(cmd *cobra.Command, args []string) {
+		repo, err := todolib.New(TodoTxtPath)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		p := tui.NewProgram(repo)
+		if _, err := p.Run(); err != nil {
+			fmt.Printf("Alas, there's been an error: %v", err)
+			os.Exit(1)
+		}
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
