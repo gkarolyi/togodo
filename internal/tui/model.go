@@ -84,7 +84,43 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 
-		// Regular key handling when not adding
+		// If we're filtering, handle all keys except ESC and Enter
+		if m.filtering {
+			switch msg.Type {
+			case tea.KeyEsc:
+				m.filtering = false
+				m.filter = ""
+				m.choices = m.repository.Items()
+				return m, nil
+			case tea.KeyEnter:
+				m.filtering = false
+				return m, nil
+			case tea.KeyBackspace:
+				if len(m.filter) > 0 {
+					m.filter = m.filter[:len(m.filter)-1]
+					m.choices = m.repository.Filter(m.filter)
+					if m.cursor >= len(m.choices) {
+						m.cursor = len(m.choices) - 1
+					}
+					if m.cursor < 0 {
+						m.cursor = 0
+					}
+				}
+				return m, nil
+			default:
+				m.filter += msg.String()
+				m.choices = m.repository.Filter(m.filter)
+				if m.cursor >= len(m.choices) {
+					m.cursor = len(m.choices) - 1
+				}
+				if m.cursor < 0 {
+					m.cursor = 0
+				}
+				return m, nil
+			}
+		}
+
+		// Regular key handling when not adding or filtering
 		switch msg.String() {
 		case "ctrl+c", "q":
 			return m, tea.Quit
@@ -119,7 +155,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.repository.Toggle(lineNumbers)
 
 		case "/":
-			if !m.filtering {
+			if !m.adding {
 				m.filtering = true
 				m.filter = ""
 				return m, nil
@@ -131,45 +167,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.input.Reset()
 				m.input.Focus()
 				return m, textinput.Blink
-			}
-
-		case "esc":
-			if m.filtering {
-				m.filtering = false
-				m.filter = ""
-				m.choices = m.repository.Items()
-				return m, nil
-			}
-
-		default:
-			if m.filtering {
-				switch msg.Type {
-				case tea.KeyRunes:
-					m.filter += msg.String()
-					m.choices = m.repository.Filter(m.filter)
-					if m.cursor >= len(m.choices) {
-						m.cursor = len(m.choices) - 1
-					}
-					if m.cursor < 0 {
-						m.cursor = 0
-					}
-					return m, nil
-				case tea.KeyBackspace:
-					if len(m.filter) > 0 {
-						m.filter = m.filter[:len(m.filter)-1]
-						m.choices = m.repository.Filter(m.filter)
-						if m.cursor >= len(m.choices) {
-							m.cursor = len(m.choices) - 1
-						}
-						if m.cursor < 0 {
-							m.cursor = 0
-						}
-					}
-					return m, nil
-				case tea.KeyEnter:
-					m.filtering = false
-					return m, nil
-				}
 			}
 		}
 	}
