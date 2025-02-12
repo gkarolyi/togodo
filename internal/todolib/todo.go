@@ -9,7 +9,6 @@ type Todo struct {
 	Projects []string
 	Contexts []string
 	Number   int
-	Index    int // TODO: is this needed?
 }
 
 func NewTodo(text string, index int) Todo {
@@ -19,7 +18,6 @@ func NewTodo(text string, index int) Todo {
 		Priority: FindPriority(text),
 		Projects: FindProjects(text),
 		Contexts: FindContexts(text),
-		Index:    index,
 		Number:   index + 1,
 	}
 
@@ -37,6 +35,16 @@ func (t *Todo) ToggleDone() {
 	} else {
 		t.Done = true
 		t.Text = strings.Join([]string{"x ", t.Text}, "")
+	}
+}
+
+// SetPriority sets the priority of the todo item.
+func (t *Todo) SetPriority(priority string) {
+	t.Text = strings.TrimPrefix(t.Text, "("+t.Priority+") ")
+	t.Priority = priority
+
+	if t.Prioritised() {
+		t.Text = strings.Join([]string{"(", t.Priority, ") ", t.Text}, "")
 	}
 }
 

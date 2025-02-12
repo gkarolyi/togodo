@@ -210,6 +210,41 @@ func (t *TodoRepository) Tidy() ([]Todo, error) {
 	return done, nil
 }
 
+// SetPriority sets the priority of the items at the given line numbers.
+func (t *TodoRepository) SetPriority(lineNumbers []int, priority string) ([]Todo, error) {
+	var todos []Todo
+
+	for _, lineNumber := range lineNumbers {
+		todo, err := t.get(lineNumber)
+		if err != nil {
+			return nil, err
+		}
+		todo.SetPriority(priority)
+		todos = append(todos, *todo)
+	}
+
+	// Sort all items and update numbers
+	t.items = sortByPriority(t.items)
+	t.reassignNumbers()
+
+	// Update the numbers in our todos slice to match their new sorted position
+	for i := range todos {
+		for _, todo := range t.items {
+			if todos[i].Text == todo.Text {
+				todos[i].Number = todo.Number
+				break
+			}
+		}
+	}
+
+	err := t.Save()
+	if err != nil {
+		return nil, err
+	}
+
+	return todos, nil
+}
+
 func (t *TodoRepository) get(lineNumber int) (*Todo, error) {
 	if lineNumber < 1 || lineNumber > len(t.items) {
 		return nil, errorInvalidLineNumber

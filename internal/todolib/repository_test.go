@@ -586,3 +586,65 @@ func TestTidy(t *testing.T) {
 		}
 	})
 }
+
+func TestSetPriority(t *testing.T) {
+	todoTxtPath := tempTodoTxtFile(t)
+	repo, err := New(todoTxtPath)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+
+	t.Run("setting priority on single todo", func(t *testing.T) {
+		todos, err := repo.SetPriority([]int{3}, "A")
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		if len(todos) != 1 {
+			t.Fatalf("expected 1 todo, got %d", len(todos))
+		}
+
+		if todos[0].Priority != "A" {
+			t.Errorf("expected priority to be A, got %s", todos[0].Priority)
+		}
+
+		if todos[0].Number != 2 {
+			t.Errorf("expected number to be 2 (after resorting), got %d", todos[0].Number)
+		}
+	})
+
+	t.Run("setting priority on multiple todos", func(t *testing.T) {
+		todos, err := repo.SetPriority([]int{3, 4}, "B")
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		if len(todos) != 2 {
+			t.Fatalf("expected 2 todos, got %d", len(todos))
+		}
+
+		for _, todo := range todos {
+			if todo.Priority != "B" {
+				t.Errorf("expected priority to be B, got %s", todo.Priority)
+			}
+		}
+	})
+
+	t.Run("removing assigned priority", func(t *testing.T) {
+		todo, err := repo.SetPriority([]int{1}, "")
+		if err != nil {
+			t.Errorf("expected no error for blank priority, got %v", err)
+		}
+
+		if todo[0].Priority != "" {
+			t.Errorf("expected priority to be empty, got %s", todo[0].Priority)
+		}
+	})
+
+	t.Run("setting priority on non-existent todo", func(t *testing.T) {
+		_, err := repo.SetPriority([]int{100}, "A")
+		if err == nil {
+			t.Error("expected error for non-existent todo, got nil")
+		}
+	})
+}
