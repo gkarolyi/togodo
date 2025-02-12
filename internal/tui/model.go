@@ -3,8 +3,20 @@ package tui
 import (
 	"fmt"
 
+	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	todolib "github.com/gkarolyi/togodo/internal/todolib"
+)
+
+var (
+	stylePrimary = lipgloss.NewStyle().
+			Padding(1, 2)
+	stylePrimaryBold = stylePrimary.Copy().
+				Bold(true)
+	styleHelp = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#626262")).
+			Italic(true)
 )
 
 func NewProgram(repository todolib.TodoRepository) *tea.Program {
@@ -17,22 +29,26 @@ type model struct {
 	cursor     int              // which to-do list item our cursor is pointing at
 	selected   map[int]struct{} // which to-do items are selected
 	repository todolib.TodoRepository
-	filtering  bool   // whether we're currently filtering
-	filter     string // the current filter string
+	filtering  bool            // whether we're currently filtering
+	filter     string          // the current filter string
+	adding     bool            // whether we're currently adding a new item
+	input      textinput.Model // text input for new items
 }
 
 func initialModel(repository todolib.TodoRepository) model {
+	ti := textinput.New()
+	ti.Placeholder = "Enter new todo item..."
+	ti.CharLimit = 150
+	ti.Width = 50
+
 	return model{
-		// Our to-do list is a grocery list
 		repository: repository,
 		choices:    repository.Items(),
-
-		// A map which indicates which choices are selected. We're using
-		// the  map like a mathematical set. The keys refer to the indexes
-		// of the `choices` slice, above.
-		selected:  make(map[int]struct{}),
-		filtering: false,
-		filter:    "",
+		selected:   make(map[int]struct{}),
+		filtering:  false,
+		filter:     "",
+		adding:     false,
+		input:      ti,
 	}
 }
 
@@ -43,32 +59,47 @@ func (m model) Init() tea.Cmd {
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-
-	// Is it a key press?
 	case tea.KeyMsg:
+		// If we're adding, handle all keys through the text input except ESC and Enter
+		if m.adding {
+			switch msg.Type {
+			case tea.KeyEsc:
+				m.adding = false
+				m.input.Reset()
+				m.input.Blur()
+				return m, nil
+			case tea.KeyEnter:
+				if m.input.Value() != "" {
+					m.repository.Add(m.input.Value())
+					m.choices = m.repository.Items()
+					m.adding = false
+					m.input.Reset()
+					m.input.Blur()
+				}
+				return m, nil
+			default:
+				var cmd tea.Cmd
+				m.input, cmd = m.input.Update(msg)
+				return m, cmd
+			}
+		}
 
-		// Cool, what was the actual key pressed?
+		// Regular key handling when not adding
 		switch msg.String() {
-
-		// These keys should exit the program.
 		case "ctrl+c", "q":
 			return m, tea.Quit
 
-		// The "up" and "k" keys move the cursor up
 		case "up", "k":
 			if m.cursor > 0 {
 				m.cursor--
 			}
 
-		// The "down" and "j" keys move the cursor down
 		case "down", "j":
 			if m.cursor < len(m.choices)-1 {
 				m.cursor++
 			}
 
-		// The "enter" key and the spacebar (a literal space) toggle
-		// the selected state for the item that the cursor is pointing at.
-		case "enter", " ":
+		case " ":
 			_, ok := m.selected[m.cursor]
 			if ok {
 				delete(m.selected, m.cursor)
@@ -76,7 +107,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.selected[m.cursor] = struct{}{}
 			}
 
-		// The "x" key toggles the done status for all selected items.
 		case "x":
 			var lineNumbers []int
 			if len(m.selected) == 0 {
@@ -93,6 +123,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.filtering = true
 				m.filter = ""
 				return m, nil
+			}
+
+		case "a":
+			if !m.filtering {
+				m.adding = true
+				m.input.Reset()
+				m.input.Focus()
+				return m, textinput.Blink
 			}
 
 		case "esc":
@@ -136,37 +174,65 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	// Return the updated model to the Bubble Tea runtime for processing.
-	// Note that we're not returning a command.
 	return m, nil
 }
 
 func (m model) View() string {
-	// The header
-	s := m.repository.Path()
+	// First build the main view
+	mainView := m.repository.Path()
 	if m.filtering {
-		s += fmt.Sprintf("\nFilter: %s", m.filter)
+		mainView += fmt.Sprintf("\nFilter: %s", m.filter)
 	}
-	s += "\n\n"
+	mainView += "\n\n"
 
 	// Iterate over our choices
 	for i, choice := range m.choices {
-
-		// Is the cursor pointing at this choice?
-		cursor := " " // no cursor
+		cursor := " "
 		if m.cursor == i {
-			cursor = ">" // cursor!
+			cursor = ">"
 		}
-
-		// Render the row
-		s += fmt.Sprintf("%s ", cursor)
-		s += todolib.RenderToString(choice)
-		s += "\n"
+		mainView += fmt.Sprintf("%s ", cursor)
+		mainView += todolib.RenderToString(choice)
+		mainView += "\n"
 	}
 
-	// The footer
-	s += "\nx: toggle | p: set priority | /: filter | q: quit\n"
+	mainView += "\nx: toggle | p: set priority | /: filter | a: add | q: quit\n"
 
-	// Send the UI for rendering
-	return s
+	// If we're adding, overlay the popup on top
+	if m.adding {
+		mainWidth := lipgloss.Width(mainView)
+		width := int(float64(mainWidth) * 0.75)
+		height := 3
+
+		popup := stylePrimaryBold.Render("Add New Todo") + "\n"
+
+		// Create a Todo with proper priority parsing
+		text := m.input.Value()
+		priority := ""
+		if len(text) >= 3 && text[0] == '(' && text[2] == ')' {
+			priority = string(text[1])
+		}
+		popup += todolib.RenderToString(todolib.Todo{
+			Text:     text,
+			Priority: priority,
+		}) + "\n"
+		popup += styleHelp.Render("(esc to cancel, enter to save)")
+
+		overlay := stylePrimary.
+			Width(width).
+			Height(height).
+			Align(lipgloss.Center).
+			Border(lipgloss.RoundedBorder()).
+			Render(popup)
+
+		return lipgloss.Place(
+			lipgloss.Width(mainView),
+			lipgloss.Height(mainView),
+			lipgloss.Center,
+			lipgloss.Center,
+			overlay,
+		)
+	}
+
+	return mainView
 }
