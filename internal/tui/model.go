@@ -17,6 +17,8 @@ type model struct {
 	cursor     int              // which to-do list item our cursor is pointing at
 	selected   map[int]struct{} // which to-do items are selected
 	repository todolib.TodoRepository
+	filtering  bool   // whether we're currently filtering
+	filter     string // the current filter string
 }
 
 func initialModel(repository todolib.TodoRepository) model {
@@ -28,7 +30,9 @@ func initialModel(repository todolib.TodoRepository) model {
 		// A map which indicates which choices are selected. We're using
 		// the  map like a mathematical set. The keys refer to the indexes
 		// of the `choices` slice, above.
-		selected: make(map[int]struct{}),
+		selected:  make(map[int]struct{}),
+		filtering: false,
+		filter:    "",
 	}
 }
 
@@ -65,14 +69,70 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// The "enter" key and the spacebar (a literal space) toggle
 		// the selected state for the item that the cursor is pointing at.
 		case "enter", " ":
-			// _, ok := m.selected[m.cursor]
-			// if ok {
-			// 	delete(m.selected, m.cursor)
-			// } else {
-			// 	m.selected[m.cursor] = struct{}{}
-			// }
-			lineNumbers := []int{m.cursor + 1}
+			_, ok := m.selected[m.cursor]
+			if ok {
+				delete(m.selected, m.cursor)
+			} else {
+				m.selected[m.cursor] = struct{}{}
+			}
+
+		// The "x" key toggles the done status for all selected items.
+		case "x":
+			var lineNumbers []int
+			if len(m.selected) == 0 {
+				lineNumbers = []int{m.cursor + 1}
+			} else {
+				for i := range m.selected {
+					lineNumbers = append(lineNumbers, i+1)
+				}
+			}
 			m.repository.Toggle(lineNumbers)
+
+		case "/":
+			if !m.filtering {
+				m.filtering = true
+				m.filter = ""
+				return m, nil
+			}
+
+		case "esc":
+			if m.filtering {
+				m.filtering = false
+				m.filter = ""
+				m.choices = m.repository.Items()
+				return m, nil
+			}
+
+		default:
+			if m.filtering {
+				switch msg.Type {
+				case tea.KeyRunes:
+					m.filter += msg.String()
+					m.choices = m.repository.Filter(m.filter)
+					if m.cursor >= len(m.choices) {
+						m.cursor = len(m.choices) - 1
+					}
+					if m.cursor < 0 {
+						m.cursor = 0
+					}
+					return m, nil
+				case tea.KeyBackspace:
+					if len(m.filter) > 0 {
+						m.filter = m.filter[:len(m.filter)-1]
+						m.choices = m.repository.Filter(m.filter)
+						if m.cursor >= len(m.choices) {
+							m.cursor = len(m.choices) - 1
+						}
+						if m.cursor < 0 {
+							m.cursor = 0
+						}
+					}
+					return m, nil
+				case tea.KeyEnter:
+					m.filtering = false
+					return m, nil
+				}
+			}
 		}
 	}
 
@@ -83,7 +143,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	// The header
-	s := m.repository.Path() + "\n\n"
+	s := m.repository.Path()
+	if m.filtering {
+		s += fmt.Sprintf("\nFilter: %s", m.filter)
+	}
+	s += "\n\n"
 
 	// Iterate over our choices
 	for i, choice := range m.choices {
@@ -94,18 +158,14 @@ func (m model) View() string {
 			cursor = ">" // cursor!
 		}
 
-		// Is this choice selected?
-		checked := " " // not selected
-		if choice.Done {
-			checked = "x" // selected!
-		}
-
 		// Render the row
-		s += fmt.Sprintf("%s [%s] %s\n", cursor, checked, choice.Text)
+		s += fmt.Sprintf("%s ", cursor)
+		s += todolib.RenderToString(choice)
+		s += "\n"
 	}
 
 	// The footer
-	s += "\nPress q to quit.\n"
+	s += "\nx: toggle | p: set priority | /: filter | q: quit\n"
 
 	// Send the UI for rendering
 	return s

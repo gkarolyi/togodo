@@ -54,6 +54,33 @@ func Render(todo Todo) {
 	fmt.Println()
 }
 
+func RenderToString(todo Todo) string {
+	var builder strings.Builder
+	words := strings.Fields(todo.Text)
+	stdStyle := priorityStyle(todo.Priority)
+
+	if todo.Done {
+		builder.WriteString(doneStyle.Render(todo.Text))
+	} else {
+		for i, word := range words {
+			if IsProject(word) {
+				builder.WriteString(projectStyle.Render(word))
+			} else if IsContext(word) {
+				builder.WriteString(contextStyle.Render(word))
+			} else if IsTag(word) {
+				builder.WriteString(tagStyle.Render(word))
+			} else {
+				builder.WriteString(stdStyle.Render(word))
+			}
+			if i < len(words)-1 {
+				builder.WriteString(" ")
+			}
+		}
+	}
+
+	return builder.String()
+}
+
 func renderStyle(word string, style lipgloss.Style) {
 	fmt.Print(style.Render(word))
 }
