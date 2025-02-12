@@ -2,6 +2,7 @@ package tui
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -33,6 +34,7 @@ type model struct {
 	filter     string          // the current filter string
 	adding     bool            // whether we're currently adding a new item
 	input      textinput.Model // text input for new items
+	setting    bool            // whether we're currently setting priority
 }
 
 func initialModel(repository todolib.TodoRepository) model {
@@ -48,6 +50,7 @@ func initialModel(repository todolib.TodoRepository) model {
 		filtering:  false,
 		filter:     "",
 		adding:     false,
+		setting:    false,
 		input:      ti,
 	}
 }
@@ -60,6 +63,30 @@ func (m model) Init() tea.Cmd {
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		// If we're setting priority, handle priority keys
+		if m.setting {
+			switch msg.String() {
+			case "esc":
+				m.setting = false
+				return m, nil
+			case "a", "b", "c", "d", "A", "B", "C", "D":
+				priority := strings.ToUpper(msg.String())
+				var lineNumbers []int
+				if len(m.selected) == 0 {
+					lineNumbers = []int{m.cursor + 1}
+				} else {
+					for i := range m.selected {
+						lineNumbers = append(lineNumbers, i+1)
+					}
+				}
+				m.repository.SetPriority(lineNumbers, priority)
+				m.choices = m.repository.Items()
+				m.setting = false
+				return m, nil
+			}
+			return m, nil
+		}
+
 		// If we're adding, handle all keys through the text input except ESC and Enter
 		if m.adding {
 			switch msg.Type {
@@ -168,6 +195,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.input.Focus()
 				return m, textinput.Blink
 			}
+
+		case "p":
+			if !m.filtering && !m.adding {
+				m.setting = true
+				return m, nil
+			}
 		}
 	}
 
@@ -194,6 +227,31 @@ func (m model) View() string {
 	}
 
 	mainView += "\nx: toggle | p: set priority | /: filter | a: add | q: quit\n"
+
+	// If we're setting priority, show the priority overlay
+	if m.setting {
+		width := 40
+		height := 3
+
+		popup := stylePrimaryBold.Render("Set Priority") + "\n"
+		popup += "Press A-D to set priority, ESC to cancel" + "\n"
+		popup += styleHelp.Render("(A is highest, D is lowest)")
+
+		overlay := stylePrimary.
+			Width(width).
+			Height(height).
+			Align(lipgloss.Center).
+			Border(lipgloss.RoundedBorder()).
+			Render(popup)
+
+		return lipgloss.Place(
+			lipgloss.Width(mainView),
+			lipgloss.Height(mainView),
+			lipgloss.Center,
+			lipgloss.Center,
+			overlay,
+		)
+	}
 
 	// If we're adding, overlay the popup on top
 	if m.adding {
