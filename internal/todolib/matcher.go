@@ -8,41 +8,41 @@ var priorityRe = regexp.MustCompile(`^\(([A-Z])\)`)
 var doneRe = regexp.MustCompile(`^x `)
 var tagRe = regexp.MustCompile(`\w+:\S+`)
 
-func FindProjects(text string) []string {
+func findProjects(text string) []string {
 	return projectRe.FindAllString(text, -1)
 }
 
-func FindContexts(text string) []string {
+func findContexts(text string) []string {
 	return contextRe.FindAllString(text, -1)
 }
 
-func FindPriority(text string) string {
+func findPriority(text string) string {
 	if priorityRe.MatchString(text) {
 		return priorityRe.FindStringSubmatch(text)[1]
 	}
 	return ""
 }
 
-func FindDone(text string) bool {
+func findDone(text string) bool {
 	return doneRe.MatchString(text)
 }
 
-func IsDone(text string) bool {
+func isDone(text string) bool {
 	return doneRe.MatchString(text)
 }
 
-func IsProject(word string) bool {
+func isProject(word string) bool {
 	return projectRe.MatchString(word)
 }
 
-func IsContext(word string) bool {
+func isContext(word string) bool {
 	return contextRe.MatchString(word)
 }
 
-func IsPriority(word string) bool {
+func isPriority(word string) bool {
 	return priorityRe.MatchString(word)
 }
 
-func IsTag(word string) bool {
+func isTag(word string) bool {
 	return tagRe.MatchString(word)
 }

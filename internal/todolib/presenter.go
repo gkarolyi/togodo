@@ -29,7 +29,7 @@ var tagStyle = lipgloss.NewStyle().
 	Underline(true).
 	Foreground(lipgloss.Color("#96C5B0"))
 
-func Render(todo Todo) {
+func render(todo Todo) {
 	fmt.Printf("%d ", todo.Number)
 	words := strings.Fields(todo.Text)
 	stdStyle := priorityStyle(todo.Priority)
@@ -38,11 +38,11 @@ func Render(todo Todo) {
 		renderStyle(todo.Text, doneStyle)
 	} else {
 		for _, word := range words {
-			if IsProject(word) {
+			if isProject(word) {
 				renderStyle(word, projectStyle)
-			} else if IsContext(word) {
+			} else if isContext(word) {
 				renderStyle(word, contextStyle)
-			} else if IsTag(word) {
+			} else if isTag(word) {
 				renderStyle(word, tagStyle)
 			} else {
 				renderStyle(word, stdStyle)
@@ -63,11 +63,11 @@ func RenderToString(todo Todo) string {
 		builder.WriteString(doneStyle.Render(todo.Text))
 	} else {
 		for i, word := range words {
-			if IsProject(word) {
+			if isProject(word) {
 				builder.WriteString(projectStyle.Render(word))
-			} else if IsContext(word) {
+			} else if isContext(word) {
 				builder.WriteString(contextStyle.Render(word))
-			} else if IsTag(word) {
+			} else if isTag(word) {
 				builder.WriteString(tagStyle.Render(word))
 			} else {
 				builder.WriteString(stdStyle.Render(word))

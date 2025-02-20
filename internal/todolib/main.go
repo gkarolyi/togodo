@@ -22,7 +22,7 @@ func List(todoTxtPath string, args []string) {
 	}
 
 	for _, todo := range todos {
-		Render(todo)
+		render(todo)
 	}
 }
 
@@ -37,7 +37,7 @@ func Add(todoTxtPath string, args []string) {
 		fmt.Println(err)
 	}
 	for _, todo := range todos {
-		Render(todo)
+		render(todo)
 	}
 }
 
@@ -60,7 +60,7 @@ func Do(todoTxtPath string, args []string) {
 		fmt.Println(err)
 	}
 	for _, todo := range todos {
-		Render(todo)
+		render(todo)
 	}
 }
 func Pri(todoTxtPath string, args []string) {
@@ -89,7 +89,7 @@ func Pri(todoTxtPath string, args []string) {
 		fmt.Println(err)
 	}
 	for _, todo := range todos {
-		Render(todo)
+		render(todo)
 	}
 }
 func Tidy(todoTxtPath string, args []string) {
@@ -98,6 +98,7 @@ func Tidy(todoTxtPath string, args []string) {
 		fmt.Println(err)
 	}
 	todos, err := repo.Tidy()
+
 	if err != nil {
 		fmt.Println(err)
 	}

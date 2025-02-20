@@ -14,10 +14,10 @@ type Todo struct {
 func NewTodo(text string, index int) Todo {
 	todo := Todo{
 		Text:     text,
-		Done:     IsDone(text),
-		Priority: FindPriority(text),
-		Projects: FindProjects(text),
-		Contexts: FindContexts(text),
+		Done:     isDone(text),
+		Priority: findPriority(text),
+		Projects: findProjects(text),
+		Contexts: findContexts(text),
 		Number:   index + 1,
 	}
 
