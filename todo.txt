@@ -1,10 +1,9 @@
-add tui for browsing and acting on todos +feature
-add quick entry interface? +idea
-support setting priorities with !! shortcuts +idea
-implement recursive flag to list todo.txts from subdirectories +idea
-might be faster to just use text operations rather than classes +idea
+(A) write tests for commands as well
+(A) refactor to allow for end to end testing
+(B) only sort items on List, otherwise leave in place
+(B) move done to done.txt instead of just deleting
 save priority with shorthand so todo can be restored? @idea
-gracefully handle missing todo.txt file
-write tests for commands as well
-move done to done.txt instead of just deleting
 tidy should remove blank lines and duplicates
+gracefully handle missing todo.txt file
+add user config
+add fish completions

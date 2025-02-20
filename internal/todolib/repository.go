@@ -198,7 +198,7 @@ func (t TodoRepository) Filter(query string) (matched []Todo) {
 }
 
 // Tidy removes all done items from the repository.
-func (t *TodoRepository) Tidy() ([]Todo, error) {
+func (t *TodoRepository) tidy() ([]Todo, error) {
 	done := t.Done()
 	t.items = t.Todos()
 	err := t.Save()

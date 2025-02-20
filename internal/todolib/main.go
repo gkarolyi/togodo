@@ -97,7 +97,7 @@ func Tidy(todoTxtPath string, args []string) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	todos, err := repo.Tidy()
+	todos, err := repo.tidy()
 
 	if err != nil {
 		fmt.Println(err)

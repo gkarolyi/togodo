@@ -560,7 +560,7 @@ func TestTidy(t *testing.T) {
 	}
 
 	t.Run("removes done items from the list", func(t *testing.T) {
-		removedTodos, err := repo.Tidy()
+		removedTodos, err := repo.tidy()
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
