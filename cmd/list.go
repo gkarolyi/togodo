@@ -1,9 +1,6 @@
 package cmd
 
 import (
-	"log"
-	"strings"
-
 	"github.com/gkarolyi/togodo/internal/todolib"
 
 	"github.com/spf13/cobra"
@@ -26,22 +23,7 @@ togodo list '@work'
 	Aliases: []string{"ls", "l"},
 	Args:    cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		repo, err := todolib.New(TodoTxtPath)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		var todos []todolib.Todo
-		if len(args) == 0 {
-			todos = repo.All()
-		} else {
-			query := strings.Join(args, " ")
-			todos = repo.Filter(query)
-		}
-
-		for _, todo := range todos {
-			todolib.Render(todo)
-		}
+		todolib.List(TodoTxtPath, args)
 	},
 }
 

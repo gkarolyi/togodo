@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/gkarolyi/togodo/internal/todolib"
 
 	"github.com/spf13/cobra"
@@ -27,18 +25,7 @@ Buy bread"
 	Args:    cobra.MinimumNArgs(1),
 	Aliases: []string{"a"},
 	Run: func(cmd *cobra.Command, args []string) {
-		repo, err := todolib.New(TodoTxtPath)
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		todos, err := repo.Add(args[0])
-		if err != nil {
-			fmt.Println(err)
-		}
-		for _, todo := range todos {
-			todolib.Render(todo)
-		}
+		todolib.Add(TodoTxtPath, args)
 	},
 }
 

@@ -1,9 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-	"strconv"
-
 	"github.com/gkarolyi/togodo/internal/todolib"
 
 	"github.com/spf13/cobra"
@@ -25,33 +22,7 @@ togodo pri 1 2 3 B
 	Args:    cobra.MinimumNArgs(1),
 	Aliases: []string{"p"},
 	Run: func(cmd *cobra.Command, args []string) {
-		repo, err := todolib.New(TodoTxtPath)
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		var lineNumbers []int
-		var priority string
-		for i, arg := range args {
-			lineNumber, err := strconv.Atoi(arg)
-			if err != nil {
-				if i == len(args)-1 {
-					priority = arg
-				} else {
-					fmt.Println("Invalid argument:", arg)
-				}
-				continue
-			}
-			lineNumbers = append(lineNumbers, lineNumber)
-		}
-
-		todos, err := repo.SetPriority(lineNumbers, priority)
-		if err != nil {
-			fmt.Println(err)
-		}
-		for _, todo := range todos {
-			todolib.Render(todo)
-		}
+		todolib.Pri(TodoTxtPath, args)
 	},
 }
 

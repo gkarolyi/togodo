@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/gkarolyi/togodo/internal/todolib"
 
 	"github.com/spf13/cobra"
@@ -19,17 +17,7 @@ togodo tidy`,
 	Args:    cobra.NoArgs,
 	Aliases: []string{"clean"},
 	Run: func(cmd *cobra.Command, args []string) {
-		repo, err := todolib.New(TodoTxtPath)
-		if err != nil {
-			fmt.Println(err)
-		}
-		todos, err := repo.Tidy()
-		if err != nil {
-			fmt.Println(err)
-		}
-		for _, todo := range todos {
-			fmt.Println(todo.Text)
-		}
+		todolib.Tidy(TodoTxtPath, args)
 	},
 }
 
