@@ -56,7 +56,7 @@ func (t *Todo) SetPriority(priority string) {
 }
 
 func (t Todo) Equals(other Todo) bool {
-	return t.Text == other.Text
+	return t.Text == other.Text && t.Done == other.Done
 }
 
 func findProjects(text string) []string {
@@ -74,26 +74,6 @@ func findPriority(text string) string {
 	return ""
 }
 
-func findDone(text string) bool {
-	return doneRe.MatchString(text)
-}
-
 func isDone(text string) bool {
 	return doneRe.MatchString(text)
-}
-
-func isProject(word string) bool {
-	return projectRe.MatchString(word)
-}
-
-func isContext(word string) bool {
-	return contextRe.MatchString(word)
-}
-
-func isPriority(word string) bool {
-	return priorityRe.MatchString(word)
-}
-
-func isTag(word string) bool {
-	return tagRe.MatchString(word)
 }
