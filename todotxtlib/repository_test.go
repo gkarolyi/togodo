@@ -6,172 +6,223 @@ import (
 	"testing"
 )
 
-var testTodos = []Todo{
-	{Text: "Test todo 1"},
-	{Text: "Test todo 2"},
+func createTestTodos() []Todo {
+	return []Todo{
+		NewTodo("(A) test todo 1 +project2 @context1"),
+		NewTodo("(B) test todo 2 +project1 @context2"),
+		NewTodo("x (C) test todo 3"),
+	}
 }
 
-func createTestRepository(tempDir string) Repository {
+func setupTestRepository(tb testing.TB) (func(tb testing.TB), Repository) {
+	tempDir := tb.TempDir()
 	reader := NewFileReader()
 	writer := NewFileWriter()
-	tempTodoTxt := filepath.Join(tempDir, "todo.txt")
 
-	return &repository{
-		todos:  testTodos,
+	repo := &repository{
+		todos:  createTestTodos(),
 		reader: reader,
 		writer: writer,
-		path:   tempTodoTxt,
+		path:   filepath.Join(tempDir, "todo.txt"),
 	}
+
+	teardown := func(tb testing.TB) {
+		os.RemoveAll(tempDir)
+	}
+
+	return teardown, repo
 }
 
 func TestNewRepository(t *testing.T) {
-	// Create a temporary directory for test files
-	tempDir := t.TempDir()
-	tempFile := filepath.Join(tempDir, "todo.txt")
+	t.Run("creates new repository with empty file", func(t *testing.T) {
+		tempDir := t.TempDir()
+		tempFile := filepath.Join(tempDir, "todo.txt")
 
-	// Test creating new repository
-	repo, err := NewRepository(tempFile)
-	if err != nil {
-		t.Fatalf("NewRepository() error = %v, want nil", err)
-	}
-	if repo == nil {
-		t.Fatal("NewRepository() returned nil repository")
-	}
+		repo, err := NewRepository(tempFile)
+		if err != nil {
+			t.Fatalf("NewRepository() error = %v, want nil", err)
+		}
+		if repo == nil {
+			t.Fatal("NewRepository() returned nil repository")
+		}
+	})
+
+	t.Run("creates new repository with existing file", func(t *testing.T) {
+		tempDir := t.TempDir()
+		tempFile := filepath.Join(tempDir, "todo.txt")
+
+		// Create an initial todo file
+		if err := os.WriteFile(tempFile, []byte("Test todo\n"), 0644); err != nil {
+			t.Fatalf("Failed to create test file: %v", err)
+		}
+
+		repo, err := NewRepository(tempFile)
+		if err != nil {
+			t.Fatalf("NewRepository() error = %v, want nil", err)
+		}
+		if repo == nil {
+			t.Fatal("NewRepository() returned nil repository")
+		}
+
+		todos, err := repo.ListTodos()
+		if err != nil {
+			t.Fatalf("ListTodos() error = %v, want nil", err)
+		}
+		if len(todos) != 1 {
+			t.Errorf("ListTodos() returned %d todos, want 1", len(todos))
+		}
+	})
+}
+
+func TestRepository_Add(t *testing.T) {
+	teardown, repo := setupTestRepository(t)
+	defer teardown(t)
+
+	t.Run("adds new todo", func(t *testing.T) {
+		todo, err := repo.Add("Test todo 3")
+		if err != nil {
+			t.Errorf("Add() error = %v, want nil", err)
+		}
+		if todo.Text != "Test todo 3" {
+			t.Errorf("Add() returned todo with text %s, want Test todo 3", todo.Text)
+		}
+
+		todos, err := repo.ListTodos()
+		if err != nil {
+			t.Errorf("ListTodos() error = %v, want nil", err)
+		}
+		if len(todos) != 4 {
+			t.Errorf("expected 4 todos, got %d", len(todos))
+		}
+	})
+}
+
+func TestRepository_Remove(t *testing.T) {
+	teardown, repo := setupTestRepository(t)
+	defer teardown(t)
+
+	t.Run("removes todo by index", func(t *testing.T) {
+		todo, err := repo.Remove(0)
+		if err != nil {
+			t.Errorf("Remove() error = %v, want nil", err)
+		}
+		if todo.Text != "(A) test todo 1 +project2 @context1" {
+			t.Errorf("Remove() returned todo with text %s, want (A) test todo 1 +project2 @context1", todo.Text)
+		}
+
+		todos, err := repo.ListTodos()
+		if err != nil {
+			t.Errorf("ListTodos() error = %v, want nil", err)
+		}
+		if len(todos) != 2 {
+			t.Errorf("expected 2 todos, got %d", len(todos))
+		}
+	})
+
+	t.Run("returns error for invalid index", func(t *testing.T) {
+		_, err := repo.Remove(999)
+		if err == nil {
+			t.Error("Remove() expected error for invalid index, got nil")
+		}
+	})
+}
+
+func TestRepository_ListTodos(t *testing.T) {
+	teardown, repo := setupTestRepository(t)
+	defer teardown(t)
+
+	t.Run("returns all todos", func(t *testing.T) {
+		todos, err := repo.ListTodos()
+		if err != nil {
+			t.Errorf("ListTodos() error = %v, want nil", err)
+		}
+		if len(todos) != 3 {
+			t.Errorf("ListTodos() returned %d todos, want 3", len(todos))
+		}
+	})
+}
+
+func TestRepository_ListDone(t *testing.T) {
+	teardown, repo := setupTestRepository(t)
+	defer teardown(t)
+
+	t.Run("returns only done todos", func(t *testing.T) {
+		done, err := repo.ListDone()
+		if err != nil {
+			t.Errorf("ListDone() error = %v, want nil", err)
+		}
+		if len(done) != 1 {
+			t.Errorf("ListDone() returned %d todos, want 1", len(done))
+		}
+		if !done[0].Done {
+			t.Error("ListDone() returned non-done todo")
+		}
+	})
+}
+
+func TestRepository_ListProjects(t *testing.T) {
+	teardown, repo := setupTestRepository(t)
+	defer teardown(t)
+
+	t.Run("returns unique sorted projects", func(t *testing.T) {
+		projects, err := repo.ListProjects()
+		if err != nil {
+			t.Errorf("ListProjects() error = %v, want nil", err)
+		}
+		if len(projects) != 2 {
+			t.Errorf("ListProjects() returned %d projects, want 2", len(projects))
+		}
+		if projects[0] != "+project1" || projects[1] != "+project2" {
+			t.Errorf("ListProjects() returned projects in wrong order, got %v, want [+project1 +project2]", projects)
+		}
+	})
+}
+
+func TestRepository_ListContexts(t *testing.T) {
+	teardown, repo := setupTestRepository(t)
+	defer teardown(t)
+
+	t.Run("returns unique sorted contexts", func(t *testing.T) {
+		contexts, err := repo.ListContexts()
+		if err != nil {
+			t.Errorf("ListContexts() error = %v, want nil", err)
+		}
+		if len(contexts) != 2 {
+			t.Errorf("ListContexts() returned %d contexts, want 2", len(contexts))
+		}
+		if contexts[0] != "@context1" || contexts[1] != "@context2" {
+			t.Errorf("ListContexts() returned contexts in wrong order, got %v, want [@context1 @context2]", contexts)
+		}
+	})
 }
 
 func TestRepository_Save(t *testing.T) {
-	// Create repository with test todos
-	tempDir := t.TempDir()
-	repo := createTestRepository(tempDir)
+	t.Run("saves todos to file", func(t *testing.T) {
+		tempDir := t.TempDir()
+		tempFile := filepath.Join(tempDir, "todo.txt")
 
-	// Test that Save does not return an error
-	if err := repo.Save(); err != nil {
-		t.Errorf("Save() error = %v, want nil", err)
-	}
+		repo, err := NewRepository(tempFile)
+		if err != nil {
+			t.Fatalf("NewRepository() error = %v, want nil", err)
+		}
 
-	// Test that the file was created
-	// Test that the file exists and is not empty
-	todoFile := filepath.Join(tempDir, "todo.txt")
-	fileInfo, err := os.Stat(todoFile)
-	if err != nil {
-		t.Errorf("todo.txt does not exist: %v", err)
-	}
-	if fileInfo.Size() == 0 {
-		t.Error("todo.txt is empty")
-	}
+		// Add some todos
+		repo.Add("Test todo 1")
+		repo.Add("Test todo 2")
+
+		if err := repo.Save(); err != nil {
+			t.Errorf("Save() error = %v, want nil", err)
+		}
+
+		// Verify file contents
+		content, err := os.ReadFile(tempFile)
+		if err != nil {
+			t.Fatalf("Failed to read saved file: %v", err)
+		}
+
+		expected := "Test todo 1\nTest todo 2\n"
+		if string(content) != expected {
+			t.Errorf("Save() wrote %q, want %q", string(content), expected)
+		}
+	})
 }
-
-// func TestRepository_CRUDOperations(t *testing.T) {
-// 	tempDir := t.TempDir()
-// 	tempFile := filepath.Join(tempDir, "test.todo.txt")
-
-// 	// Create repository with initial todos
-// 	content := "Buy groceries\nCall mom\n"
-// 	if err := os.WriteFile(tempFile, []byte(content), 0644); err != nil {
-// 		t.Fatalf("Failed to create test file: %v", err)
-// 	}
-
-// 	repo, err := NewRepository(tempFile)
-// 	if err != nil {
-// 		t.Fatalf("NewRepository() error = %v", err)
-// 	}
-
-// 	// Test Add
-// 	newTodo := Todo{Text: "Pay bills"}
-// 	if err := repo.Add(newTodo); err != nil {
-// 		t.Errorf("Add() error = %v, want nil", err)
-// 	}
-
-// 	// Test Find
-// 	todos, err := repo.Find(Filter{Query: "bills"})
-// 	if err != nil {
-// 		t.Errorf("Find() error = %v, want nil", err)
-// 	}
-// 	if len(todos) != 1 || todos[0].Text != "Pay bills" {
-// 		t.Errorf("Find() got = %v, want [Pay bills]", todos)
-// 	}
-
-// 	// Test Update
-// 	updatedTodo := todos[0]
-// 	updatedTodo.Text = "Pay bills tomorrow"
-// 	if err := repo.Update(updatedTodo); err != nil {
-// 		t.Errorf("Update() error = %v, want nil", err)
-// 	}
-
-// 	// Verify update
-// 	todos, err = repo.Find(Filter{Query: "tomorrow"})
-// 	if err != nil {
-// 		t.Errorf("Find() after update error = %v, want nil", err)
-// 	}
-// 	if len(todos) != 1 || todos[0].Text != "Pay bills tomorrow" {
-// 		t.Errorf("Find() after update got = %v, want [Pay bills tomorrow]", todos)
-// 	}
-
-// 	// Test Remove
-// 	if err := repo.Remove(updatedTodo); err != nil {
-// 		t.Errorf("Remove() error = %v, want nil", err)
-// 	}
-
-// 	// Verify remove
-// 	todos, err = repo.Find(Filter{Query: "tomorrow"})
-// 	if err != nil {
-// 		t.Errorf("Find() after remove error = %v, want nil", err)
-// 	}
-// 	if len(todos) != 0 {
-// 		t.Errorf("Find() after remove got = %v, want []", todos)
-// 	}
-// }
-
-// func TestRepository_StatusOperations(t *testing.T) {
-// 	tempDir := t.TempDir()
-// 	tempFile := filepath.Join(tempDir, "test.todo.txt")
-
-// 	// Create repository with initial todo
-// 	content := "Buy groceries\n"
-// 	if err := os.WriteFile(tempFile, []byte(content), 0644); err != nil {
-// 		t.Fatalf("Failed to create test file: %v", err)
-// 	}
-
-// 	repo, err := NewRepository(tempFile)
-// 	if err != nil {
-// 		t.Fatalf("NewRepository() error = %v", err)
-// 	}
-
-// 	// Get the todo
-// 	todos, err := repo.All()
-// 	if err != nil {
-// 		t.Fatalf("All() error = %v", err)
-// 	}
-// 	if len(todos) != 1 {
-// 		t.Fatalf("All() got %d todos, want 1", len(todos))
-// 	}
-// 	todo := todos[0]
-
-// 	// Test ToggleDone
-// 	if err := repo.ToggleDone(todo); err != nil {
-// 		t.Errorf("ToggleDone() error = %v, want nil", err)
-// 	}
-
-// 	// Verify toggle
-// 	todos, err = repo.All()
-// 	if err != nil {
-// 		t.Errorf("All() after toggle error = %v", err)
-// 	}
-// 	if !todos[0].Done {
-// 		t.Error("ToggleDone() did not mark todo as done")
-// 	}
-
-// 	// Test SetPriority
-// 	if err := repo.SetPriority(todo, "A"); err != nil {
-// 		t.Errorf("SetPriority() error = %v, want nil", err)
-// 	}
-
-// 	// Verify priority
-// 	todos, err = repo.All()
-// 	if err != nil {
-// 		t.Errorf("All() after priority error = %v", err)
-// 	}
-// 	if todos[0].Priority != "A" {
-// 		t.Errorf("SetPriority() got priority = %v, want A", todos[0].Priority)
-// 	}
-// }
