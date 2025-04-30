@@ -1,12 +1,36 @@
 package todotxtlib
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 )
 
+var testTodos = []Todo{
+	{Text: "Test todo 1"},
+	{Text: "Test todo 2"},
+}
+
+func createTestRepository(tempDir string) Repository {
+	reader := NewFileReader()
+	writer := NewFileWriter()
+	tempTodoTxt := filepath.Join(tempDir, "todo.txt")
+
+	return &repository{
+		todos:  testTodos,
+		reader: reader,
+		writer: writer,
+		path:   tempTodoTxt,
+	}
+}
+
 func TestNewRepository(t *testing.T) {
+	// Create a temporary directory for test files
+	tempDir := t.TempDir()
+	tempFile := filepath.Join(tempDir, "todo.txt")
+
 	// Test creating new repository
-	repo, err := NewRepository("test.todo.txt")
+	repo, err := NewRepository(tempFile)
 	if err != nil {
 		t.Fatalf("NewRepository() error = %v, want nil", err)
 	}
@@ -16,15 +40,24 @@ func TestNewRepository(t *testing.T) {
 }
 
 func TestRepository_Save(t *testing.T) {
-	// Create repository
-	repo, err := NewRepository("test.todo.txt")
-	if err != nil {
-		t.Fatalf("NewRepository() error = %v", err)
-	}
+	// Create repository with test todos
+	tempDir := t.TempDir()
+	repo := createTestRepository(tempDir)
 
-	// Test that Save delegates to Writer
+	// Test that Save does not return an error
 	if err := repo.Save(); err != nil {
 		t.Errorf("Save() error = %v, want nil", err)
+	}
+
+	// Test that the file was created
+	// Test that the file exists and is not empty
+	todoFile := filepath.Join(tempDir, "todo.txt")
+	fileInfo, err := os.Stat(todoFile)
+	if err != nil {
+		t.Errorf("todo.txt does not exist: %v", err)
+	}
+	if fileInfo.Size() == 0 {
+		t.Error("todo.txt is empty")
 	}
 }
 
