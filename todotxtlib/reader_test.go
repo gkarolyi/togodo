@@ -1,6 +1,7 @@
 package todotxtlib
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"testing"
@@ -51,8 +52,6 @@ func TestFileReader_Read(t *testing.T) {
 		},
 	}
 
-	reader := NewFileReader()
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Create a temporary file
@@ -62,7 +61,8 @@ func TestFileReader_Read(t *testing.T) {
 			}
 
 			// Test reading
-			got, err := reader.Read(tempFile)
+			reader := NewFileReader(tempFile)
+			got, err := reader.Read()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FileReader.Read() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -83,13 +83,78 @@ func TestFileReader_Read(t *testing.T) {
 
 	// Test non-existent file
 	t.Run("non-existent file", func(t *testing.T) {
-		got, err := reader.Read(filepath.Join(tempDir, "nonexistent.todo.txt"))
-		if err == nil {
-			if len(got) != 0 {
-				t.Errorf("FileReader.Read() expected empty slice for non-existent file, got %v", got)
-			}
-		} else if !os.IsNotExist(err) {
-			t.Errorf("FileReader.Read() expected os.IsNotExist error, got %v", err)
+		reader := NewFileReader(filepath.Join(tempDir, "nonexistent.todo.txt"))
+		got, err := reader.Read()
+		if err != nil {
+			t.Errorf("FileReader.Read() error = %v, want nil", err)
+		}
+		if len(got) != 0 {
+			t.Errorf("FileReader.Read() expected empty slice for non-existent file, got %v", got)
 		}
 	})
+}
+
+func TestBufferReader_Read(t *testing.T) {
+	tests := []struct {
+		name    string
+		content string
+		want    []Todo
+		wantErr bool
+	}{
+		{
+			name:    "empty content",
+			content: "",
+			want:    []Todo{},
+			wantErr: false,
+		},
+		{
+			name:    "single todo",
+			content: "Buy groceries",
+			want: []Todo{
+				{Text: "Buy groceries"},
+			},
+			wantErr: false,
+		},
+		{
+			name:    "multiple todos",
+			content: "Buy groceries\nCall mom\nPay bills",
+			want: []Todo{
+				{Text: "Buy groceries"},
+				{Text: "Call mom"},
+				{Text: "Pay bills"},
+			},
+			wantErr: false,
+		},
+		{
+			name:    "with empty lines",
+			content: "Buy groceries\n\nCall mom\n\n",
+			want: []Todo{
+				{Text: "Buy groceries"},
+				{Text: "Call mom"},
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			reader := NewBufferReader(bytes.NewBufferString(tt.content))
+			got, err := reader.Read()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("BufferReader.Read() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if len(got) != len(tt.want) {
+				t.Errorf("BufferReader.Read() got %d todos, want %d", len(got), len(tt.want))
+				return
+			}
+
+			for i := range got {
+				if got[i].Text != tt.want[i].Text {
+					t.Errorf("BufferReader.Read() todo[%d] = %v, want %v", i, got[i].Text, tt.want[i].Text)
+				}
+			}
+		})
+	}
 }
