@@ -124,6 +124,11 @@ func (r *Repository) RemoveProject(index int, project string) (Todo, error) {
 	return r.todos[index], nil
 }
 
+// Filter returns todos that match all the specified criteria
+func (r Repository) Filter(filter Filter) ([]Todo, error) {
+	return filter.Apply(r.todos), nil
+}
+
 // ListAll returns all todos
 func (r Repository) ListAll() ([]Todo, error) {
 	return r.todos, nil

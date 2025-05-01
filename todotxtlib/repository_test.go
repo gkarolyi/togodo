@@ -7,34 +7,6 @@ import (
 	"testing"
 )
 
-func createTestTodos() []Todo {
-	return []Todo{
-		NewTodo("(A) test todo 1 +project2 @context1"),
-		NewTodo("(B) test todo 2 +project1 @context2"),
-		NewTodo("x (C) test todo 3 +project1 @context1"),
-	}
-}
-
-func setupTestRepository(tb testing.TB) *Repository {
-	// Create a buffer with test todos
-	var buf bytes.Buffer
-	for _, todo := range createTestTodos() {
-		buf.WriteString(todo.Text + "\n")
-	}
-
-	// Create reader and writer that work with the buffer
-	reader := NewBufferReader(&buf)
-	writer := NewBufferWriter(&buf)
-
-	// Create repository with the buffer-based reader and writer
-	repo, err := NewRepository(reader, writer)
-	if err != nil {
-		tb.Fatalf("Failed to create test repository: %v", err)
-	}
-
-	return repo
-}
-
 func TestNewRepository(t *testing.T) {
 	t.Run("with a buffer reader and writer", func(t *testing.T) {
 		t.Run("creates new repository with empty buffer", func(t *testing.T) {
@@ -229,97 +201,6 @@ func TestRepository_ToggleDone(t *testing.T) {
 	})
 }
 
-func TestRepository_ListTodos(t *testing.T) {
-	repo := setupTestRepository(t)
-
-	t.Run("returns all todos that are not done", func(t *testing.T) {
-		todos, err := repo.ListTodos()
-		if err != nil {
-			t.Errorf("ListTodos() error = %v, want nil", err)
-		}
-		if len(todos) != 2 {
-			t.Errorf("ListTodos() returned %d todos, want 2", len(todos))
-		}
-	})
-}
-
-func TestRepository_ListDone(t *testing.T) {
-	repo := setupTestRepository(t)
-
-	t.Run("returns only done todos", func(t *testing.T) {
-		done, err := repo.ListDone()
-		if err != nil {
-			t.Errorf("ListDone() error = %v, want nil", err)
-		}
-		if len(done) != 1 {
-			t.Errorf("ListDone() returned %d todos, want 1", len(done))
-		}
-		if !done[0].Done {
-			t.Error("ListDone() returned non-done todo")
-		}
-	})
-}
-
-func TestRepository_ListProjects(t *testing.T) {
-	repo := setupTestRepository(t)
-
-	t.Run("returns unique sorted projects", func(t *testing.T) {
-		projects, err := repo.ListProjects()
-		if err != nil {
-			t.Errorf("ListProjects() error = %v, want nil", err)
-		}
-		if len(projects) != 2 {
-			t.Errorf("ListProjects() returned %d projects, want 2", len(projects))
-		}
-		if projects[0] != "+project1" || projects[1] != "+project2" {
-			t.Errorf("ListProjects() returned projects in wrong order, got %v, want [+project1 +project2]", projects)
-		}
-	})
-}
-
-func TestRepository_ListContexts(t *testing.T) {
-	repo := setupTestRepository(t)
-
-	t.Run("returns unique sorted contexts", func(t *testing.T) {
-		contexts, err := repo.ListContexts()
-		if err != nil {
-			t.Errorf("ListContexts() error = %v, want nil", err)
-		}
-		if len(contexts) != 2 {
-			t.Errorf("ListContexts() returned %d contexts, want 2", len(contexts))
-		}
-		if contexts[0] != "@context1" || contexts[1] != "@context2" {
-			t.Errorf("ListContexts() returned contexts in wrong order, got %v, want [@context1 @context2]", contexts)
-		}
-	})
-}
-
-func TestRepository_Save(t *testing.T) {
-	t.Run("saves todos to buffer", func(t *testing.T) {
-		var buf bytes.Buffer
-		reader := NewBufferReader(&buf)
-		writer := NewBufferWriter(&buf)
-
-		repo, err := NewRepository(reader, writer)
-		if err != nil {
-			t.Fatalf("NewRepository() error = %v, want nil", err)
-		}
-
-		// Add some todos
-		repo.Add("Test todo 1")
-		repo.Add("Test todo 2")
-
-		if err := repo.Save(); err != nil {
-			t.Errorf("Save() error = %v, want nil", err)
-		}
-
-		expected := "Test todo 1\nTest todo 2\n"
-		if buf.String() != expected {
-			t.Errorf("Save() wrote %q, want %q", buf.String(), expected)
-		}
-	})
-}
-
 func TestRepository_SetPriority(t *testing.T) {
 	repo := setupTestRepository(t)
 
@@ -505,12 +386,116 @@ func TestRepository_RemoveProject(t *testing.T) {
 	})
 }
 
-// Helper function to check if a string slice contains a value
-func contains(slice []string, value string) bool {
-	for _, item := range slice {
-		if item == value {
-			return true
+func TestRepository_Filter(t *testing.T) {
+	repo := setupTestRepository(t)
+
+	t.Run("filters todos with a combined filter", func(t *testing.T) {
+		filter := Filter{
+			Done:     "true",
+			Priority: "",
+			Project:  "+project1",
+			Context:  "@context1",
 		}
-	}
-	return false
+		filtered, err := repo.Filter(filter)
+		if err != nil {
+			t.Errorf("Filter() error = %v, want nil", err)
+		}
+		if len(filtered) != 1 {
+			t.Errorf("Filter() returned %d todos, want 1", len(filtered))
+		}
+		if !filtered[0].Equals(NewTodo("x (C) test todo 3 +project1 @context1")) {
+			t.Errorf("Filter() returned todo %v, want x (C) test todo 3 +project1 @context1", filtered[0].Text)
+		}
+	})
+}
+
+func TestRepository_ListTodos(t *testing.T) {
+	repo := setupTestRepository(t)
+
+	t.Run("returns all todos that are not done", func(t *testing.T) {
+		todos, err := repo.ListTodos()
+		if err != nil {
+			t.Errorf("ListTodos() error = %v, want nil", err)
+		}
+		if len(todos) != 2 {
+			t.Errorf("ListTodos() returned %d todos, want 2", len(todos))
+		}
+	})
+}
+
+func TestRepository_ListDone(t *testing.T) {
+	repo := setupTestRepository(t)
+
+	t.Run("returns only done todos", func(t *testing.T) {
+		done, err := repo.ListDone()
+		if err != nil {
+			t.Errorf("ListDone() error = %v, want nil", err)
+		}
+		if len(done) != 1 {
+			t.Errorf("ListDone() returned %d todos, want 1", len(done))
+		}
+		if !done[0].Done {
+			t.Error("ListDone() returned non-done todo")
+		}
+	})
+}
+
+func TestRepository_ListProjects(t *testing.T) {
+	repo := setupTestRepository(t)
+
+	t.Run("returns unique sorted projects", func(t *testing.T) {
+		projects, err := repo.ListProjects()
+		if err != nil {
+			t.Errorf("ListProjects() error = %v, want nil", err)
+		}
+		if len(projects) != 2 {
+			t.Errorf("ListProjects() returned %d projects, want 2", len(projects))
+		}
+		if projects[0] != "+project1" || projects[1] != "+project2" {
+			t.Errorf("ListProjects() returned projects in wrong order, got %v, want [+project1 +project2]", projects)
+		}
+	})
+}
+
+func TestRepository_ListContexts(t *testing.T) {
+	repo := setupTestRepository(t)
+
+	t.Run("returns unique sorted contexts", func(t *testing.T) {
+		contexts, err := repo.ListContexts()
+		if err != nil {
+			t.Errorf("ListContexts() error = %v, want nil", err)
+		}
+		if len(contexts) != 2 {
+			t.Errorf("ListContexts() returned %d contexts, want 2", len(contexts))
+		}
+		if contexts[0] != "@context1" || contexts[1] != "@context2" {
+			t.Errorf("ListContexts() returned contexts in wrong order, got %v, want [@context1 @context2]", contexts)
+		}
+	})
+}
+
+func TestRepository_Save(t *testing.T) {
+	t.Run("saves todos to buffer", func(t *testing.T) {
+		var buf bytes.Buffer
+		reader := NewBufferReader(&buf)
+		writer := NewBufferWriter(&buf)
+
+		repo, err := NewRepository(reader, writer)
+		if err != nil {
+			t.Fatalf("NewRepository() error = %v, want nil", err)
+		}
+
+		// Add some todos
+		repo.Add("Test todo 1")
+		repo.Add("Test todo 2")
+
+		if err := repo.Save(); err != nil {
+			t.Errorf("Save() error = %v, want nil", err)
+		}
+
+		expected := "Test todo 1\nTest todo 2\n"
+		if buf.String() != expected {
+			t.Errorf("Save() wrote %q, want %q", buf.String(), expected)
+		}
+	})
 }
