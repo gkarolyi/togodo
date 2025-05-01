@@ -52,6 +52,78 @@ func (r *Repository) Update(index int, todo Todo) (Todo, error) {
 	return todo, nil
 }
 
+// ToggleDone toggles the done status of a todo
+func (r *Repository) ToggleDone(index int) (Todo, error) {
+	if index < 0 || index >= len(r.todos) {
+		return Todo{}, fmt.Errorf("index out of bounds")
+	}
+	r.todos[index].ToggleDone()
+	return r.todos[index], nil
+}
+
+// SetPriority sets the priority of a todo
+func (r *Repository) SetPriority(index int, priority string) (Todo, error) {
+	if index < 0 || index >= len(r.todos) {
+		return Todo{}, fmt.Errorf("index out of bounds")
+	}
+	r.todos[index].SetPriority(priority)
+	return r.todos[index], nil
+}
+
+// SetContexts sets the contexts of a todo
+func (r *Repository) SetContexts(index int, contexts []string) (Todo, error) {
+	if index < 0 || index >= len(r.todos) {
+		return Todo{}, fmt.Errorf("index out of bounds")
+	}
+	r.todos[index].SetContexts(contexts)
+	return r.todos[index], nil
+}
+
+// SetProjects sets the projects of a todo
+func (r *Repository) SetProjects(index int, projects []string) (Todo, error) {
+	if index < 0 || index >= len(r.todos) {
+		return Todo{}, fmt.Errorf("index out of bounds")
+	}
+	r.todos[index].SetProjects(projects)
+	return r.todos[index], nil
+}
+
+// AddContext adds a context to a todo if it doesn't already exist
+func (r *Repository) AddContext(index int, context string) (Todo, error) {
+	if index < 0 || index >= len(r.todos) {
+		return Todo{}, fmt.Errorf("index out of bounds")
+	}
+	r.todos[index].AddContext(context)
+	return r.todos[index], nil
+}
+
+// AddProject adds a project to a todo if it doesn't already exist
+func (r *Repository) AddProject(index int, project string) (Todo, error) {
+	if index < 0 || index >= len(r.todos) {
+		return Todo{}, fmt.Errorf("index out of bounds")
+	}
+	r.todos[index].AddProject(project)
+	return r.todos[index], nil
+}
+
+// RemoveContext removes a context from a todo
+func (r *Repository) RemoveContext(index int, context string) (Todo, error) {
+	if index < 0 || index >= len(r.todos) {
+		return Todo{}, fmt.Errorf("index out of bounds")
+	}
+	r.todos[index].RemoveContext(context)
+	return r.todos[index], nil
+}
+
+// RemoveProject removes a project from a todo
+func (r *Repository) RemoveProject(index int, project string) (Todo, error) {
+	if index < 0 || index >= len(r.todos) {
+		return Todo{}, fmt.Errorf("index out of bounds")
+	}
+	r.todos[index].RemoveProject(project)
+	return r.todos[index], nil
+}
+
 // ListAll returns all todos
 func (r Repository) ListAll() ([]Todo, error) {
 	return r.todos, nil

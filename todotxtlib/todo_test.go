@@ -276,3 +276,261 @@ func TestTodo_Equals(t *testing.T) {
 		})
 	}
 }
+
+func TestTodo_SetContexts(t *testing.T) {
+	tests := []struct {
+		name     string
+		todo     Todo
+		contexts []string
+		want     []string
+	}{
+		{
+			name:     "set empty contexts",
+			todo:     Todo{Text: "Buy groceries", Contexts: []string{"@home", "@store"}},
+			contexts: []string{},
+			want:     []string{},
+		},
+		{
+			name:     "set new contexts",
+			todo:     Todo{Text: "Buy groceries"},
+			contexts: []string{"@home", "@store"},
+			want:     []string{"@home", "@store"},
+		},
+		{
+			name:     "replace existing contexts",
+			todo:     Todo{Text: "Buy groceries", Contexts: []string{"@old"}},
+			contexts: []string{"@new"},
+			want:     []string{"@new"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.todo.SetContexts(tt.contexts)
+			if len(tt.todo.Contexts) != len(tt.want) {
+				t.Errorf("SetContexts() Contexts length = %v, want %v", len(tt.todo.Contexts), len(tt.want))
+			} else {
+				for i := range tt.todo.Contexts {
+					if tt.todo.Contexts[i] != tt.want[i] {
+						t.Errorf("SetContexts() Contexts[%d] = %v, want %v", i, tt.todo.Contexts[i], tt.want[i])
+					}
+				}
+			}
+		})
+	}
+}
+
+func TestTodo_SetProjects(t *testing.T) {
+	tests := []struct {
+		name     string
+		todo     Todo
+		projects []string
+		want     []string
+	}{
+		{
+			name:     "set empty projects",
+			todo:     Todo{Text: "Buy groceries", Projects: []string{"+shopping", "+food"}},
+			projects: []string{},
+			want:     []string{},
+		},
+		{
+			name:     "set new projects",
+			todo:     Todo{Text: "Buy groceries"},
+			projects: []string{"+shopping", "+food"},
+			want:     []string{"+shopping", "+food"},
+		},
+		{
+			name:     "replace existing projects",
+			todo:     Todo{Text: "Buy groceries", Projects: []string{"+old"}},
+			projects: []string{"+new"},
+			want:     []string{"+new"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.todo.SetProjects(tt.projects)
+			if len(tt.todo.Projects) != len(tt.want) {
+				t.Errorf("SetProjects() Projects length = %v, want %v", len(tt.todo.Projects), len(tt.want))
+			} else {
+				for i := range tt.todo.Projects {
+					if tt.todo.Projects[i] != tt.want[i] {
+						t.Errorf("SetProjects() Projects[%d] = %v, want %v", i, tt.todo.Projects[i], tt.want[i])
+					}
+				}
+			}
+		})
+	}
+}
+
+func TestTodo_AddContext(t *testing.T) {
+	tests := []struct {
+		name    string
+		todo    Todo
+		context string
+		want    []string
+	}{
+		{
+			name:    "add to empty contexts",
+			todo:    Todo{Text: "Buy groceries"},
+			context: "@home",
+			want:    []string{"@home"},
+		},
+		{
+			name:    "add to existing contexts",
+			todo:    Todo{Text: "Buy groceries", Contexts: []string{"@store"}},
+			context: "@home",
+			want:    []string{"@store", "@home"},
+		},
+		{
+			name:    "do not add duplicate context",
+			todo:    Todo{Text: "Buy groceries", Contexts: []string{"@home"}},
+			context: "@home",
+			want:    []string{"@home"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.todo.AddContext(tt.context)
+			if len(tt.todo.Contexts) != len(tt.want) {
+				t.Errorf("AddContext() Contexts length = %v, want %v", len(tt.todo.Contexts), len(tt.want))
+			} else {
+				for i := range tt.todo.Contexts {
+					if tt.todo.Contexts[i] != tt.want[i] {
+						t.Errorf("AddContext() Contexts[%d] = %v, want %v", i, tt.todo.Contexts[i], tt.want[i])
+					}
+				}
+			}
+		})
+	}
+}
+
+func TestTodo_AddProject(t *testing.T) {
+	tests := []struct {
+		name    string
+		todo    Todo
+		project string
+		want    []string
+	}{
+		{
+			name:    "add to empty projects",
+			todo:    Todo{Text: "Buy groceries"},
+			project: "+shopping",
+			want:    []string{"+shopping"},
+		},
+		{
+			name:    "add to existing projects",
+			todo:    Todo{Text: "Buy groceries", Projects: []string{"+food"}},
+			project: "+shopping",
+			want:    []string{"+food", "+shopping"},
+		},
+		{
+			name:    "do not add duplicate project",
+			todo:    Todo{Text: "Buy groceries", Projects: []string{"+shopping"}},
+			project: "+shopping",
+			want:    []string{"+shopping"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.todo.AddProject(tt.project)
+			if len(tt.todo.Projects) != len(tt.want) {
+				t.Errorf("AddProject() Projects length = %v, want %v", len(tt.todo.Projects), len(tt.want))
+			} else {
+				for i := range tt.todo.Projects {
+					if tt.todo.Projects[i] != tt.want[i] {
+						t.Errorf("AddProject() Projects[%d] = %v, want %v", i, tt.todo.Projects[i], tt.want[i])
+					}
+				}
+			}
+		})
+	}
+}
+
+func TestTodo_RemoveContext(t *testing.T) {
+	tests := []struct {
+		name    string
+		todo    Todo
+		context string
+		want    []string
+	}{
+		{
+			name:    "remove existing context",
+			todo:    Todo{Text: "Buy groceries", Contexts: []string{"@home", "@store"}},
+			context: "@home",
+			want:    []string{"@store"},
+		},
+		{
+			name:    "remove non-existent context",
+			todo:    Todo{Text: "Buy groceries", Contexts: []string{"@store"}},
+			context: "@home",
+			want:    []string{"@store"},
+		},
+		{
+			name:    "remove from empty contexts",
+			todo:    Todo{Text: "Buy groceries"},
+			context: "@home",
+			want:    []string{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.todo.RemoveContext(tt.context)
+			if len(tt.todo.Contexts) != len(tt.want) {
+				t.Errorf("RemoveContext() Contexts length = %v, want %v", len(tt.todo.Contexts), len(tt.want))
+			} else {
+				for i := range tt.todo.Contexts {
+					if tt.todo.Contexts[i] != tt.want[i] {
+						t.Errorf("RemoveContext() Contexts[%d] = %v, want %v", i, tt.todo.Contexts[i], tt.want[i])
+					}
+				}
+			}
+		})
+	}
+}
+
+func TestTodo_RemoveProject(t *testing.T) {
+	tests := []struct {
+		name    string
+		todo    Todo
+		project string
+		want    []string
+	}{
+		{
+			name:    "remove existing project",
+			todo:    Todo{Text: "Buy groceries", Projects: []string{"+shopping", "+food"}},
+			project: "+shopping",
+			want:    []string{"+food"},
+		},
+		{
+			name:    "remove non-existent project",
+			todo:    Todo{Text: "Buy groceries", Projects: []string{"+food"}},
+			project: "+shopping",
+			want:    []string{"+food"},
+		},
+		{
+			name:    "remove from empty projects",
+			todo:    Todo{Text: "Buy groceries"},
+			project: "+shopping",
+			want:    []string{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.todo.RemoveProject(tt.project)
+			if len(tt.todo.Projects) != len(tt.want) {
+				t.Errorf("RemoveProject() Projects length = %v, want %v", len(tt.todo.Projects), len(tt.want))
+			} else {
+				for i := range tt.todo.Projects {
+					if tt.todo.Projects[i] != tt.want[i] {
+						t.Errorf("RemoveProject() Projects[%d] = %v, want %v", i, tt.todo.Projects[i], tt.want[i])
+					}
+				}
+			}
+		})
+	}
+}

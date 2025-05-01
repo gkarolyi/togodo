@@ -77,3 +77,57 @@ func findPriority(text string) string {
 func isDone(text string) bool {
 	return doneRe.MatchString(text)
 }
+
+// SetContexts sets the contexts of a todo
+func (t *Todo) SetContexts(contexts []string) {
+	t.Contexts = contexts
+}
+
+// SetProjects sets the projects of a todo
+func (t *Todo) SetProjects(projects []string) {
+	t.Projects = projects
+}
+
+// AddContext adds a context to a todo if it doesn't already exist
+func (t *Todo) AddContext(context string) {
+	// Check if context already exists
+	for _, ctx := range t.Contexts {
+		if ctx == context {
+			return
+		}
+	}
+	t.Contexts = append(t.Contexts, context)
+}
+
+// AddProject adds a project to a todo if it doesn't already exist
+func (t *Todo) AddProject(project string) {
+	// Check if project already exists
+	for _, proj := range t.Projects {
+		if proj == project {
+			return
+		}
+	}
+	t.Projects = append(t.Projects, project)
+}
+
+// RemoveContext removes a context from a todo
+func (t *Todo) RemoveContext(context string) {
+	// Find and remove the context
+	for i, ctx := range t.Contexts {
+		if ctx == context {
+			t.Contexts = append(t.Contexts[:i], t.Contexts[i+1:]...)
+			break
+		}
+	}
+}
+
+// RemoveProject removes a project from a todo
+func (t *Todo) RemoveProject(project string) {
+	// Find and remove the project
+	for i, proj := range t.Projects {
+		if proj == project {
+			t.Projects = append(t.Projects[:i], t.Projects[i+1:]...)
+			break
+		}
+	}
+}
