@@ -11,7 +11,7 @@ func createTestTodos() []Todo {
 	return []Todo{
 		NewTodo("(A) test todo 1 +project2 @context1"),
 		NewTodo("(B) test todo 2 +project1 @context2"),
-		NewTodo("x (C) test todo 3"),
+		NewTodo("x (C) test todo 3 +project1 @context1"),
 	}
 }
 
@@ -70,12 +70,12 @@ func TestNewRepository(t *testing.T) {
 				t.Fatalf("NewRepository() error = %v, want nil", err)
 			}
 
-			todos, err := repo.ListTodos()
+			todos, err := repo.ListAll()
 			if err != nil {
-				t.Fatalf("ListTodos() error = %v, want nil", err)
+				t.Fatalf("ListAll() error = %v, want nil", err)
 			}
 			if len(todos) != 2 {
-				t.Errorf("ListTodos() returned %d todos, want 2", len(todos))
+				t.Errorf("ListAll() returned %d todos, want 2", len(todos))
 			}
 		})
 	})
@@ -93,12 +93,12 @@ func TestNewRepository(t *testing.T) {
 				t.Fatalf("NewRepository() error = %v, want nil", err)
 			}
 
-			todos, err := repo.ListTodos()
+			todos, err := repo.ListAll()
 			if err != nil {
-				t.Fatalf("ListTodos() error = %v, want nil", err)
+				t.Fatalf("ListAll() error = %v, want nil", err)
 			}
 			if len(todos) != 0 {
-				t.Errorf("ListTodos() returned %d todos, want 0", len(todos))
+				t.Errorf("ListAll() returned %d todos, want 0", len(todos))
 			}
 		})
 
@@ -122,12 +122,12 @@ func TestNewRepository(t *testing.T) {
 				t.Fatalf("NewRepository() error = %v, want nil", err)
 			}
 
-			todos, err := repo.ListTodos()
+			todos, err := repo.ListAll()
 			if err != nil {
-				t.Fatalf("ListTodos() error = %v, want nil", err)
+				t.Fatalf("ListAll() error = %v, want nil", err)
 			}
 			if len(todos) != 3 {
-				t.Errorf("ListTodos() returned %d todos, want 3", len(todos))
+				t.Errorf("ListAll() returned %d todos, want 3", len(todos))
 			}
 		})
 	})
@@ -145,9 +145,9 @@ func TestRepository_Add(t *testing.T) {
 			t.Errorf("Add() returned todo with text %s, want Test todo 3", todo.Text)
 		}
 
-		todos, err := repo.ListTodos()
+		todos, err := repo.ListAll()
 		if err != nil {
-			t.Errorf("ListTodos() error = %v, want nil", err)
+			t.Errorf("ListAll() error = %v, want nil", err)
 		}
 		if len(todos) != 4 {
 			t.Errorf("expected 4 todos, got %d", len(todos))
@@ -167,9 +167,9 @@ func TestRepository_Remove(t *testing.T) {
 			t.Errorf("Remove() returned todo with text %s, want (A) test todo 1 +project2 @context1", todo.Text)
 		}
 
-		todos, err := repo.ListTodos()
+		todos, err := repo.ListAll()
 		if err != nil {
-			t.Errorf("ListTodos() error = %v, want nil", err)
+			t.Errorf("ListAll() error = %v, want nil", err)
 		}
 		if len(todos) != 2 {
 			t.Errorf("expected 2 todos, got %d", len(todos))
@@ -187,13 +187,13 @@ func TestRepository_Remove(t *testing.T) {
 func TestRepository_ListTodos(t *testing.T) {
 	repo := setupTestRepository(t)
 
-	t.Run("returns all todos", func(t *testing.T) {
+	t.Run("returns all todos that are not done", func(t *testing.T) {
 		todos, err := repo.ListTodos()
 		if err != nil {
 			t.Errorf("ListTodos() error = %v, want nil", err)
 		}
-		if len(todos) != 3 {
-			t.Errorf("ListTodos() returned %d todos, want 3", len(todos))
+		if len(todos) != 2 {
+			t.Errorf("ListTodos() returned %d todos, want 2", len(todos))
 		}
 	})
 }

@@ -43,13 +43,33 @@ func (r *Repository) Remove(index int) (Todo, error) {
 	return todo, nil
 }
 
-// ListTodos returns all todos
-func (r *Repository) ListTodos() ([]Todo, error) {
+// Update updates a todo in the repository
+func (r *Repository) Update(index int, todo Todo) (Todo, error) {
+	if index < 0 || index >= len(r.todos) {
+		return Todo{}, fmt.Errorf("index out of bounds")
+	}
+	r.todos[index] = todo
+	return todo, nil
+}
+
+// ListAll returns all todos
+func (r Repository) ListAll() ([]Todo, error) {
 	return r.todos, nil
 }
 
+// ListTodos returns all todos that are not done
+func (r Repository) ListTodos() ([]Todo, error) {
+	notDone := []Todo{}
+	for _, todo := range r.todos {
+		if !todo.Done {
+			notDone = append(notDone, todo)
+		}
+	}
+	return notDone, nil
+}
+
 // ListDone returns all done todos
-func (r *Repository) ListDone() ([]Todo, error) {
+func (r Repository) ListDone() ([]Todo, error) {
 	done := []Todo{}
 	for _, todo := range r.todos {
 		if todo.Done {
@@ -59,22 +79,38 @@ func (r *Repository) ListDone() ([]Todo, error) {
 	return done, nil
 }
 
-// ListProjects returns all projects
-func (r *Repository) ListProjects() ([]string, error) {
-	projects := []string{}
+// ListProjects returns all unique projects sorted alphabetically
+func (r Repository) ListProjects() ([]string, error) {
+	projectMap := make(map[string]struct{})
 	for _, todo := range r.todos {
-		projects = append(projects, todo.Projects...)
+		for _, project := range todo.Projects {
+			projectMap[project] = struct{}{}
+		}
 	}
+
+	projects := make([]string, 0, len(projectMap))
+	for project := range projectMap {
+		projects = append(projects, project)
+	}
+
 	sort.Strings(projects)
 	return projects, nil
 }
 
-// ListContexts returns all contexts
-func (r *Repository) ListContexts() ([]string, error) {
-	contexts := []string{}
+// ListContexts returns all unique contexts sorted alphabetically
+func (r Repository) ListContexts() ([]string, error) {
+	contextMap := make(map[string]struct{})
 	for _, todo := range r.todos {
-		contexts = append(contexts, todo.Contexts...)
+		for _, context := range todo.Contexts {
+			contextMap[context] = struct{}{}
+		}
 	}
+
+	contexts := make([]string, 0, len(contextMap))
+	for context := range contextMap {
+		contexts = append(contexts, context)
+	}
+
 	sort.Strings(contexts)
 	return contexts, nil
 }
