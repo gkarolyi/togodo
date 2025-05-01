@@ -129,6 +129,12 @@ func (r Repository) Filter(filter Filter) ([]Todo, error) {
 	return filter.Apply(r.todos), nil
 }
 
+// Search returns todos that match the search query
+func (r Repository) Search(query string) ([]Todo, error) {
+	filter := Filter{Text: query}
+	return filter.Apply(r.todos), nil
+}
+
 // ListAll returns all todos
 func (r Repository) ListAll() ([]Todo, error) {
 	return r.todos, nil
