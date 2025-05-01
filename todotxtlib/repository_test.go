@@ -436,6 +436,60 @@ func TestRepository_Search(t *testing.T) {
 	})
 }
 
+func TestRepository_Sort(t *testing.T) {
+	tests := []struct {
+		name     string
+		sort     Sort
+		expected []Todo
+	}{
+		{
+			name: "sorts todos by text ascending with done items last",
+			sort: NewDefaultSort(),
+			expected: []Todo{
+				NewTodo("(A) test todo 1 +project2 @context1"),
+				NewTodo("(B) test todo 2 +project1 @context2"),
+				NewTodo("x (C) test todo 3 +project1 @context1"),
+			},
+		},
+		{
+			name: "sorts todos by text descending with done items first",
+			sort: Sort{Field: Text, Order: Descending},
+			expected: []Todo{
+				NewTodo("x (C) test todo 3 +project1 @context1"),
+				NewTodo("(B) test todo 2 +project1 @context2"),
+				NewTodo("(A) test todo 1 +project2 @context1"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			repo := setupTestRepository(t)
+
+			// Sort the todos
+			repo.Sort(tt.sort)
+
+			// Verify the sorted todos
+			todos, err := repo.ListAll()
+			if err != nil {
+				t.Errorf("ListAll() error = %v, want nil", err)
+				return
+			}
+
+			if len(todos) != len(tt.expected) {
+				t.Errorf("Sort() returned %d todos, want %d", len(todos), len(tt.expected))
+				return
+			}
+
+			for i := range todos {
+				if !todos[i].Equals(tt.expected[i]) {
+					t.Errorf("Sort() todo[%d] = %v, want %v", i, todos[i], tt.expected[i])
+				}
+			}
+		})
+	}
+}
+
 func TestRepository_ListTodos(t *testing.T) {
 	repo := setupTestRepository(t)
 

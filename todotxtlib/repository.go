@@ -135,6 +135,11 @@ func (r Repository) Search(query string) ([]Todo, error) {
 	return filter.Apply(r.todos), nil
 }
 
+// Sort sorts the todos in the repository according to the specified criteria
+func (r *Repository) Sort(sort Sort) {
+	sort.Apply(r.todos)
+}
+
 // ListAll returns all todos
 func (r Repository) ListAll() ([]Todo, error) {
 	return r.todos, nil
