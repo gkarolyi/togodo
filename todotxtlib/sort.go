@@ -4,26 +4,26 @@ import (
 	"sort"
 )
 
-// SortOrder represents the order in which to sort
-type SortOrder int
+// sortOrder represents the order in which to sort
+type sortOrder int
 
 const (
-	Ascending SortOrder = iota
+	Ascending sortOrder = iota
 	Descending
 )
 
-// SortField represents the field to sort by
-type SortField int
+// sortField represents the field to sort by
+type sortField int
 
 const (
-	Text SortField = iota
+	Text sortField = iota
 	// TODO: Add other fields
 )
 
 // Sort represents sorting criteria for todos
 type Sort struct {
-	Field SortField
-	Order SortOrder
+	Field sortField // Field to sort by, e.g. Text
+	Order sortOrder // Order to sort by, e.g. Ascending
 }
 
 // NewDefaultSort returns the default todo.txt sorting (alphabetical with done items last)

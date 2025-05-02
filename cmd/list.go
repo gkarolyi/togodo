@@ -1,12 +1,20 @@
 package cmd
 
 import (
-	"github.com/gkarolyi/togodo/internal/todolib"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
 
-// listCmd represents the list command
+func executeList(base *BaseCommand, searchQuery string) error {
+	todos, err := base.Repository.Search(searchQuery)
+	if err != nil {
+		return err
+	}
+
+	return base.PrintList(todos)
+}
+
 var listCmd = &cobra.Command{
 	Use:   "list [FILTER]",
 	Short: "List and filter items in your todo.txt",
@@ -22,8 +30,10 @@ togodo list '@work'
 `,
 	Aliases: []string{"ls", "l"},
 	Args:    cobra.ArbitraryArgs,
-	Run: func(cmd *cobra.Command, args []string) {
-		todolib.List(TodoTxtPath, args)
+	RunE: func(cmd *cobra.Command, args []string) error {
+		base := NewDefaultBaseCommand()
+		searchQuery := strings.Join(args, " ")
+		return executeList(base, searchQuery)
 	},
 }
 

@@ -1,12 +1,24 @@
 package cmd
 
 import (
-	"github.com/gkarolyi/togodo/internal/todolib"
+	"fmt"
+	"strconv"
 
 	"github.com/spf13/cobra"
 )
 
-// addCmd represents the add command
+func executePri(base *BaseCommand, args []string) error {
+	priority := args[len(args)-1]
+	for _, arg := range args[:len(args)-1] {
+		lineNumber, err := strconv.Atoi(arg)
+		if err != nil {
+			return fmt.Errorf("failed to convert arg to int: %w", err)
+		}
+		base.Repository.SetPriority(lineNumber-1, priority)
+	}
+	return base.Write()
+}
+
 var priCmd = &cobra.Command{
 	Use:   "pri [LINE NUMBER]...",
 	Short: "Set the priority of a todo item",
@@ -21,8 +33,9 @@ togodo pri 1 2 3 B
 
 	Args:    cobra.MinimumNArgs(1),
 	Aliases: []string{"p"},
-	Run: func(cmd *cobra.Command, args []string) {
-		todolib.Pri(TodoTxtPath, args)
+	RunE: func(cmd *cobra.Command, args []string) error {
+		base := NewDefaultBaseCommand()
+		return executePri(base, args)
 	},
 }
 

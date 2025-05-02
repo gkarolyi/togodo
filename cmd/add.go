@@ -1,12 +1,24 @@
 package cmd
 
 import (
-	"github.com/gkarolyi/togodo/internal/todolib"
-
 	"github.com/spf13/cobra"
 )
 
-// addCmd represents the add command
+func executeAdd(base *BaseCommand, args []string) error {
+	added := make([]string, 0)
+	for _, todoText := range args {
+		todo, err := base.Repository.Add(todoText)
+		if err != nil {
+			return err
+		}
+		added = append(added, todo.Text)
+	}
+
+	base.Repository.SortDefault()
+
+	return base.Write()
+}
+
 var addCmd = &cobra.Command{
 	Use:   "add [TASK]",
 	Short: "Add a new todo item to the list",
@@ -24,8 +36,9 @@ Buy bread"
 
 	Args:    cobra.MinimumNArgs(1),
 	Aliases: []string{"a"},
-	Run: func(cmd *cobra.Command, args []string) {
-		todolib.Add(TodoTxtPath, args)
+	RunE: func(cmd *cobra.Command, args []string) error {
+		base := NewDefaultBaseCommand()
+		return executeAdd(base, args)
 	},
 }
 

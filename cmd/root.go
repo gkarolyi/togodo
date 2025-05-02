@@ -38,7 +38,7 @@ var rootCmd = &cobra.Command{
 
 	// This is where the TUI will be called from eventually
 	Run: func(cmd *cobra.Command, args []string) {
-		repo, err := todolib.New(TodoTxtPath)
+		repo, err := todolib.New(getTodoTxtPath())
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -61,39 +61,6 @@ func Execute() {
 	}
 }
 
-var TodoTxtPath string
-
 func init() {
-	// Try to open a todo.txt file in the current directory first
-	if TodoTxtPath == "" {
-		if _, err := os.Stat("todo.txt"); os.IsNotExist(err) {
-			os.Exit(1)
-		} else {
-			TodoTxtPath = "todo.txt"
-		}
-	}
-
-	// If that fails, try to open a todo.txt file in the directory specified by the TODO_TXT_PATH environment variable
-	if TodoTxtPath == "" {
-		envTodoTxtPath := os.Getenv("TODO_TXT_PATH")
-		if _, err := os.Stat(envTodoTxtPath); os.IsNotExist(err) {
-			os.Exit(1)
-		} else {
-			TodoTxtPath = envTodoTxtPath
-		}
-	}
-
-	// Finally, try to open a todo.txt file in the user's home directory
-	if TodoTxtPath == "" {
-		homeDir, err := os.UserHomeDir()
-		if err != nil {
-			os.Exit(1)
-		}
-		TodoTxtPath = homeDir + "/todo.txt"
-		if _, err := os.Stat(TodoTxtPath); os.IsNotExist(err) {
-			os.Exit(1)
-		}
-	}
-
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

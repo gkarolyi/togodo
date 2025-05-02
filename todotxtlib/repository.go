@@ -129,14 +129,25 @@ func (r Repository) Filter(filter Filter) ([]Todo, error) {
 	return filter.Apply(r.todos), nil
 }
 
-// Search returns todos that match the search query
+// Search returns todos that match the search query.
+// If the query is empty, it returns all todos.
 func (r Repository) Search(query string) ([]Todo, error) {
+	if query == "" {
+		return r.ListAll()
+	}
+
 	filter := Filter{Text: query}
 	return filter.Apply(r.todos), nil
 }
 
 // Sort sorts the todos in the repository according to the specified criteria
 func (r *Repository) Sort(sort Sort) {
+	sort.Apply(r.todos)
+}
+
+// SortDefault sorts the todos in the repository in default order, with done todos at the bottom.
+func (r *Repository) SortDefault() {
+	sort := NewDefaultSort()
 	sort.Apply(r.todos)
 }
 
