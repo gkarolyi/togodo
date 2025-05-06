@@ -22,11 +22,8 @@ THE SOFTWARE.
 package cmd
 
 import (
-	"fmt"
 	"os"
 
-	todolib "github.com/gkarolyi/togodo/internal/todolib"
-	tui "github.com/gkarolyi/togodo/internal/tui"
 	"github.com/spf13/cobra"
 )
 
@@ -38,17 +35,8 @@ var rootCmd = &cobra.Command{
 
 	// This is where the TUI will be called from eventually
 	Run: func(cmd *cobra.Command, args []string) {
-		repo, err := todolib.New(getTodoTxtPath())
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		p := tui.NewProgram(repo)
-		if _, err := p.Run(); err != nil {
-			fmt.Printf("Alas, there's been an error: %v", err)
-			os.Exit(1)
-		}
+		baseCmd := NewTUIBaseCommand()
+		baseCmd.Output.Run()
 	},
 }
 

@@ -7,7 +7,8 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	todolib "github.com/gkarolyi/togodo/internal/todolib"
+	"github.com/gkarolyi/togodo/todotxtlib"
+	"github.com/gkarolyi/togodo/todotxtui/format"
 )
 
 var (
@@ -20,16 +21,17 @@ var (
 			Italic(true)
 )
 
-func NewProgram(repository todolib.TodoRepository) *tea.Program {
+func NewProgram(repository *todotxtlib.Repository) *tea.Program {
 	model := initialModel(repository)
 	return tea.NewProgram(model)
 }
 
 type model struct {
-	choices    []todolib.Todo   // items on the to-do list
-	cursor     int              // which to-do list item our cursor is pointing at
-	selected   map[int]struct{} // which to-do items are selected
-	repository todolib.TodoRepository
+	choices    []todotxtlib.Todo // items on the to-do list
+	cursor     int               // which to-do list item our cursor is pointing at
+	selected   map[int]struct{}  // which to-do items are selected
+	repository *todotxtlib.Repository
+	formatter  format.TodoFormatter
 	filtering  bool            // whether we're currently filtering
 	filter     string          // the current filter string
 	adding     bool            // whether we're currently adding a new item
@@ -37,21 +39,37 @@ type model struct {
 	setting    bool            // whether we're currently setting priority
 }
 
-func initialModel(repository todolib.TodoRepository) model {
+func initialModel(repository *todotxtlib.Repository) model {
 	ti := textinput.New()
 	ti.Placeholder = "Enter new todo item..."
 	ti.CharLimit = 150
 	ti.Width = 50
 
-	return model{
-		repository: repository,
-		choices:    repository.Items(),
-		selected:   make(map[int]struct{}),
-		filtering:  false,
-		filter:     "",
-		adding:     false,
-		setting:    false,
-		input:      ti,
+	allTodos, err := repository.ListAll()
+	if err != nil {
+		return model{
+			repository: repository,
+			formatter:  format.NewLipglossFormatter(),
+			choices:    []todotxtlib.Todo{},
+			selected:   make(map[int]struct{}),
+			filtering:  false,
+			filter:     "",
+			adding:     false,
+			setting:    false,
+			input:      ti,
+		}
+	} else {
+		return model{
+			repository: repository,
+			formatter:  format.NewLipglossFormatter(),
+			choices:    allTodos,
+			selected:   make(map[int]struct{}),
+			filtering:  false,
+			filter:     "",
+			adding:     false,
+			setting:    false,
+			input:      ti,
+		}
 	}
 }
 
@@ -71,16 +89,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			case "a", "b", "c", "d", "A", "B", "C", "D":
 				priority := strings.ToUpper(msg.String())
-				var lineNumbers []int
-				if len(m.selected) == 0 {
-					lineNumbers = []int{m.cursor + 1}
-				} else {
-					for i := range m.selected {
-						lineNumbers = append(lineNumbers, i+1)
-					}
+				for i := range m.selected {
+					m.repository.SetPriority(i, priority)
 				}
-				m.repository.SetPriority(lineNumbers, priority)
-				m.choices = m.repository.Items()
+				allTodos, _ := m.repository.ListAll()
+				m.choices = allTodos
 				m.setting = false
 				return m, nil
 			}
@@ -98,7 +111,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case tea.KeyEnter:
 				if m.input.Value() != "" {
 					m.repository.Add(m.input.Value())
-					m.choices = m.repository.Items()
+					allTodos, _ := m.repository.ListAll()
+					m.choices = allTodos
 					m.adding = false
 					m.input.Reset()
 					m.input.Blur()
@@ -117,7 +131,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case tea.KeyEsc:
 				m.filtering = false
 				m.filter = ""
-				m.choices = m.repository.Items()
+				allTodos, _ := m.repository.ListAll()
+				m.choices = allTodos
 				return m, nil
 			case tea.KeyEnter:
 				m.filtering = false
@@ -125,7 +140,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case tea.KeyBackspace:
 				if len(m.filter) > 0 {
 					m.filter = m.filter[:len(m.filter)-1]
-					m.choices = m.repository.Filter(m.filter)
+					filteredTodos, _ := m.repository.Search(m.filter)
+					m.choices = filteredTodos
 					if m.cursor >= len(m.choices) {
 						m.cursor = len(m.choices) - 1
 					}
@@ -136,7 +152,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			default:
 				m.filter += msg.String()
-				m.choices = m.repository.Filter(m.filter)
+				filteredTodos, _ := m.repository.Search(m.filter)
+				m.choices = filteredTodos
 				if m.cursor >= len(m.choices) {
 					m.cursor = len(m.choices) - 1
 				}
@@ -171,15 +188,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case "x":
-			var lineNumbers []int
-			if len(m.selected) == 0 {
-				lineNumbers = []int{m.cursor + 1}
-			} else {
-				for i := range m.selected {
-					lineNumbers = append(lineNumbers, i+1)
-				}
+			for i := range m.selected {
+				m.repository.ToggleDone(i)
 			}
-			m.repository.Toggle(lineNumbers)
+			allTodos, _ := m.repository.ListAll()
+			m.choices = allTodos
 
 		case "/":
 			if !m.adding {
@@ -209,7 +222,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	// First build the main view
-	mainView := m.repository.Path()
+	var mainView string
 	if m.filtering {
 		mainView += fmt.Sprintf("\nFilter: %s", m.filter)
 	}
@@ -222,8 +235,7 @@ func (m model) View() string {
 			cursor = ">"
 		}
 		mainView += fmt.Sprintf("%s ", cursor)
-		mainView += todolib.RenderToString(choice)
-		mainView += "\n"
+		mainView += m.formatter.Format(choice) + "\n"
 	}
 
 	mainView += "\nx: toggle | p: set priority | /: filter | a: add | q: quit\n"
@@ -267,7 +279,7 @@ func (m model) View() string {
 		if len(text) >= 3 && text[0] == '(' && text[2] == ')' {
 			priority = string(text[1])
 		}
-		popup += todolib.RenderToString(todolib.Todo{
+		popup += m.formatter.Format(todotxtlib.Todo{
 			Text:     text,
 			Priority: priority,
 		}) + "\n"

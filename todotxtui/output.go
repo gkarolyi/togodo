@@ -10,6 +10,7 @@ type OutputWriter interface {
 	WriteLine(line string)
 	WriteLines(lines []string)
 	WriteError(err error)
+	Run() error
 }
 
 // StdoutWriter implements OutputWriter for standard output
@@ -31,4 +32,8 @@ func (w *StdoutWriter) WriteLines(lines []string) {
 
 func (w *StdoutWriter) WriteError(err error) {
 	fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+}
+
+func (w *StdoutWriter) Run() error {
+	return nil
 }

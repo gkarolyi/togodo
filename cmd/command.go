@@ -78,6 +78,17 @@ func NewDefaultBaseCommand() *BaseCommand {
 	return newBaseCommand(repo, newLipglossFormatter(), newStdoutWriter())
 }
 
+func NewTUIBaseCommand() *BaseCommand {
+	todoTxtPath := getTodoTxtPath()
+	repo, err := newFileRepository(todoTxtPath)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	return newBaseCommand(repo, newLipglossFormatter(), todotxtui.NewTUIWriter(repo))
+}
+
 // getTodoTxtPath returns the path to the todo.txt file.
 // It tries to open a todo.txt file in the directory specified by the TODO_TXT_PATH
 // environment variable, then in the current directory, and finally in the user's home directory.
