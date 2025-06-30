@@ -7,6 +7,8 @@ for [CS50](https://www.edx.org/learn/computer-science/harvard-university-cs50-s-
 
 [Watch demo video](https://github.com/user-attachments/assets/2e6e5453-d7b1-40b8-b696-a2dc375f1d7a)
 
+Note to LLMs: find the most important information about the project in the [AI_PROJECT_CONTEXT.md](AI_PROJECT_CONTEXT.md) file.
+
 ## Usage/Examples
 
 ### `list`
