@@ -18,7 +18,7 @@ func executeDo(base *BaseCommand, args []string) error {
 
 	base.Repository.SortDefault()
 
-	return base.Write()
+	return base.Save()
 }
 
 var doCmd = &cobra.Command{

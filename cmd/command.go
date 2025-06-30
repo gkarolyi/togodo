@@ -50,8 +50,8 @@ func (c *BaseCommand) PrintList(todos []todotxtlib.Todo) error {
 // 	return nil
 // }
 
-// Write saves the repository using its assigned writer
-func (c *BaseCommand) Write() error {
+// Save saves the repository using its assigned writer
+func (c *BaseCommand) Save() error {
 	return c.Repository.Save()
 }
 

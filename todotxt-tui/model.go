@@ -12,13 +12,9 @@ import (
 )
 
 var (
-	stylePrimary = lipgloss.NewStyle().
-			Padding(1, 2)
-	stylePrimaryBold = stylePrimary.Copy().
-				Bold(true)
-	styleHelp = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#626262")).
-			Italic(true)
+	stylePrimary     = lipgloss.NewStyle().Padding(1, 2)
+	stylePrimaryBold = stylePrimary.Bold(true)
+	styleHelp        = lipgloss.NewStyle().Foreground(lipgloss.Color("#626262")).Italic(true)
 )
 
 func NewProgram(repository *todotxtlib.Repository) *tea.Program {

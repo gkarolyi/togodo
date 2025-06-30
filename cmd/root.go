@@ -33,7 +33,6 @@ var rootCmd = &cobra.Command{
 	Short: "A CLI tool for managing your todo.txt",
 	Long:  `togodo is a CLI tool for managing your todo.txt file.`,
 
-	// This is where the TUI will be called from eventually
 	Run: func(cmd *cobra.Command, args []string) {
 		baseCmd := NewTUIBaseCommand()
 		baseCmd.Output.Run()

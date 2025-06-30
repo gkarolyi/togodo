@@ -16,7 +16,7 @@ func executePri(base *BaseCommand, args []string) error {
 		}
 		base.Repository.SetPriority(lineNumber-1, priority)
 	}
-	return base.Write()
+	return base.Save()
 }
 
 var priCmd = &cobra.Command{
