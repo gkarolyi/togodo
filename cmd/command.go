@@ -32,23 +32,7 @@ func (c *BaseCommand) PrintList(todos []todotxtlib.Todo) error {
 	return nil
 }
 
-// // PrintUpdated prints the updated todo items with their line numbers to the output.
-// func (c *BaseCommand) PrintUpdated(updatedTodoTexts []string) error {
-// 	updatedTodos := make([]todotxtlib.Todo, len(updatedTodoTexts))
-// 	allTodos, err := c.Repository.ListAll()
-// 	if err != nil {
-// 		return err
-// 	}
-// 	for _, todoText := range updatedTodoTexts {
-// 		for idx, todo := range allTodos {
-// 			if todo.Text == todoText {
-// 				c.Output.WriteLine()
-// 			}
-// 		}
-// 	}
-// 	c.Output.WriteLines(updated)
-// 	return nil
-// }
+
 
 // Save saves the repository using its assigned writer
 func (c *BaseCommand) Save() error {
@@ -95,14 +79,12 @@ func NewTUIBaseCommand() *BaseCommand {
 func getTodoTxtPath() string {
 	var todoTxtPath string
 	// First try to open a todo.txt file in the directory specified by the TODO_TXT_PATH environment variable
-	// if todoTxtPath == "" {
-	// 	envtodoTxtPath := os.Getenv("TODO_TXT_PATH")
-	// 	if _, err := os.Stat(envtodoTxtPath); os.IsNotExist(err) {
-	// 		os.Exit(1)
-	// 	} else {
-	// 		todoTxtPath = envtodoTxtPath
-	// 	}
-	// }
+	envtodoTxtPath := os.Getenv("TODO_TXT_PATH")
+	if envtodoTxtPath != "" {
+		if _, err := os.Stat(envtodoTxtPath); err == nil {
+			todoTxtPath = envtodoTxtPath
+		}
+	}
 
 	// If that fails, try to open a todo.txt file in the current directory
 	if todoTxtPath == "" {

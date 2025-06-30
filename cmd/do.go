@@ -13,7 +13,10 @@ func executeDo(base *BaseCommand, args []string) error {
 		if err != nil {
 			return fmt.Errorf("failed to convert arg to int: %w", err)
 		}
-		base.Repository.ToggleDone(lineNumber - 1)
+		_, err = base.Repository.ToggleDone(lineNumber - 1)
+		if err != nil {
+			return fmt.Errorf("failed to toggle todo at line %d: %w", lineNumber, err)
+		}
 	}
 
 	base.Repository.SortDefault()

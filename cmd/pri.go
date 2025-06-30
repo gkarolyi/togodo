@@ -14,7 +14,10 @@ func executePri(base *BaseCommand, args []string) error {
 		if err != nil {
 			return fmt.Errorf("failed to convert arg to int: %w", err)
 		}
-		base.Repository.SetPriority(lineNumber-1, priority)
+		_, err = base.Repository.SetPriority(lineNumber-1, priority)
+		if err != nil {
+			return fmt.Errorf("failed to set priority for todo at line %d: %w", lineNumber, err)
+		}
 	}
 	return base.Save()
 }
