@@ -22,9 +22,15 @@ THE SOFTWARE.
 package main
 
 import (
+	"context"
+	"os"
+
+	"github.com/charmbracelet/fang"
 	"github.com/gkarolyi/togodo/cmd"
 )
 
 func main() {
-	cmd.Execute()
+	if err := fang.Execute(context.Background(), cmd.RootCmd()); err != nil {
+		os.Exit(1)
+	}
 }
