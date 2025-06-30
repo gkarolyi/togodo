@@ -1,9 +1,15 @@
-(A) write tests for commands as well
 (A) refactor to allow for end to end testing
-(B) only sort items on List, otherwise leave in place
+(A) write tests for commands as well
 (B) move done to done.txt instead of just deleting
-save priority with shorthand so todo can be restored? @idea
-tidy should remove blank lines and duplicates
-gracefully handle missing todo.txt file
-add user config
+(B) only sort items on List, otherwise leave in place
 add fish completions
+add rename project and context +refactor
+add sorting to todotxtlib +refactor
+add user config
+graceful shutdown of tui @idea
+gracefully handle missing todo.txt file
+save priority with shorthand so todo can be restored? @idea
+set sort object on repository and sort on each operation
+tidy should remove blank lines and duplicates
+x (A) Test refactoring completion
+x add tidy +refactor
