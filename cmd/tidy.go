@@ -1,11 +1,12 @@
 package cmd
 
 import (
+	"github.com/gkarolyi/togodo/cli"
 	"github.com/gkarolyi/togodo/todotxtlib"
 	"github.com/spf13/cobra"
 )
 
-func executeTidy(repo *todotxtlib.Repository, presenter *Presenter) error {
+func executeTidy(repo *todotxtlib.Repository, presenter *cli.Presenter) error {
 	// Get all done todos before removing them
 	doneTodos, err := repo.ListDone()
 	if err != nil {

@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/gkarolyi/togodo/cli"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -77,7 +78,7 @@ Configuration is stored in ~/.config/togodo.toml`,
 	},
 }
 
-func executeConfig(presenter *Presenter, args []string) error {
+func executeConfig(presenter *cli.Presenter, args []string) error {
 	switch len(args) {
 	case 0:
 		return showAllConfig(presenter)
@@ -90,31 +91,31 @@ func executeConfig(presenter *Presenter, args []string) error {
 	}
 }
 
-func showAllConfig(presenter *Presenter) error {
+func showAllConfig(presenter *cli.Presenter) error {
 	settings := viper.AllSettings()
 	if len(settings) == 0 {
-		presenter.output.WriteLine("No configuration found")
+		presenter.WriteLine("No configuration found")
 		return nil
 	}
 
 	for key, value := range settings {
-		presenter.output.WriteLine(fmt.Sprintf("%s = %v", key, value))
+		presenter.WriteLine(fmt.Sprintf("%s = %v", key, value))
 	}
 	return nil
 }
 
-func showConfig(presenter *Presenter, key string) error {
+func showConfig(presenter *cli.Presenter, key string) error {
 	if !viper.IsSet(key) {
-		presenter.output.WriteLine(fmt.Sprintf("Configuration key '%s' is not set", key))
+		presenter.WriteLine(fmt.Sprintf("Configuration key '%s' is not set", key))
 		return nil
 	}
 
 	value := viper.Get(key)
-	presenter.output.WriteLine(fmt.Sprintf("%s = %v", key, value))
+	presenter.WriteLine(fmt.Sprintf("%s = %v", key, value))
 	return nil
 }
 
-func setConfig(presenter *Presenter, key, value string) error {
+func setConfig(presenter *cli.Presenter, key, value string) error {
 	// Validate the key (only allow known configuration keys)
 	validKeys := map[string]bool{
 		"todo_txt_path": true,
@@ -138,7 +139,7 @@ func setConfig(presenter *Presenter, key, value string) error {
 		return fmt.Errorf("error writing configuration: %w", err)
 	}
 
-	presenter.output.WriteLine(fmt.Sprintf("Set %s = %s", key, value))
+	presenter.WriteLine(fmt.Sprintf("Set %s = %s", key, value))
 	return nil
 }
 

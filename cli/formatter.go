@@ -1,4 +1,4 @@
-package todotxtui
+package cli
 
 import (
 	"fmt"

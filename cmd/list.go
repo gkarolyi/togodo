@@ -3,11 +3,12 @@ package cmd
 import (
 	"strings"
 
+	"github.com/gkarolyi/togodo/cli"
 	"github.com/gkarolyi/togodo/todotxtlib"
 	"github.com/spf13/cobra"
 )
 
-func executeList(repo *todotxtlib.Repository, presenter *Presenter, searchQuery string) error {
+func executeList(repo *todotxtlib.Repository, presenter *cli.Presenter, searchQuery string) error {
 	todos, err := repo.Search(searchQuery)
 	if err != nil {
 		return err
