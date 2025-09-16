@@ -5,20 +5,20 @@ import (
 	"github.com/gkarolyi/togodo/todotxtlib"
 )
 
-// Controller handles TUI initialization and execution
-type Controller struct {
+// controller handles TUI initialization and execution
+type controller struct {
 	repo *todotxtlib.Repository
 }
 
 // NewController creates a new TUI controller
-func NewController(repo *todotxtlib.Repository) *Controller {
-	return &Controller{
+func NewController(repo *todotxtlib.Repository) *controller {
+	return &controller{
 		repo: repo,
 	}
 }
 
 // Run starts the TUI interface
-func (c *Controller) Run() error {
+func (c *controller) Run() error {
 	model := initialModel(c.repo)
 	p := tea.NewProgram(model)
 	_, err := p.Run()

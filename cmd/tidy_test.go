@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"testing"
+
+	"github.com/gkarolyi/togodo/internal/injector"
 )
 
 func TestExecuteTidy_WithDoneTasks(t *testing.T) {
@@ -24,7 +26,7 @@ func TestExecuteTidy_WithDoneTasks(t *testing.T) {
 	}
 
 	// Execute tidy
-	err = executeTidy(repo, createCLIPresenter())
+	err = executeTidy(repo, injector.CreateCLIPresenter())
 	assertNoError(t, err)
 
 	// Verify done tasks were removed
@@ -52,7 +54,7 @@ func TestExecuteTidy_NoDoneTasks(t *testing.T) {
 	initialCount := len(initialTodos)
 
 	// Execute tidy
-	err = executeTidy(repo, createCLIPresenter())
+	err = executeTidy(repo, injector.CreateCLIPresenter())
 	assertNoError(t, err)
 
 	// Verify no tasks were removed
@@ -70,7 +72,7 @@ func TestExecuteTidy_EmptyRepository(t *testing.T) {
 	repo, _ := setupEmptyTestRepository(t)
 
 	// Execute tidy on empty repository
-	err := executeTidy(repo, createCLIPresenter())
+	err := executeTidy(repo, injector.CreateCLIPresenter())
 	assertNoError(t, err)
 
 	// Verify repository is still empty
@@ -98,7 +100,7 @@ func TestExecuteTidy_AllTasksDone(t *testing.T) {
 	}
 
 	// Execute tidy
-	err = executeTidy(repo, createCLIPresenter())
+	err = executeTidy(repo, injector.CreateCLIPresenter())
 	assertNoError(t, err)
 
 	// Verify all tasks were removed
@@ -123,7 +125,7 @@ func TestExecuteTidy_MixedDoneUndone(t *testing.T) {
 	repo.Add("undone no priority")
 
 	// Execute tidy
-	err := executeTidy(repo, createCLIPresenter())
+	err := executeTidy(repo, injector.CreateCLIPresenter())
 	assertNoError(t, err)
 
 	// Verify only undone tasks remain
@@ -157,7 +159,7 @@ func TestExecuteTidy_PreservesOrder(t *testing.T) {
 	repo.Add("no priority task")
 
 	// Execute tidy
-	err := executeTidy(repo, createCLIPresenter())
+	err := executeTidy(repo, injector.CreateCLIPresenter())
 	assertNoError(t, err)
 
 	// Verify sorting is maintained
@@ -197,7 +199,7 @@ func TestExecuteTidy_PreservesProjectsContexts(t *testing.T) {
 	repo.Add("keep task +project3 @context3")
 
 	// Execute tidy
-	err := executeTidy(repo, createCLIPresenter())
+	err := executeTidy(repo, injector.CreateCLIPresenter())
 	assertNoError(t, err)
 
 	// Verify projects and contexts are preserved
@@ -241,7 +243,7 @@ func TestExecuteTidy_WithDueDates(t *testing.T) {
 	repo.Add("task due:2025-01-01")
 
 	// Execute tidy
-	err := executeTidy(repo, createCLIPresenter())
+	err := executeTidy(repo, injector.CreateCLIPresenter())
 	assertNoError(t, err)
 
 	// Verify due dates are preserved in remaining tasks
@@ -282,7 +284,7 @@ func TestExecuteTidy_PrintsRemovedTasks(t *testing.T) {
 	doneCount := len(doneTodos)
 
 	// Execute tidy
-	err = executeTidy(repo, createCLIPresenter())
+	err = executeTidy(repo, injector.CreateCLIPresenter())
 	assertNoError(t, err)
 
 	// Verify that done tasks would have been printed
@@ -309,7 +311,7 @@ func TestExecuteTidy_Integration(t *testing.T) {
 	}
 
 	// Execute tidy
-	err = executeTidy(repo, createCLIPresenter())
+	err = executeTidy(repo, injector.CreateCLIPresenter())
 	assertNoError(t, err)
 
 	// Verify final state
@@ -332,7 +334,7 @@ func TestExecuteTidy_ErrorHandling(t *testing.T) {
 	repo, _ := setupTestRepository(t)
 
 	// Execute tidy - should not error under normal conditions
-	err := executeTidy(repo, createCLIPresenter())
+	err := executeTidy(repo, injector.CreateCLIPresenter())
 	assertNoError(t, err)
 }
 
@@ -346,7 +348,7 @@ func TestExecuteTidy_MultipleRuns(t *testing.T) {
 	repo.Add("x done task 2")
 
 	// First tidy run
-	err := executeTidy(repo, createCLIPresenter())
+	err := executeTidy(repo, injector.CreateCLIPresenter())
 	assertNoError(t, err)
 
 	// Verify done tasks were removed
@@ -355,7 +357,7 @@ func TestExecuteTidy_MultipleRuns(t *testing.T) {
 	assertTodoCount(t, todos, 2)
 
 	// Second tidy run (should be no-op)
-	err = executeTidy(repo, createCLIPresenter())
+	err = executeTidy(repo, injector.CreateCLIPresenter())
 	assertNoError(t, err)
 
 	// Verify count is unchanged
@@ -385,7 +387,7 @@ func TestExecuteTidy_LargeNumberOfDoneTasks(t *testing.T) {
 	}
 
 	// Execute tidy
-	err := executeTidy(repo, createCLIPresenter())
+	err := executeTidy(repo, injector.CreateCLIPresenter())
 	assertNoError(t, err)
 
 	// Verify only undone tasks remain

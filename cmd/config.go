@@ -6,74 +6,19 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/gkarolyi/togodo/cli"
+	"github.com/gkarolyi/togodo/internal/cli"
+	"github.com/gkarolyi/togodo/internal/injector"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-// Config holds the application configuration
-type Config struct {
-	TodoTxtPath string `mapstructure:"todo_txt_path"`
-}
-
-// InitConfig initializes Viper configuration
-func InitConfig() error {
-	// Set config name and type
-	viper.SetConfigName("togodo")
-	viper.SetConfigType("toml")
-
-	// Add config paths
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return fmt.Errorf("error getting home directory: %w", err)
-	}
-
-	viper.AddConfigPath(filepath.Join(homeDir, ".config")) // ~/.config/togodo.toml
-	viper.AddConfigPath(homeDir)                           // ~/.togodo.toml
-
-	// Set default values
-	viper.SetDefault("todo_txt_path", "todo.txt")
-
-	// Read config file
-	if err := viper.ReadInConfig(); err != nil {
-		// It's okay if config file doesn't exist, we'll use defaults
-		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
-			return fmt.Errorf("error reading config file %s: %w", viper.ConfigFileUsed(), err)
-		}
-	}
-
-	return nil
-}
-
-// GetTodoTxtPath returns the configured todo.txt file path
-func GetTodoTxtPath() string {
-	path := viper.GetString("todo_txt_path")
-
-	// Expand tilde to home directory if needed
-	if len(path) > 0 && path[0] == '~' {
-		homeDir, err := os.UserHomeDir()
-		if err == nil {
-			path = filepath.Join(homeDir, path[1:])
-		}
-	}
-
-	return path
-}
-
 var configCmd = &cobra.Command{
 	Use:   "config [key] [value]",
 	Short: "View or set configuration options",
-	Long: `View or set configuration options for togodo.
-
-Examples:
-  togodo config                    # Show all configuration
-  togodo config todo_txt_path      			  # Show specific config value
-  togodo config todo_txt_path ~/my-todos.txt  # Set config value
-
-Configuration is stored in ~/.config/togodo.toml`,
+	Long: `View or set configuration options for togodo.\n\nExamples:\n  togodo config                    # Show all configuration\n  togodo config todo_txt_path      			  # Show specific config value\n  togodo config todo_txt_path ~/my-todos.txt  # Set config value\n\nConfiguration is stored in ~/.config/togodo.toml`,
 	Args: cobra.MaximumNArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		presenter := createCLIPresenter()
+		presenter := injector.CreateCLIPresenter()
 		return executeConfig(presenter, args)
 	},
 }
@@ -123,7 +68,8 @@ func setConfig(presenter *cli.Presenter, key, value string) error {
 
 	if !validKeys[key] {
 		return fmt.Errorf("invalid configuration key '%s'. Valid keys: %s",
-			key, strings.Join(getValidKeys(validKeys), ", "))
+			key,
+			strings.Join(getValidKeys(validKeys), ", "))
 	}
 
 	// Set the configuration value

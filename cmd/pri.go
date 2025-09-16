@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/gkarolyi/togodo/internal/injector"
 	"github.com/gkarolyi/togodo/todotxtlib"
 	"github.com/spf13/cobra"
 )
@@ -38,7 +39,7 @@ togodo pri 1 2 3 B
 	Args:    cobra.MinimumNArgs(1),
 	Aliases: []string{"p"},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		repo, err := createRepository()
+		repo, err := injector.CreateRepository()
 		if err != nil {
 			return err
 		}

@@ -3,7 +3,8 @@ package cmd
 import (
 	"strings"
 
-	"github.com/gkarolyi/togodo/cli"
+	"github.com/gkarolyi/togodo/internal/cli"
+	"github.com/gkarolyi/togodo/internal/injector"
 	"github.com/gkarolyi/togodo/todotxtlib"
 	"github.com/spf13/cobra"
 )
@@ -33,11 +34,11 @@ togodo list '@work'
 	Aliases: []string{"ls", "l"},
 	Args:    cobra.ArbitraryArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		repo, err := createRepository()
+		repo, err := injector.CreateRepository()
 		if err != nil {
 			return err
 		}
-		presenter := createCLIPresenter()
+		presenter := injector.CreateCLIPresenter()
 		searchQuery := strings.Join(args, " ")
 		return executeList(repo, presenter, searchQuery)
 	},

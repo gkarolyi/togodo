@@ -25,6 +25,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/gkarolyi/togodo/internal/config"
+	"github.com/gkarolyi/togodo/internal/injector"
 	"github.com/spf13/cobra"
 )
 
@@ -35,13 +37,13 @@ var rootCmd = &cobra.Command{
 	Long:  `togodo is a CLI tool for managing your todo.txt file.`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		repo, err := createRepository()
+		repo, err := injector.CreateRepository()
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
 
-		controller := createTUIController(repo)
+		controller := injector.CreateTUIController(repo)
 		err = controller.Run()
 		if err != nil {
 			fmt.Println(err)
@@ -56,13 +58,14 @@ func RootCmd() *cobra.Command {
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
+
+cobra.OnInitialize(initConfig)
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
 // initConfig reads in config file and ENV variables.
 func initConfig() {
-	if err := InitConfig(); err != nil {
+	if err := config.InitConfig(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error initializing config: %v\n", err)
 		os.Exit(1)
 	}

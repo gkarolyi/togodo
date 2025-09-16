@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/gkarolyi/togodo/internal/injector"
 	"github.com/gkarolyi/togodo/todotxtlib"
 	"github.com/spf13/cobra"
 )
@@ -35,7 +36,7 @@ Buy bread"
 	Args:    cobra.MinimumNArgs(1),
 	Aliases: []string{"a"},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		repo, err := createRepository()
+		repo, err := injector.CreateRepository()
 		if err != nil {
 			return err
 		}
