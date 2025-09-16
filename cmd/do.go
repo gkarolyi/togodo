@@ -4,24 +4,24 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/gkarolyi/togodo/todotxtlib"
 	"github.com/spf13/cobra"
 )
 
-func executeDo(base *BaseCommand, args []string) error {
+func executeDo(repo *todotxtlib.Repository, args []string) error {
 	for _, arg := range args {
 		lineNumber, err := strconv.Atoi(arg)
 		if err != nil {
 			return fmt.Errorf("failed to convert arg to int: %w", err)
 		}
-		_, err = base.Repository.ToggleDone(lineNumber - 1)
+		_, err = repo.ToggleDone(lineNumber - 1)
 		if err != nil {
 			return fmt.Errorf("failed to toggle todo at line %d: %w", lineNumber, err)
 		}
 	}
 
-	base.Repository.SortDefault()
-
-	return base.Save()
+	repo.SortDefault()
+	return repo.Save()
 }
 
 var doCmd = &cobra.Command{
@@ -40,8 +40,11 @@ togodo do 1 2 3
 	Args:    cobra.MinimumNArgs(1),
 	Aliases: []string{"x"},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		base := NewDefaultBaseCommand()
-		return executeDo(base, args)
+		repo, err := createRepository()
+		if err != nil {
+			return err
+		}
+		return executeDo(repo, args)
 	},
 }
 

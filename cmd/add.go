@@ -1,22 +1,20 @@
 package cmd
 
 import (
+	"github.com/gkarolyi/togodo/todotxtlib"
 	"github.com/spf13/cobra"
 )
 
-func executeAdd(base *BaseCommand, args []string) error {
-	added := make([]string, 0)
+func executeAdd(repo *todotxtlib.Repository, args []string) error {
 	for _, todoText := range args {
-		todo, err := base.Repository.Add(todoText)
+		_, err := repo.Add(todoText)
 		if err != nil {
 			return err
 		}
-		added = append(added, todo.Text)
 	}
 
-	base.Repository.SortDefault()
-
-	return base.Save()
+	repo.SortDefault()
+	return repo.Save()
 }
 
 var addCmd = &cobra.Command{
@@ -37,8 +35,11 @@ Buy bread"
 	Args:    cobra.MinimumNArgs(1),
 	Aliases: []string{"a"},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		base := NewDefaultBaseCommand()
-		return executeAdd(base, args)
+		repo, err := createRepository()
+		if err != nil {
+			return err
+		}
+		return executeAdd(repo, args)
 	},
 }
 

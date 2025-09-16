@@ -5,27 +5,27 @@ import (
 )
 
 func TestExecuteList_AllTasks(t *testing.T) {
-	baseCmd, _ := setupTestBaseCommand(t)
+	repo, _ := setupTestRepository(t)
 
 	// Test listing all tasks with empty search query
-	err := executeList(baseCmd, "")
+	err := executeList(repo, createCLIPresenter(), "")
 	assertNoError(t, err)
 
 	// Verify all tasks are returned
-	todos, err := baseCmd.Repository.Search("")
+	todos, err := repo.Search("")
 	assertNoError(t, err)
 	assertTodoCount(t, todos, 3)
 }
 
 func TestExecuteList_FilterByContext(t *testing.T) {
-	baseCmd, _ := setupTestBaseCommand(t)
+	repo, _ := setupTestRepository(t)
 
 	// Test filtering by context
-	err := executeList(baseCmd, "@context1")
+	err := executeList(repo, createCLIPresenter(), "@context1")
 	assertNoError(t, err)
 
 	// Verify only tasks with @context1 are returned
-	todos, err := baseCmd.Repository.Search("@context1")
+	todos, err := repo.Search("@context1")
 	assertNoError(t, err)
 
 	// Should find 2 tasks with @context1
@@ -36,14 +36,14 @@ func TestExecuteList_FilterByContext(t *testing.T) {
 }
 
 func TestExecuteList_FilterByProject(t *testing.T) {
-	baseCmd, _ := setupTestBaseCommand(t)
+	repo, _ := setupTestRepository(t)
 
 	// Test filtering by project
-	err := executeList(baseCmd, "+project1")
+	err := executeList(repo, createCLIPresenter(), "+project1")
 	assertNoError(t, err)
 
 	// Verify only tasks with +project1 are returned
-	todos, err := baseCmd.Repository.Search("+project1")
+	todos, err := repo.Search("+project1")
 	assertNoError(t, err)
 
 	// Should find 2 tasks with +project1
@@ -54,14 +54,14 @@ func TestExecuteList_FilterByProject(t *testing.T) {
 }
 
 func TestExecuteList_FilterByPriority(t *testing.T) {
-	baseCmd, _ := setupTestBaseCommand(t)
+	repo, _ := setupTestRepository(t)
 
 	// Test filtering by priority
-	err := executeList(baseCmd, "(A)")
+	err := executeList(repo, createCLIPresenter(), "(A)")
 	assertNoError(t, err)
 
 	// Verify only priority A tasks are returned
-	todos, err := baseCmd.Repository.Search("(A)")
+	todos, err := repo.Search("(A)")
 	assertNoError(t, err)
 
 	// Should find 1 task with priority A
@@ -70,14 +70,14 @@ func TestExecuteList_FilterByPriority(t *testing.T) {
 }
 
 func TestExecuteList_FilterByKeyword(t *testing.T) {
-	baseCmd, _ := setupTestBaseCommand(t)
+	repo, _ := setupTestRepository(t)
 
 	// Test filtering by keyword
-	err := executeList(baseCmd, "todo")
+	err := executeList(repo, createCLIPresenter(), "todo")
 	assertNoError(t, err)
 
 	// Verify only tasks containing "todo" are returned
-	todos, err := baseCmd.Repository.Search("todo")
+	todos, err := repo.Search("todo")
 	assertNoError(t, err)
 
 	// All test tasks contain "todo" in their text
@@ -88,40 +88,40 @@ func TestExecuteList_FilterByKeyword(t *testing.T) {
 }
 
 func TestExecuteList_NoMatches(t *testing.T) {
-	baseCmd, _ := setupTestBaseCommand(t)
+	repo, _ := setupTestRepository(t)
 
 	// Test filtering with query that matches nothing
-	err := executeList(baseCmd, "nonexistent")
+	err := executeList(repo, createCLIPresenter(), "nonexistent")
 	assertNoError(t, err)
 
 	// Verify no tasks are returned
-	todos, err := baseCmd.Repository.Search("nonexistent")
+	todos, err := repo.Search("nonexistent")
 	assertNoError(t, err)
 	assertTodoCount(t, todos, 0)
 }
 
 func TestExecuteList_EmptyRepository(t *testing.T) {
-	baseCmd, _ := setupEmptyTestBaseCommand(t)
+	repo, _ := setupEmptyTestRepository(t)
 
 	// Test listing from empty repository
-	err := executeList(baseCmd, "")
+	err := executeList(repo, createCLIPresenter(), "")
 	assertNoError(t, err)
 
 	// Verify no tasks are returned
-	todos, err := baseCmd.Repository.Search("")
+	todos, err := repo.Search("")
 	assertNoError(t, err)
 	assertTodoCount(t, todos, 0)
 }
 
 func TestExecuteList_MultipleFilters(t *testing.T) {
-	baseCmd, _ := setupTestBaseCommand(t)
+	repo, _ := setupTestRepository(t)
 
 	// Test filtering with multiple terms
-	err := executeList(baseCmd, "@context1 +project")
+	err := executeList(repo, createCLIPresenter(), "@context1 +project")
 	assertNoError(t, err)
 
 	// Verify tasks matching the combined filter
-	todos, err := baseCmd.Repository.Search("@context1 +project")
+	todos, err := repo.Search("@context1 +project")
 	assertNoError(t, err)
 
 	// Should find tasks that contain both @context1 and +project
@@ -132,17 +132,17 @@ func TestExecuteList_MultipleFilters(t *testing.T) {
 }
 
 func TestExecuteList_CaseSensitiveSearch(t *testing.T) {
-	baseCmd, _ := setupEmptyTestBaseCommand(t)
+	repo, _ := setupEmptyTestRepository(t)
 
 	// Add tasks with different cases
-	baseCmd.Repository.Add("Task with UPPERCASE")
-	baseCmd.Repository.Add("task with lowercase")
+	repo.Add("Task with UPPERCASE")
+	repo.Add("task with lowercase")
 
 	// Test case sensitive search
-	err := executeList(baseCmd, "UPPERCASE")
+	err := executeList(repo, createCLIPresenter(), "UPPERCASE")
 	assertNoError(t, err)
 
-	todos, err := baseCmd.Repository.Search("UPPERCASE")
+	todos, err := repo.Search("UPPERCASE")
 	assertNoError(t, err)
 
 	// Should find only the uppercase version
@@ -151,13 +151,13 @@ func TestExecuteList_CaseSensitiveSearch(t *testing.T) {
 }
 
 func TestExecuteList_FilterDoneTasks(t *testing.T) {
-	baseCmd, _ := setupTestBaseCommand(t)
+	repo, _ := setupTestRepository(t)
 
 	// Test filtering for done tasks
-	err := executeList(baseCmd, "x ")
+	err := executeList(repo, createCLIPresenter(), "x ")
 	assertNoError(t, err)
 
-	todos, err := baseCmd.Repository.Search("x ")
+	todos, err := repo.Search("x ")
 	assertNoError(t, err)
 
 	// Should find 1 done task
@@ -166,16 +166,16 @@ func TestExecuteList_FilterDoneTasks(t *testing.T) {
 }
 
 func TestExecuteList_FilterSpecialCharacters(t *testing.T) {
-	baseCmd, _ := setupEmptyTestBaseCommand(t)
+	repo, _ := setupEmptyTestRepository(t)
 
 	// Add task with special characters
-	baseCmd.Repository.Add("Email user@domain.com about +project due:2024-12-31")
+	repo.Add("Email user@domain.com about +project due:2024-12-31")
 
 	// Test filtering by email
-	err := executeList(baseCmd, "user@domain.com")
+	err := executeList(repo, createCLIPresenter(), "user@domain.com")
 	assertNoError(t, err)
 
-	todos, err := baseCmd.Repository.Search("user@domain.com")
+	todos, err := repo.Search("user@domain.com")
 	assertNoError(t, err)
 
 	assertTodoCount(t, todos, 1)
@@ -183,18 +183,18 @@ func TestExecuteList_FilterSpecialCharacters(t *testing.T) {
 }
 
 func TestExecuteList_FilterByDueDate(t *testing.T) {
-	baseCmd, _ := setupEmptyTestBaseCommand(t)
+	repo, _ := setupEmptyTestRepository(t)
 
 	// Add tasks with due dates
-	baseCmd.Repository.Add("Task 1 due:2024-12-31")
-	baseCmd.Repository.Add("Task 2 due:2024-01-01")
-	baseCmd.Repository.Add("Task 3 no due date")
+	repo.Add("Task 1 due:2024-12-31")
+	repo.Add("Task 2 due:2024-01-01")
+	repo.Add("Task 3 no due date")
 
 	// Test filtering by due date
-	err := executeList(baseCmd, "due:2024")
+	err := executeList(repo, createCLIPresenter(), "due:2024")
 	assertNoError(t, err)
 
-	todos, err := baseCmd.Repository.Search("due:2024")
+	todos, err := repo.Search("due:2024")
 	assertNoError(t, err)
 
 	// Should find 2 tasks with 2024 due dates
@@ -205,13 +205,13 @@ func TestExecuteList_FilterByDueDate(t *testing.T) {
 }
 
 func TestExecuteList_WhitespaceInFilter(t *testing.T) {
-	baseCmd, _ := setupTestBaseCommand(t)
+	repo, _ := setupTestRepository(t)
 
 	// Test filter with leading/trailing whitespace
-	err := executeList(baseCmd, "  test todo  ")
+	err := executeList(repo, createCLIPresenter(), "  test todo  ")
 	assertNoError(t, err)
 
-	todos, err := baseCmd.Repository.Search("  test todo  ")
+	todos, err := repo.Search("  test todo  ")
 	assertNoError(t, err)
 
 	// Should still find matching tasks
@@ -221,17 +221,17 @@ func TestExecuteList_WhitespaceInFilter(t *testing.T) {
 }
 
 func TestExecuteList_QuotedFilter(t *testing.T) {
-	baseCmd, _ := setupEmptyTestBaseCommand(t)
+	repo, _ := setupEmptyTestRepository(t)
 
 	// Add task with exact phrase
-	baseCmd.Repository.Add("test todo with exact phrase")
-	baseCmd.Repository.Add("test different todo phrase")
+	repo.Add("test todo with exact phrase")
+	repo.Add("test different todo phrase")
 
 	// Test filtering for exact phrase (though quotes may not be handled specially)
-	err := executeList(baseCmd, "exact phrase")
+	err := executeList(repo, createCLIPresenter(), "exact phrase")
 	assertNoError(t, err)
 
-	todos, err := baseCmd.Repository.Search("exact phrase")
+	todos, err := repo.Search("exact phrase")
 	assertNoError(t, err)
 
 	// Should find tasks containing both words
@@ -242,19 +242,19 @@ func TestExecuteList_QuotedFilter(t *testing.T) {
 }
 
 func TestExecuteList_PriorityOrdering(t *testing.T) {
-	baseCmd, _ := setupEmptyTestBaseCommand(t)
+	repo, _ := setupEmptyTestRepository(t)
 
 	// Add tasks with different priorities
-	baseCmd.Repository.Add("(C) low priority")
-	baseCmd.Repository.Add("(A) high priority")
-	baseCmd.Repository.Add("(B) medium priority")
-	baseCmd.Repository.Add("no priority")
+	repo.Add("(C) low priority")
+	repo.Add("(A) high priority")
+	repo.Add("(B) medium priority")
+	repo.Add("no priority")
 
 	// Test listing all tasks to verify ordering
-	err := executeList(baseCmd, "")
+	err := executeList(repo, createCLIPresenter(), "")
 	assertNoError(t, err)
 
-	todos, err := baseCmd.Repository.Search("")
+	todos, err := repo.Search("")
 	assertNoError(t, err)
 
 	assertTodoCount(t, todos, 4)
@@ -273,14 +273,14 @@ func TestExecuteList_PriorityOrdering(t *testing.T) {
 }
 
 func TestExecuteList_Integration(t *testing.T) {
-	baseCmd, _ := setupTestBaseCommand(t)
+	repo, _ := setupTestRepository(t)
 
 	// Test full integration with complex filter
-	err := executeList(baseCmd, "+project1")
+	err := executeList(repo, createCLIPresenter(), "+project1")
 	assertNoError(t, err)
 
 	// Verify the search functionality works end-to-end
-	todos, err := baseCmd.Repository.Search("+project1")
+	todos, err := repo.Search("+project1")
 	assertNoError(t, err)
 
 	// All returned todos should contain +project1
@@ -292,7 +292,7 @@ func TestExecuteList_Integration(t *testing.T) {
 func TestExecuteList_ErrorHandling(t *testing.T) {
 	// Note: This test depends on the Repository.Search implementation
 	// If it can return errors, we should test that path
-	baseCmd, _ := setupTestBaseCommand(t)
+	repo, _ := setupTestRepository(t)
 
 	// Test with various potentially problematic inputs
 	problematicInputs := []string{
@@ -306,7 +306,7 @@ func TestExecuteList_ErrorHandling(t *testing.T) {
 	}
 
 	for _, input := range problematicInputs {
-		err := executeList(baseCmd, input)
+		err := executeList(repo, createCLIPresenter(), input)
 		assertNoError(t, err) // Should not error, just return filtered results
 	}
 }

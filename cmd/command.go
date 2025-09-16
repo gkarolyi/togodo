@@ -1,87 +1,52 @@
 package cmd
 
 import (
-	"fmt"
-	"os"
-
+	tui "github.com/gkarolyi/togodo/todotxt-tui"
 	"github.com/gkarolyi/togodo/todotxtlib"
 	"github.com/gkarolyi/togodo/todotxtui"
 )
 
-// BaseCommand provides common functionality for all commands.
-// It contains a repository, a formatter, and an output writer.
-type BaseCommand struct {
-	Repository *todotxtlib.Repository
-	Formatter  todotxtui.TodoFormatter
-	Output     todotxtui.OutputWriter
+// Presenter handles formatting and outputting todos
+type Presenter struct {
+	formatter todotxtui.TodoFormatter
+	output    todotxtui.OutputWriter
 }
 
-// Print prints a single todo item to the output.
-// It formats the todo item using the formatter and writes the formatted todo item to the output.
-func (c *BaseCommand) Print(todo todotxtlib.Todo) error {
-	formatted := c.Formatter.Format(todo)
-	c.Output.WriteLine(formatted)
+func NewPresenter(formatter todotxtui.TodoFormatter, output todotxtui.OutputWriter) *Presenter {
+	return &Presenter{
+		formatter: formatter,
+		output:    output,
+	}
+}
+
+// Print prints a single todo item
+func (p *Presenter) Print(todo todotxtlib.Todo) error {
+	formatted := p.formatter.Format(todo)
+	p.output.WriteLine(formatted)
 	return nil
 }
 
-// PrintList prints a list of todo items to the output.
-// It formats the list using the formatter and writes the formatted list to the output.
-func (c *BaseCommand) PrintList(todos []todotxtlib.Todo) error {
-	formatted := c.Formatter.FormatList(todos)
-	c.Output.WriteLines(formatted)
+// PrintList prints a list of todo items
+func (p *Presenter) PrintList(todos []todotxtlib.Todo) error {
+	formatted := p.formatter.FormatList(todos)
+	p.output.WriteLines(formatted)
 	return nil
 }
 
-// Save saves the repository using its assigned writer
-func (c *BaseCommand) Save() error {
-	return c.Repository.Save()
-}
-
-// newBaseCommand creates a new base command with the given dependencies
-func newBaseCommand(repo *todotxtlib.Repository, formatter todotxtui.TodoFormatter, output todotxtui.OutputWriter) *BaseCommand {
-	return &BaseCommand{
-		Repository: repo,
-		Formatter:  formatter,
-		Output:     output,
-	}
-}
-
-// NewDefaultBaseCommand creates a new base command with the default dependencies.
-// It creates a new file repository with the configured todo.txt path, the default lipgloss
-// formatter, and writes to stdout.
-func NewDefaultBaseCommand() *BaseCommand {
+// Factory functions for creating dependencies
+func createRepository() (*todotxtlib.Repository, error) {
 	todoTxtPath := GetTodoTxtPath()
-	repo, err := newFileRepository(todoTxtPath)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	return newBaseCommand(repo, newLipglossFormatter(), newStdoutWriter())
-}
-
-func NewTUIBaseCommand() *BaseCommand {
-	todoTxtPath := GetTodoTxtPath()
-	repo, err := newFileRepository(todoTxtPath)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	return newBaseCommand(repo, newLipglossFormatter(), todotxtui.NewTUIWriter(repo))
-}
-
-func newFileRepository(path string) (*todotxtlib.Repository, error) {
-	reader := todotxtlib.NewFileReader(path)
-	writer := todotxtlib.NewFileWriter(path)
-
+	reader := todotxtlib.NewFileReader(todoTxtPath)
+	writer := todotxtlib.NewFileWriter(todoTxtPath)
 	return todotxtlib.NewRepository(reader, writer)
 }
 
-func newLipglossFormatter() todotxtui.TodoFormatter {
-	return todotxtui.NewLipglossFormatter()
+func createCLIPresenter() *Presenter {
+	formatter := todotxtui.NewLipglossFormatter()
+	output := todotxtui.NewStdoutWriter()
+	return NewPresenter(formatter, output)
 }
 
-func newStdoutWriter() todotxtui.OutputWriter {
-	return todotxtui.NewStdoutWriter()
+func createTUIController(repo *todotxtlib.Repository) interface{ Run() error } {
+	return tui.NewController(repo)
 }

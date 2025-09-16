@@ -5,13 +5,13 @@ import (
 )
 
 func TestExecuteTidy_WithDoneTasks(t *testing.T) {
-	baseCmd, _ := setupTestBaseCommand(t)
+	repo, _ := setupTestRepository(t)
 
 	// Mark one more task as done to have multiple done tasks
-	baseCmd.Repository.ToggleDone(0) // Mark first task as done
+	repo.ToggleDone(0) // Mark first task as done
 
 	// Get initial count
-	initialTodos, err := baseCmd.Repository.ListAll()
+	initialTodos, err := repo.ListAll()
 	assertNoError(t, err)
 	initialCount := len(initialTodos)
 
@@ -24,11 +24,11 @@ func TestExecuteTidy_WithDoneTasks(t *testing.T) {
 	}
 
 	// Execute tidy
-	err = executeTidy(baseCmd)
+	err = executeTidy(repo, createCLIPresenter())
 	assertNoError(t, err)
 
 	// Verify done tasks were removed
-	todos, err := baseCmd.Repository.ListAll()
+	todos, err := repo.ListAll()
 	assertNoError(t, err)
 	expectedCount := initialCount - doneTasks
 	assertTodoCount(t, todos, expectedCount)
@@ -40,23 +40,23 @@ func TestExecuteTidy_WithDoneTasks(t *testing.T) {
 }
 
 func TestExecuteTidy_NoDoneTasks(t *testing.T) {
-	baseCmd, _ := setupEmptyTestBaseCommand(t)
+	repo, _ := setupEmptyTestRepository(t)
 
 	// Add only undone tasks
-	baseCmd.Repository.Add("(A) undone task 1")
-	baseCmd.Repository.Add("(B) undone task 2")
+	repo.Add("(A) undone task 1")
+	repo.Add("(B) undone task 2")
 
 	// Get initial count
-	initialTodos, err := baseCmd.Repository.ListAll()
+	initialTodos, err := repo.ListAll()
 	assertNoError(t, err)
 	initialCount := len(initialTodos)
 
 	// Execute tidy
-	err = executeTidy(baseCmd)
+	err = executeTidy(repo, createCLIPresenter())
 	assertNoError(t, err)
 
 	// Verify no tasks were removed
-	todos, err := baseCmd.Repository.ListAll()
+	todos, err := repo.ListAll()
 	assertNoError(t, err)
 	assertTodoCount(t, todos, initialCount)
 
@@ -67,28 +67,28 @@ func TestExecuteTidy_NoDoneTasks(t *testing.T) {
 }
 
 func TestExecuteTidy_EmptyRepository(t *testing.T) {
-	baseCmd, _ := setupEmptyTestBaseCommand(t)
+	repo, _ := setupEmptyTestRepository(t)
 
 	// Execute tidy on empty repository
-	err := executeTidy(baseCmd)
+	err := executeTidy(repo, createCLIPresenter())
 	assertNoError(t, err)
 
 	// Verify repository is still empty
-	todos, err := baseCmd.Repository.ListAll()
+	todos, err := repo.ListAll()
 	assertNoError(t, err)
 	assertTodoCount(t, todos, 0)
 }
 
 func TestExecuteTidy_AllTasksDone(t *testing.T) {
-	baseCmd, _ := setupEmptyTestBaseCommand(t)
+	repo, _ := setupEmptyTestRepository(t)
 
 	// Add tasks and mark them all as done
-	baseCmd.Repository.Add("x task 1")
-	baseCmd.Repository.Add("x task 2")
-	baseCmd.Repository.Add("x task 3")
+	repo.Add("x task 1")
+	repo.Add("x task 2")
+	repo.Add("x task 3")
 
 	// Get initial count
-	initialTodos, err := baseCmd.Repository.ListAll()
+	initialTodos, err := repo.ListAll()
 	assertNoError(t, err)
 	initialCount := len(initialTodos)
 
@@ -98,11 +98,11 @@ func TestExecuteTidy_AllTasksDone(t *testing.T) {
 	}
 
 	// Execute tidy
-	err = executeTidy(baseCmd)
+	err = executeTidy(repo, createCLIPresenter())
 	assertNoError(t, err)
 
 	// Verify all tasks were removed
-	todos, err := baseCmd.Repository.ListAll()
+	todos, err := repo.ListAll()
 	assertNoError(t, err)
 	assertTodoCount(t, todos, 0)
 
@@ -113,21 +113,21 @@ func TestExecuteTidy_AllTasksDone(t *testing.T) {
 }
 
 func TestExecuteTidy_MixedDoneUndone(t *testing.T) {
-	baseCmd, _ := setupEmptyTestBaseCommand(t)
+	repo, _ := setupEmptyTestRepository(t)
 
 	// Add mixed done and undone tasks
-	baseCmd.Repository.Add("(A) undone high priority")
-	baseCmd.Repository.Add("x done task 1")
-	baseCmd.Repository.Add("(B) undone medium priority")
-	baseCmd.Repository.Add("x done task 2")
-	baseCmd.Repository.Add("undone no priority")
+	repo.Add("(A) undone high priority")
+	repo.Add("x done task 1")
+	repo.Add("(B) undone medium priority")
+	repo.Add("x done task 2")
+	repo.Add("undone no priority")
 
 	// Execute tidy
-	err := executeTidy(baseCmd)
+	err := executeTidy(repo, createCLIPresenter())
 	assertNoError(t, err)
 
 	// Verify only undone tasks remain
-	todos, err := baseCmd.Repository.ListAll()
+	todos, err := repo.ListAll()
 	assertNoError(t, err)
 	assertTodoCount(t, todos, 3)
 
@@ -147,21 +147,21 @@ func TestExecuteTidy_MixedDoneUndone(t *testing.T) {
 }
 
 func TestExecuteTidy_PreservesOrder(t *testing.T) {
-	baseCmd, _ := setupEmptyTestBaseCommand(t)
+	repo, _ := setupEmptyTestRepository(t)
 
 	// Add tasks in specific order with mixed priorities
-	baseCmd.Repository.Add("(A) high priority 1")
-	baseCmd.Repository.Add("x done task")
-	baseCmd.Repository.Add("(A) high priority 2")
-	baseCmd.Repository.Add("(B) medium priority")
-	baseCmd.Repository.Add("no priority task")
+	repo.Add("(A) high priority 1")
+	repo.Add("x done task")
+	repo.Add("(A) high priority 2")
+	repo.Add("(B) medium priority")
+	repo.Add("no priority task")
 
 	// Execute tidy
-	err := executeTidy(baseCmd)
+	err := executeTidy(repo, createCLIPresenter())
 	assertNoError(t, err)
 
 	// Verify sorting is maintained
-	todos, err := baseCmd.Repository.ListAll()
+	todos, err := repo.ListAll()
 	assertNoError(t, err)
 	assertTodoCount(t, todos, 4)
 
@@ -189,19 +189,19 @@ func TestExecuteTidy_PreservesOrder(t *testing.T) {
 }
 
 func TestExecuteTidy_PreservesProjectsContexts(t *testing.T) {
-	baseCmd, _ := setupEmptyTestBaseCommand(t)
+	repo, _ := setupEmptyTestRepository(t)
 
 	// Add tasks with projects and contexts
-	baseCmd.Repository.Add("(A) keep task +project1 @context1")
-	baseCmd.Repository.Add("x done task +project2 @context2")
-	baseCmd.Repository.Add("keep task +project3 @context3")
+	repo.Add("(A) keep task +project1 @context1")
+	repo.Add("x done task +project2 @context2")
+	repo.Add("keep task +project3 @context3")
 
 	// Execute tidy
-	err := executeTidy(baseCmd)
+	err := executeTidy(repo, createCLIPresenter())
 	assertNoError(t, err)
 
 	// Verify projects and contexts are preserved
-	todos, err := baseCmd.Repository.ListAll()
+	todos, err := repo.ListAll()
 	assertNoError(t, err)
 	assertTodoCount(t, todos, 2)
 
@@ -233,19 +233,19 @@ func TestExecuteTidy_PreservesProjectsContexts(t *testing.T) {
 }
 
 func TestExecuteTidy_WithDueDates(t *testing.T) {
-	baseCmd, _ := setupEmptyTestBaseCommand(t)
+	repo, _ := setupEmptyTestRepository(t)
 
 	// Add tasks with due dates
-	baseCmd.Repository.Add("(A) task due:2024-12-31 +project")
-	baseCmd.Repository.Add("x done task due:2024-01-01")
-	baseCmd.Repository.Add("task due:2025-01-01")
+	repo.Add("(A) task due:2024-12-31 +project")
+	repo.Add("x done task due:2024-01-01")
+	repo.Add("task due:2025-01-01")
 
 	// Execute tidy
-	err := executeTidy(baseCmd)
+	err := executeTidy(repo, createCLIPresenter())
 	assertNoError(t, err)
 
 	// Verify due dates are preserved in remaining tasks
-	todos, err := baseCmd.Repository.ListAll()
+	todos, err := repo.ListAll()
 	assertNoError(t, err)
 	assertTodoCount(t, todos, 2)
 
@@ -271,18 +271,18 @@ func TestExecuteTidy_WithDueDates(t *testing.T) {
 }
 
 func TestExecuteTidy_PrintsRemovedTasks(t *testing.T) {
-	baseCmd, _ := setupTestBaseCommand(t)
+	repo, _ := setupTestRepository(t)
 
 	// Mark additional task as done
-	baseCmd.Repository.ToggleDone(0)
+	repo.ToggleDone(0)
 
 	// Get done tasks before tidy
-	doneTodos, err := baseCmd.Repository.ListDone()
+	doneTodos, err := repo.ListDone()
 	assertNoError(t, err)
 	doneCount := len(doneTodos)
 
 	// Execute tidy
-	err = executeTidy(baseCmd)
+	err = executeTidy(repo, createCLIPresenter())
 	assertNoError(t, err)
 
 	// Verify that done tasks would have been printed
@@ -293,10 +293,10 @@ func TestExecuteTidy_PrintsRemovedTasks(t *testing.T) {
 }
 
 func TestExecuteTidy_Integration(t *testing.T) {
-	baseCmd, _ := setupTestBaseCommand(t)
+	repo, _ := setupTestRepository(t)
 
 	// Get initial state
-	initialTodos, err := baseCmd.Repository.ListAll()
+	initialTodos, err := repo.ListAll()
 	assertNoError(t, err)
 	initialCount := len(initialTodos)
 
@@ -309,11 +309,11 @@ func TestExecuteTidy_Integration(t *testing.T) {
 	}
 
 	// Execute tidy
-	err = executeTidy(baseCmd)
+	err = executeTidy(repo, createCLIPresenter())
 	assertNoError(t, err)
 
 	// Verify final state
-	finalTodos, err := baseCmd.Repository.ListAll()
+	finalTodos, err := repo.ListAll()
 	assertNoError(t, err)
 	expectedFinalCount := initialCount - initialDoneCount
 	assertTodoCount(t, finalTodos, expectedFinalCount)
@@ -329,37 +329,37 @@ func TestExecuteTidy_Integration(t *testing.T) {
 func TestExecuteTidy_ErrorHandling(t *testing.T) {
 	// This test would be more meaningful if we could inject repository errors
 	// For now, test basic error paths
-	baseCmd, _ := setupTestBaseCommand(t)
+	repo, _ := setupTestRepository(t)
 
 	// Execute tidy - should not error under normal conditions
-	err := executeTidy(baseCmd)
+	err := executeTidy(repo, createCLIPresenter())
 	assertNoError(t, err)
 }
 
 func TestExecuteTidy_MultipleRuns(t *testing.T) {
-	baseCmd, _ := setupEmptyTestBaseCommand(t)
+	repo, _ := setupEmptyTestRepository(t)
 
 	// Add some tasks and mark some as done
-	baseCmd.Repository.Add("task 1")
-	baseCmd.Repository.Add("x done task 1")
-	baseCmd.Repository.Add("task 2")
-	baseCmd.Repository.Add("x done task 2")
+	repo.Add("task 1")
+	repo.Add("x done task 1")
+	repo.Add("task 2")
+	repo.Add("x done task 2")
 
 	// First tidy run
-	err := executeTidy(baseCmd)
+	err := executeTidy(repo, createCLIPresenter())
 	assertNoError(t, err)
 
 	// Verify done tasks were removed
-	todos, err := baseCmd.Repository.ListAll()
+	todos, err := repo.ListAll()
 	assertNoError(t, err)
 	assertTodoCount(t, todos, 2)
 
 	// Second tidy run (should be no-op)
-	err = executeTidy(baseCmd)
+	err = executeTidy(repo, createCLIPresenter())
 	assertNoError(t, err)
 
 	// Verify count is unchanged
-	todos, err = baseCmd.Repository.ListAll()
+	todos, err = repo.ListAll()
 	assertNoError(t, err)
 	assertTodoCount(t, todos, 2)
 
@@ -370,26 +370,26 @@ func TestExecuteTidy_MultipleRuns(t *testing.T) {
 }
 
 func TestExecuteTidy_LargeNumberOfDoneTasks(t *testing.T) {
-	baseCmd, _ := setupEmptyTestBaseCommand(t)
+	repo, _ := setupEmptyTestRepository(t)
 
 	// Add many done tasks
 	doneTaskCount := 50
 	undoneTaskCount := 10
 
 	for i := 0; i < doneTaskCount; i++ {
-		baseCmd.Repository.Add("x done task " + string(rune('0'+i%10)))
+		repo.Add("x done task " + string(rune('0'+i%10)))
 	}
 
 	for i := 0; i < undoneTaskCount; i++ {
-		baseCmd.Repository.Add("undone task " + string(rune('0'+i%10)))
+		repo.Add("undone task " + string(rune('0'+i%10)))
 	}
 
 	// Execute tidy
-	err := executeTidy(baseCmd)
+	err := executeTidy(repo, createCLIPresenter())
 	assertNoError(t, err)
 
 	// Verify only undone tasks remain
-	todos, err := baseCmd.Repository.ListAll()
+	todos, err := repo.ListAll()
 	assertNoError(t, err)
 	assertTodoCount(t, todos, undoneTaskCount)
 

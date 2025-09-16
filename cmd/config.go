@@ -59,7 +59,6 @@ func GetTodoTxtPath() string {
 	return path
 }
 
-
 var configCmd = &cobra.Command{
 	Use:   "config [key] [value]",
 	Short: "View or set configuration options",
@@ -67,55 +66,55 @@ var configCmd = &cobra.Command{
 
 Examples:
   togodo config                    # Show all configuration
-  togodo config todo_txt_path      # Show specific config value
+  togodo config todo_txt_path      			  # Show specific config value
   togodo config todo_txt_path ~/my-todos.txt  # Set config value
 
 Configuration is stored in ~/.config/togodo.toml`,
 	Args: cobra.MaximumNArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		base := NewDefaultBaseCommand()
-		return executeConfig(base, args)
+		presenter := createCLIPresenter()
+		return executeConfig(presenter, args)
 	},
 }
 
-func executeConfig(base *BaseCommand, args []string) error {
+func executeConfig(presenter *Presenter, args []string) error {
 	switch len(args) {
 	case 0:
-		return showAllConfig(base)
+		return showAllConfig(presenter)
 	case 1:
-		return showConfig(base, args[0])
+		return showConfig(presenter, args[0])
 	case 2:
-		return setConfig(base, args[0], args[1])
+		return setConfig(presenter, args[0], args[1])
 	default:
 		return fmt.Errorf("too many arguments")
 	}
 }
 
-func showAllConfig(base *BaseCommand) error {
+func showAllConfig(presenter *Presenter) error {
 	settings := viper.AllSettings()
 	if len(settings) == 0 {
-		base.Output.WriteLine("No configuration found")
+		presenter.output.WriteLine("No configuration found")
 		return nil
 	}
 
 	for key, value := range settings {
-		base.Output.WriteLine(fmt.Sprintf("%s = %v", key, value))
+		presenter.output.WriteLine(fmt.Sprintf("%s = %v", key, value))
 	}
 	return nil
 }
 
-func showConfig(base *BaseCommand, key string) error {
+func showConfig(presenter *Presenter, key string) error {
 	if !viper.IsSet(key) {
-		base.Output.WriteLine(fmt.Sprintf("Configuration key '%s' is not set", key))
+		presenter.output.WriteLine(fmt.Sprintf("Configuration key '%s' is not set", key))
 		return nil
 	}
 
 	value := viper.Get(key)
-	base.Output.WriteLine(fmt.Sprintf("%s = %v", key, value))
+	presenter.output.WriteLine(fmt.Sprintf("%s = %v", key, value))
 	return nil
 }
 
-func setConfig(base *BaseCommand, key, value string) error {
+func setConfig(presenter *Presenter, key, value string) error {
 	// Validate the key (only allow known configuration keys)
 	validKeys := map[string]bool{
 		"todo_txt_path": true,
@@ -139,7 +138,7 @@ func setConfig(base *BaseCommand, key, value string) error {
 		return fmt.Errorf("error writing configuration: %w", err)
 	}
 
-	base.Output.WriteLine(fmt.Sprintf("Set %s = %s", key, value))
+	presenter.output.WriteLine(fmt.Sprintf("Set %s = %s", key, value))
 	return nil
 }
 

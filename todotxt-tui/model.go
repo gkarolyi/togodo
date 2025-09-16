@@ -8,7 +8,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/gkarolyi/togodo/todotxtlib"
-	"github.com/gkarolyi/togodo/todotxtui/format"
 )
 
 var (
@@ -17,17 +16,11 @@ var (
 	styleHelp        = lipgloss.NewStyle().Foreground(lipgloss.Color("#626262")).Italic(true)
 )
 
-func NewProgram(repository *todotxtlib.Repository) *tea.Program {
-	model := initialModel(repository)
-	return tea.NewProgram(model)
-}
-
 type model struct {
 	choices    []todotxtlib.Todo // items on the to-do list
 	cursor     int               // which to-do list item our cursor is pointing at
 	selected   map[int]struct{}  // which to-do items are selected
 	repository *todotxtlib.Repository
-	formatter  format.TodoFormatter
 	filtering  bool            // whether we're currently filtering
 	filter     string          // the current filter string
 	adding     bool            // whether we're currently adding a new item
@@ -45,7 +38,6 @@ func initialModel(repository *todotxtlib.Repository) model {
 	if err != nil {
 		return model{
 			repository: repository,
-			formatter:  format.NewLipglossFormatter(),
 			choices:    []todotxtlib.Todo{},
 			selected:   make(map[int]struct{}),
 			filtering:  false,
@@ -57,7 +49,6 @@ func initialModel(repository *todotxtlib.Repository) model {
 	} else {
 		return model{
 			repository: repository,
-			formatter:  format.NewLipglossFormatter(),
 			choices:    allTodos,
 			selected:   make(map[int]struct{}),
 			filtering:  false,
@@ -231,7 +222,7 @@ func (m model) View() string {
 			cursor = ">"
 		}
 		mainView += fmt.Sprintf("%s ", cursor)
-		mainView += m.formatter.Format(choice) + "\n"
+		mainView += formatTodo(choice) + "\n"
 	}
 
 	mainView += "\nx: toggle | p: set priority | /: filter | a: add | q: quit\n"
@@ -275,7 +266,7 @@ func (m model) View() string {
 		if len(text) >= 3 && text[0] == '(' && text[2] == ')' {
 			priority = string(text[1])
 		}
-		popup += m.formatter.Format(todotxtlib.Todo{
+		popup += formatTodo(todotxtlib.Todo{
 			Text:     text,
 			Priority: priority,
 		}) + "\n"

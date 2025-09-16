@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/gkarolyi/togodo/todotxtlib"
-	"github.com/gkarolyi/togodo/todotxtui"
 )
 
 // createTestTodos returns a slice of test todos for use in tests
@@ -18,8 +17,8 @@ func createTestTodos() []todotxtlib.Todo {
 	}
 }
 
-// setupEmptyTestBaseCommand creates a new BaseCommand with an empty repository for testing
-func setupEmptyTestBaseCommand(tb testing.TB) (*BaseCommand, *bytes.Buffer) {
+// setupEmptyTestRepository creates a new Repository with an empty buffer for testing
+func setupEmptyTestRepository(tb testing.TB) (*todotxtlib.Repository, *bytes.Buffer) {
 	// Create an empty buffer
 	var buf bytes.Buffer
 
@@ -33,18 +32,11 @@ func setupEmptyTestBaseCommand(tb testing.TB) (*BaseCommand, *bytes.Buffer) {
 		tb.Fatalf("Failed to create test repository: %v", err)
 	}
 
-	// Create formatter and output writer for testing
-	formatter := todotxtui.NewLipglossFormatter()
-	output := todotxtui.NewStdoutWriter()
-
-	// Create base command
-	baseCmd := newBaseCommand(repo, formatter, output)
-
-	return baseCmd, &buf
+	return repo, &buf
 }
 
-// setupTestBaseCommand creates a new BaseCommand with pre-populated test data
-func setupTestBaseCommand(tb testing.TB) (*BaseCommand, *bytes.Buffer) {
+// setupTestRepository creates a new Repository with pre-populated test data
+func setupTestRepository(tb testing.TB) (*todotxtlib.Repository, *bytes.Buffer) {
 	// Create a buffer with test todos
 	var buf bytes.Buffer
 	for _, todo := range createTestTodos() {
@@ -61,14 +53,7 @@ func setupTestBaseCommand(tb testing.TB) (*BaseCommand, *bytes.Buffer) {
 		tb.Fatalf("Failed to create test repository: %v", err)
 	}
 
-	// Create formatter and output writer for testing
-	formatter := todotxtui.NewLipglossFormatter()
-	output := todotxtui.NewStdoutWriter()
-
-	// Create base command
-	baseCmd := newBaseCommand(repo, formatter, output)
-
-	return baseCmd, &buf
+	return repo, &buf
 }
 
 // assertNoError asserts that the provided error is nil

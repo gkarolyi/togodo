@@ -1,46 +1,45 @@
 package cmd
 
 import (
+	"github.com/gkarolyi/togodo/todotxtlib"
 	"github.com/spf13/cobra"
 )
 
-func executeTidy(base *BaseCommand) error {
+func executeTidy(repo *todotxtlib.Repository, presenter *Presenter) error {
 	// Get all done todos before removing them
-	doneTodos, err := base.Repository.ListDone()
+	doneTodos, err := repo.ListDone()
 	if err != nil {
 		return err
 	}
 
 	// Remove done todos from the repository
 	// We need to iterate backwards to avoid index shifting issues
-	allTodos, err := base.Repository.ListAll()
+	allTodos, err := repo.ListAll()
 	if err != nil {
 		return err
 	}
 
-	removedCount := 0
 	for i := len(allTodos) - 1; i >= 0; i-- {
 		if allTodos[i].Done {
-			_, err := base.Repository.Remove(i)
+			_, err := repo.Remove(i)
 			if err != nil {
 				return err
 			}
-			removedCount++
 		}
 	}
 
 	// Sort the remaining todos
-	base.Repository.SortDefault()
+	repo.SortDefault()
 
 	// Save the repository
-	err = base.Save()
+	err = repo.Save()
 	if err != nil {
 		return err
 	}
 
 	// Print the removed todos if any
 	if len(doneTodos) > 0 {
-		return base.PrintList(doneTodos)
+		return presenter.PrintList(doneTodos)
 	}
 
 	return nil
@@ -56,8 +55,12 @@ togodo tidy`,
 	Args:    cobra.NoArgs,
 	Aliases: []string{"clean"},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		base := NewDefaultBaseCommand()
-		return executeTidy(base)
+		repo, err := createRepository()
+		if err != nil {
+			return err
+		}
+		presenter := createCLIPresenter()
+		return executeTidy(repo, presenter)
 	},
 }
 

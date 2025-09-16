@@ -5,20 +5,20 @@ import (
 )
 
 func TestExecuteDo_SingleTask(t *testing.T) {
-	baseCmd, _ := setupTestBaseCommand(t)
+	repo, _ := setupTestRepository(t)
 
 	// Get initial todos to check state
-	initialTodos, err := baseCmd.Repository.ListAll()
+	initialTodos, err := repo.ListAll()
 	assertNoError(t, err)
 	assertTodoCount(t, initialTodos, 3)
 
 	// Test toggling a task that's not done (line 1)
 	args := []string{"1"}
-	err = executeDo(baseCmd, args)
+	err = executeDo(repo, args)
 	assertNoError(t, err)
 
 	// Verify the task was toggled
-	todos, err := baseCmd.Repository.ListAll()
+	todos, err := repo.ListAll()
 	assertNoError(t, err)
 	assertTodoCount(t, todos, 3)
 
@@ -29,15 +29,15 @@ func TestExecuteDo_SingleTask(t *testing.T) {
 }
 
 func TestExecuteDo_MultipleTask(t *testing.T) {
-	baseCmd, _ := setupTestBaseCommand(t)
+	repo, _ := setupTestRepository(t)
 
 	// Test toggling multiple tasks
 	args := []string{"1", "2"}
-	err := executeDo(baseCmd, args)
+	err := executeDo(repo, args)
 	assertNoError(t, err)
 
 	// Verify both tasks were toggled
-	todos, err := baseCmd.Repository.ListAll()
+	todos, err := repo.ListAll()
 	assertNoError(t, err)
 	assertTodoCount(t, todos, 3)
 
@@ -56,16 +56,16 @@ func TestExecuteDo_MultipleTask(t *testing.T) {
 }
 
 func TestExecuteDo_ToggleAlreadyDone(t *testing.T) {
-	baseCmd, _ := setupTestBaseCommand(t)
+	repo, _ := setupTestRepository(t)
 
 	// The third task in our test data is already done
 	// Test toggling it to undone (line 3)
 	args := []string{"3"}
-	err := executeDo(baseCmd, args)
+	err := executeDo(repo, args)
 	assertNoError(t, err)
 
 	// Verify the task was toggled back to undone
-	todos, err := baseCmd.Repository.ListAll()
+	todos, err := repo.ListAll()
 	assertNoError(t, err)
 	assertTodoCount(t, todos, 3)
 
@@ -83,68 +83,68 @@ func TestExecuteDo_ToggleAlreadyDone(t *testing.T) {
 }
 
 func TestExecuteDo_InvalidLineNumber(t *testing.T) {
-	baseCmd, _ := setupTestBaseCommand(t)
+	repo, _ := setupTestRepository(t)
 
 	// Test with invalid line number (too high)
 	args := []string{"10"}
-	err := executeDo(baseCmd, args)
+	err := executeDo(repo, args)
 	assertError(t, err)
 	assertContains(t, err.Error(), "failed to toggle todo at line 10")
 }
 
 func TestExecuteDo_InvalidLineNumberFormat(t *testing.T) {
-	baseCmd, _ := setupTestBaseCommand(t)
+	repo, _ := setupTestRepository(t)
 
 	// Test with invalid line number format
 	args := []string{"abc"}
-	err := executeDo(baseCmd, args)
+	err := executeDo(repo, args)
 	assertError(t, err)
 	assertContains(t, err.Error(), "failed to convert arg to int")
 }
 
 func TestExecuteDo_ZeroLineNumber(t *testing.T) {
-	baseCmd, _ := setupTestBaseCommand(t)
+	repo, _ := setupTestRepository(t)
 
 	// Test with line number 0 (should fail - line numbers start at 1)
 	args := []string{"0"}
-	err := executeDo(baseCmd, args)
+	err := executeDo(repo, args)
 	assertError(t, err)
 }
 
 func TestExecuteDo_NegativeLineNumber(t *testing.T) {
-	baseCmd, _ := setupTestBaseCommand(t)
+	repo, _ := setupTestRepository(t)
 
 	// Test with negative line number
 	args := []string{"-1"}
-	err := executeDo(baseCmd, args)
+	err := executeDo(repo, args)
 	assertError(t, err)
 }
 
 func TestExecuteDo_EmptyRepository(t *testing.T) {
-	baseCmd, _ := setupEmptyTestBaseCommand(t)
+	repo, _ := setupEmptyTestRepository(t)
 
 	// Test toggling on empty repository
 	args := []string{"1"}
-	err := executeDo(baseCmd, args)
+	err := executeDo(repo, args)
 	assertError(t, err)
 	assertContains(t, err.Error(), "failed to toggle todo at line 1")
 }
 
 func TestExecuteDo_SortingAfterToggle(t *testing.T) {
-	baseCmd, _ := setupEmptyTestBaseCommand(t)
+	repo, _ := setupEmptyTestRepository(t)
 
 	// Add some tasks with different priorities
-	baseCmd.Repository.Add("(A) high priority task")
-	baseCmd.Repository.Add("(B) medium priority task")
-	baseCmd.Repository.Add("no priority task")
+	repo.Add("(A) high priority task")
+	repo.Add("(B) medium priority task")
+	repo.Add("no priority task")
 
 	// Toggle the high priority task to done
 	args := []string{"1"}
-	err := executeDo(baseCmd, args)
+	err := executeDo(repo, args)
 	assertNoError(t, err)
 
 	// Verify sorting - done tasks should be at the end
-	todos, err := baseCmd.Repository.ListAll()
+	todos, err := repo.ListAll()
 	assertNoError(t, err)
 	assertTodoCount(t, todos, 3)
 
@@ -159,15 +159,15 @@ func TestExecuteDo_SortingAfterToggle(t *testing.T) {
 }
 
 func TestExecuteDo_MultipleToggleSameTask(t *testing.T) {
-	baseCmd, _ := setupTestBaseCommand(t)
+	repo, _ := setupTestRepository(t)
 
 	// Toggle the same task twice (should end up back to original state)
 	args := []string{"1", "1"}
-	err := executeDo(baseCmd, args)
+	err := executeDo(repo, args)
 	assertNoError(t, err)
 
 	// Get the task that was toggled twice
-	todos, err := baseCmd.Repository.ListAll()
+	todos, err := repo.ListAll()
 	assertNoError(t, err)
 
 	// The first task should be back to its original state (not done)
@@ -176,16 +176,16 @@ func TestExecuteDo_MultipleToggleSameTask(t *testing.T) {
 }
 
 func TestExecuteDo_MixedValidInvalidNumbers(t *testing.T) {
-	baseCmd, _ := setupTestBaseCommand(t)
+	repo, _ := setupTestRepository(t)
 
 	// Test with mix of valid and invalid line numbers
 	args := []string{"1", "abc", "2"}
-	err := executeDo(baseCmd, args)
+	err := executeDo(repo, args)
 	assertError(t, err)
 	assertContains(t, err.Error(), "failed to convert arg to int")
 
 	// Verify first task was toggled before error occurred
-	todos, err := baseCmd.Repository.ListAll()
+	todos, err := repo.ListAll()
 	assertNoError(t, err)
 
 	// Check that first task was marked as done before the error
@@ -202,15 +202,15 @@ func TestExecuteDo_MixedValidInvalidNumbers(t *testing.T) {
 }
 
 func TestExecuteDo_Integration(t *testing.T) {
-	baseCmd, _ := setupTestBaseCommand(t)
+	repo, _ := setupTestRepository(t)
 
 	// Test full integration: toggle, verify save was called
 	args := []string{"1"}
-	err := executeDo(baseCmd, args)
+	err := executeDo(repo, args)
 	assertNoError(t, err)
 
 	// Verify task was toggled and repository was saved
-	todos, err := baseCmd.Repository.ListAll()
+	todos, err := repo.ListAll()
 	assertNoError(t, err)
 	assertTodoCount(t, todos, 3)
 
@@ -221,18 +221,18 @@ func TestExecuteDo_Integration(t *testing.T) {
 }
 
 func TestExecuteDo_PreservePriorityWhenToggling(t *testing.T) {
-	baseCmd, _ := setupEmptyTestBaseCommand(t)
+	repo, _ := setupEmptyTestRepository(t)
 
 	// Add a priority task
-	baseCmd.Repository.Add("(A) important task +project @context")
+	repo.Add("(A) important task +project @context")
 
 	// Toggle it to done
 	args := []string{"1"}
-	err := executeDo(baseCmd, args)
+	err := executeDo(repo, args)
 	assertNoError(t, err)
 
 	// Verify the task is done but priority and tags are preserved
-	todos, err := baseCmd.Repository.ListAll()
+	todos, err := repo.ListAll()
 	assertNoError(t, err)
 	assertTodoCount(t, todos, 1)
 
@@ -244,11 +244,11 @@ func TestExecuteDo_PreservePriorityWhenToggling(t *testing.T) {
 	assertContains(t, doneTask.Text, "x ")
 
 	// Toggle it back to undone
-	err = executeDo(baseCmd, args)
+	err = executeDo(repo, args)
 	assertNoError(t, err)
 
 	// Verify it's back to original state
-	todos, err = baseCmd.Repository.ListAll()
+	todos, err = repo.ListAll()
 	assertNoError(t, err)
 	undoneTask := todos[0]
 	assertTodoCompleted(t, undoneTask, false)

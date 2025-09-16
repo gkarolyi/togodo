@@ -5,16 +5,16 @@ import (
 )
 
 func TestExecuteAdd_SingleTask(t *testing.T) {
-	baseCmd, _ := setupEmptyTestBaseCommand(t)
+	repo, _ := setupEmptyTestRepository(t)
 
 	// Test adding a single task
 	args := []string{"(A) new task +project @context"}
-	err := executeAdd(baseCmd, args)
+	err := executeAdd(repo, args)
 
 	assertNoError(t, err)
 
 	// Verify the task was added
-	todos, err := baseCmd.Repository.ListAll()
+	todos, err := repo.ListAll()
 	assertNoError(t, err)
 	assertTodoCount(t, todos, 1)
 	assertContains(t, todos[0].Text, "new task")
@@ -23,7 +23,7 @@ func TestExecuteAdd_SingleTask(t *testing.T) {
 }
 
 func TestExecuteAdd_MultipleTasks(t *testing.T) {
-	baseCmd, _ := setupEmptyTestBaseCommand(t)
+	repo, _ := setupEmptyTestRepository(t)
 
 	// Test adding multiple tasks
 	args := []string{
@@ -31,12 +31,12 @@ func TestExecuteAdd_MultipleTasks(t *testing.T) {
 		"(B) second task +project2 @context2",
 		"third task without priority",
 	}
-	err := executeAdd(baseCmd, args)
+	err := executeAdd(repo, args)
 
 	assertNoError(t, err)
 
 	// Verify all tasks were added
-	todos, err := baseCmd.Repository.ListAll()
+	todos, err := repo.ListAll()
 	assertNoError(t, err)
 	assertTodoCount(t, todos, 3)
 
@@ -68,31 +68,31 @@ func TestExecuteAdd_MultipleTasks(t *testing.T) {
 }
 
 func TestExecuteAdd_EmptyArgs(t *testing.T) {
-	baseCmd, _ := setupEmptyTestBaseCommand(t)
+	repo, _ := setupEmptyTestRepository(t)
 
 	// Test adding with empty args (should not add anything)
 	args := []string{}
-	err := executeAdd(baseCmd, args)
+	err := executeAdd(repo, args)
 
 	assertNoError(t, err)
 
 	// Verify no tasks were added
-	todos, err := baseCmd.Repository.ListAll()
+	todos, err := repo.ListAll()
 	assertNoError(t, err)
 	assertTodoCount(t, todos, 0)
 }
 
 func TestExecuteAdd_TaskWithSpecialCharacters(t *testing.T) {
-	baseCmd, _ := setupEmptyTestBaseCommand(t)
+	repo, _ := setupEmptyTestRepository(t)
 
 	// Test adding task with special characters
 	args := []string{"(A) task with @email:user@domain.com and +project:name due:2024-12-31"}
-	err := executeAdd(baseCmd, args)
+	err := executeAdd(repo, args)
 
 	assertNoError(t, err)
 
 	// Verify the task was added with special characters preserved
-	todos, err := baseCmd.Repository.ListAll()
+	todos, err := repo.ListAll()
 	assertNoError(t, err)
 	assertTodoCount(t, todos, 1)
 	assertContains(t, todos[0].Text, "@email:user@domain.com")
@@ -101,21 +101,21 @@ func TestExecuteAdd_TaskWithSpecialCharacters(t *testing.T) {
 }
 
 func TestExecuteAdd_WithExistingTasks(t *testing.T) {
-	baseCmd, _ := setupTestBaseCommand(t)
+	repo, _ := setupTestRepository(t)
 
 	// Get initial count
-	initialTodos, err := baseCmd.Repository.ListAll()
+	initialTodos, err := repo.ListAll()
 	assertNoError(t, err)
 	initialCount := len(initialTodos)
 
 	// Test adding to existing repository
 	args := []string{"(A) new high priority task"}
-	err = executeAdd(baseCmd, args)
+	err = executeAdd(repo, args)
 
 	assertNoError(t, err)
 
 	// Verify the task was added to existing tasks
-	todos, err := baseCmd.Repository.ListAll()
+	todos, err := repo.ListAll()
 	assertNoError(t, err)
 	assertTodoCount(t, todos, initialCount+1)
 
@@ -133,7 +133,7 @@ func TestExecuteAdd_WithExistingTasks(t *testing.T) {
 }
 
 func TestExecuteAdd_SortingBehavior(t *testing.T) {
-	baseCmd, _ := setupEmptyTestBaseCommand(t)
+	repo, _ := setupEmptyTestRepository(t)
 
 	// Add tasks in mixed priority order
 	args := []string{
@@ -144,12 +144,12 @@ func TestExecuteAdd_SortingBehavior(t *testing.T) {
 	}
 
 	for _, arg := range args {
-		err := executeAdd(baseCmd, []string{arg})
+		err := executeAdd(repo, []string{arg})
 		assertNoError(t, err)
 	}
 
 	// Verify tasks are sorted correctly after addition
-	todos, err := baseCmd.Repository.ListAll()
+	todos, err := repo.ListAll()
 	assertNoError(t, err)
 	assertTodoCount(t, todos, 4)
 
@@ -175,16 +175,16 @@ func TestExecuteAdd_SortingBehavior(t *testing.T) {
 }
 
 func TestExecuteAdd_MultilineString(t *testing.T) {
-	baseCmd, _ := setupEmptyTestBaseCommand(t)
+	repo, _ := setupEmptyTestRepository(t)
 
 	// Test adding a task that contains newlines (should be treated as one task)
 	args := []string{"(A) task with\nnewline characters\nin the text"}
-	err := executeAdd(baseCmd, args)
+	err := executeAdd(repo, args)
 
 	assertNoError(t, err)
 
 	// Verify only one task was added
-	todos, err := baseCmd.Repository.ListAll()
+	todos, err := repo.ListAll()
 	assertNoError(t, err)
 	assertTodoCount(t, todos, 1)
 	assertContains(t, todos[0].Text, "task with")
@@ -193,19 +193,19 @@ func TestExecuteAdd_MultilineString(t *testing.T) {
 }
 
 func TestExecuteAdd_DuplicateTasks(t *testing.T) {
-	baseCmd, _ := setupEmptyTestBaseCommand(t)
+	repo, _ := setupEmptyTestRepository(t)
 
 	// Test adding duplicate tasks
 	args := []string{
 		"(A) duplicate task +project @context",
 		"(A) duplicate task +project @context",
 	}
-	err := executeAdd(baseCmd, args)
+	err := executeAdd(repo, args)
 
 	assertNoError(t, err)
 
 	// Verify both tasks were added (duplicates should be allowed)
-	todos, err := baseCmd.Repository.ListAll()
+	todos, err := repo.ListAll()
 	assertNoError(t, err)
 	assertTodoCount(t, todos, 2)
 
@@ -222,16 +222,16 @@ func TestExecuteAdd_DuplicateTasks(t *testing.T) {
 }
 
 func TestExecuteAdd_Integration(t *testing.T) {
-	baseCmd, _ := setupEmptyTestBaseCommand(t)
+	repo, _ := setupEmptyTestRepository(t)
 
 	// Test full integration: add, verify save was called
 	args := []string{"(A) integration test task"}
-	err := executeAdd(baseCmd, args)
+	err := executeAdd(repo, args)
 
 	assertNoError(t, err)
 
 	// Verify task was added and repository was saved
-	todos, err := baseCmd.Repository.ListAll()
+	todos, err := repo.ListAll()
 	assertNoError(t, err)
 	assertTodoCount(t, todos, 1)
 	assertContains(t, todos[0].Text, "integration test task")

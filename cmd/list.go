@@ -3,16 +3,17 @@ package cmd
 import (
 	"strings"
 
+	"github.com/gkarolyi/togodo/todotxtlib"
 	"github.com/spf13/cobra"
 )
 
-func executeList(base *BaseCommand, searchQuery string) error {
-	todos, err := base.Repository.Search(searchQuery)
+func executeList(repo *todotxtlib.Repository, presenter *Presenter, searchQuery string) error {
+	todos, err := repo.Search(searchQuery)
 	if err != nil {
 		return err
 	}
 
-	return base.PrintList(todos)
+	return presenter.PrintList(todos)
 }
 
 var listCmd = &cobra.Command{
@@ -31,9 +32,13 @@ togodo list '@work'
 	Aliases: []string{"ls", "l"},
 	Args:    cobra.ArbitraryArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		base := NewDefaultBaseCommand()
+		repo, err := createRepository()
+		if err != nil {
+			return err
+		}
+		presenter := createCLIPresenter()
 		searchQuery := strings.Join(args, " ")
-		return executeList(base, searchQuery)
+		return executeList(repo, presenter, searchQuery)
 	},
 }
 

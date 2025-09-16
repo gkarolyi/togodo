@@ -4,22 +4,23 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/gkarolyi/togodo/todotxtlib"
 	"github.com/spf13/cobra"
 )
 
-func executePri(base *BaseCommand, args []string) error {
+func executePri(repo *todotxtlib.Repository, args []string) error {
 	priority := args[len(args)-1]
 	for _, arg := range args[:len(args)-1] {
 		lineNumber, err := strconv.Atoi(arg)
 		if err != nil {
 			return fmt.Errorf("failed to convert arg to int: %w", err)
 		}
-		_, err = base.Repository.SetPriority(lineNumber-1, priority)
+		_, err = repo.SetPriority(lineNumber-1, priority)
 		if err != nil {
 			return fmt.Errorf("failed to set priority for todo at line %d: %w", lineNumber, err)
 		}
 	}
-	return base.Save()
+	return repo.Save()
 }
 
 var priCmd = &cobra.Command{
@@ -37,8 +38,11 @@ togodo pri 1 2 3 B
 	Args:    cobra.MinimumNArgs(1),
 	Aliases: []string{"p"},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		base := NewDefaultBaseCommand()
-		return executePri(base, args)
+		repo, err := createRepository()
+		if err != nil {
+			return err
+		}
+		return executePri(repo, args)
 	},
 }
 

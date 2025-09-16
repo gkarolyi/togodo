@@ -35,8 +35,18 @@ var rootCmd = &cobra.Command{
 	Long:  `togodo is a CLI tool for managing your todo.txt file.`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		baseCmd := NewTUIBaseCommand()
-		baseCmd.Output.Run()
+		repo, err := createRepository()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		controller := createTUIController(repo)
+		err = controller.Run()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 	},
 }
 
