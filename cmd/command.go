@@ -49,10 +49,10 @@ func newBaseCommand(repo *todotxtlib.Repository, formatter todotxtui.TodoFormatt
 }
 
 // NewDefaultBaseCommand creates a new base command with the default dependencies.
-// It creates a new file repository with the default todo.txt path, the default lipgloss
+// It creates a new file repository with the configured todo.txt path, the default lipgloss
 // formatter, and writes to stdout.
 func NewDefaultBaseCommand() *BaseCommand {
-	todoTxtPath := getTodoTxtPath()
+	todoTxtPath := GetTodoTxtPath()
 	repo, err := newFileRepository(todoTxtPath)
 	if err != nil {
 		fmt.Println(err)
@@ -63,7 +63,7 @@ func NewDefaultBaseCommand() *BaseCommand {
 }
 
 func NewTUIBaseCommand() *BaseCommand {
-	todoTxtPath := getTodoTxtPath()
+	todoTxtPath := GetTodoTxtPath()
 	repo, err := newFileRepository(todoTxtPath)
 	if err != nil {
 		fmt.Println(err)
@@ -73,42 +73,7 @@ func NewTUIBaseCommand() *BaseCommand {
 	return newBaseCommand(repo, newLipglossFormatter(), todotxtui.NewTUIWriter(repo))
 }
 
-// getTodoTxtPath returns the path to the todo.txt file.
-// It tries to open a todo.txt file in the directory specified by the TODO_TXT_PATH
-// environment variable, then in the current directory, and finally in the user's home directory.
-func getTodoTxtPath() string {
-	var todoTxtPath string
-	// First try to open a todo.txt file in the directory specified by the TODO_TXT_PATH environment variable
-	envtodoTxtPath := os.Getenv("TODO_TXT_PATH")
-	if envtodoTxtPath != "" {
-		if _, err := os.Stat(envtodoTxtPath); err == nil {
-			todoTxtPath = envtodoTxtPath
-		}
-	}
 
-	// If that fails, try to open a todo.txt file in the current directory
-	if todoTxtPath == "" {
-		if _, err := os.Stat("todo.txt"); os.IsNotExist(err) {
-			os.Exit(1)
-		} else {
-			todoTxtPath = "todo.txt"
-		}
-	}
-
-	// Finally, try to open a todo.txt file in the user's home directory
-	if todoTxtPath == "" {
-		homeDir, err := os.UserHomeDir()
-		if err != nil {
-			os.Exit(1)
-		}
-		todoTxtPath = homeDir + "/todo.txt"
-		if _, err := os.Stat(todoTxtPath); os.IsNotExist(err) {
-			os.Exit(1)
-		}
-	}
-
-	return todoTxtPath
-}
 
 func newFileRepository(path string) (*todotxtlib.Repository, error) {
 	reader := todotxtlib.NewFileReader(path)

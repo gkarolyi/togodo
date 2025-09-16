@@ -22,6 +22,9 @@ THE SOFTWARE.
 package cmd
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/spf13/cobra"
 )
 
@@ -45,5 +48,14 @@ func RootCmd() *cobra.Command {
 
 
 func init() {
+	cobra.OnInitialize(initConfig)
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+}
+
+// initConfig reads in config file and ENV variables.
+func initConfig() {
+	if err := InitConfig(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error initializing config: %v\n", err)
+		os.Exit(1)
+	}
 }
