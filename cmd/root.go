@@ -58,8 +58,7 @@ func RootCmd() *cobra.Command {
 }
 
 func init() {
-
-cobra.OnInitialize(initConfig)
+	cobra.OnInitialize(initConfig)
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
