@@ -296,13 +296,13 @@ func TestExecuteList_ErrorHandling(t *testing.T) {
 
 	// Test with various potentially problematic inputs
 	problematicInputs := []string{
-		"",           // empty string
-		" ",          // just space
-		"\n",         // newline
-		"\t",         // tab
-		"@",          // incomplete context
-		"+",          // incomplete project
-		"(",          // incomplete priority
+		"",   // empty string
+		" ",  // just space
+		"\n", // newline
+		"\t", // tab
+		"@",  // incomplete context
+		"+",  // incomplete project
+		"(",  // incomplete priority
 	}
 
 	for _, input := range problematicInputs {

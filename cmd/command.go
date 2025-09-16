@@ -32,8 +32,6 @@ func (c *BaseCommand) PrintList(todos []todotxtlib.Todo) error {
 	return nil
 }
 
-
-
 // Save saves the repository using its assigned writer
 func (c *BaseCommand) Save() error {
 	return c.Repository.Save()
@@ -72,8 +70,6 @@ func NewTUIBaseCommand() *BaseCommand {
 
 	return newBaseCommand(repo, newLipglossFormatter(), todotxtui.NewTUIWriter(repo))
 }
-
-
 
 func newFileRepository(path string) (*todotxtlib.Repository, error) {
 	reader := todotxtlib.NewFileReader(path)
