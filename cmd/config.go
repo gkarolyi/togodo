@@ -25,8 +25,8 @@ func InitConfig() error {
 		return fmt.Errorf("error getting home directory: %w", err)
 	}
 
-	viper.AddConfigPath(homeDir)                              // ~/.togodo.toml
 	viper.AddConfigPath(filepath.Join(homeDir, ".config"))    // ~/.config/togodo.toml
+	viper.AddConfigPath(homeDir)                              // ~/.togodo.toml
 
 	// Set default values
 	viper.SetDefault("todo_txt_path", "todo.txt")
