@@ -16,7 +16,7 @@ type Config struct {
 // InitConfig initializes Viper configuration
 func InitConfig() error {
 	// Set config name and type
-	viper.SetConfigName("togodo")
+	viper.SetConfigName("config")
 	viper.SetConfigType("toml")
 
 	// Add config paths
@@ -24,14 +24,8 @@ func InitConfig() error {
 	if err != nil {
 		return fmt.Errorf("error getting home directory: %w", err)
 	}
-	currentDir, err := os.Getwd()
-	if err != nil {
-		return fmt.Errorf("error getting current directory: %w", err)
-	}
 
-	viper.AddConfigPath(currentDir)                    	   // ./togodo.toml
-	viper.AddConfigPath(filepath.Join(homeDir, ".config")) // ~/.config/togodo.toml
-	viper.AddConfigPath(homeDir)                           // ~/.togodo.toml
+	viper.AddConfigPath(filepath.Join(homeDir, ".config", "togodo")) // ~/.config/togodo/config.toml
 
 	// Set default values
 	viper.SetDefault("todo_txt_path", "todo.txt")

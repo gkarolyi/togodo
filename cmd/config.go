@@ -15,7 +15,16 @@ import (
 var configCmd = &cobra.Command{
 	Use:   "config [key] [value]",
 	Short: "View or set configuration options",
-	Long: `View or set configuration options for togodo.\n\nExamples:\n  togodo config                    # Show all configuration\n  togodo config todo_txt_path      			  # Show specific config value\n  togodo config todo_txt_path ~/my-todos.txt  # Set config value\n\nConfiguration is stored in ~/.config/togodo.toml`,
+	Long: `
+View or set configuration options for togodo.
+
+Examples:
+	togodo config                    			# Show all configuration
+	togodo config todo_txt_path      			# Show specific config value
+	togodo config todo_txt_path ~/my-todos.txt  # Set config value
+
+Configuration is stored in ~/.config/togodo/config.toml`,
+
 	Args: cobra.MaximumNArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		presenter := injector.CreateCLIPresenter()
@@ -100,15 +109,15 @@ func getValidKeys(validKeys map[string]bool) []string {
 func ensureConfigFile() error {
 	configFile := viper.ConfigFileUsed()
 
-	// If no config file is currently being used, create one at ~/.config/togodo.toml
+	// If no config file is currently being used, create one at ~/.config/togodo/config.toml
 	if configFile == "" {
 		homeDir, err := os.UserHomeDir()
 		if err != nil {
 			return fmt.Errorf("error getting home directory: %w", err)
 		}
 
-		configDir := filepath.Join(homeDir, ".config")
-		configFile = filepath.Join(configDir, "togodo.toml")
+		configDir := filepath.Join(homeDir, ".config", "togodo")
+		configFile = filepath.Join(configDir, "config.toml")
 
 		// Create the .config directory if it doesn't exist
 		if err := os.MkdirAll(configDir, 0755); err != nil {
