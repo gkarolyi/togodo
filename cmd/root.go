@@ -27,6 +27,7 @@ import (
 
 	"github.com/gkarolyi/togodo/internal/config"
 	"github.com/gkarolyi/togodo/internal/injector"
+	"github.com/gkarolyi/togodo/internal/tui"
 	"github.com/spf13/cobra"
 )
 
@@ -43,8 +44,7 @@ var rootCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		controller := injector.CreateTUIController(repo)
-		err = controller.Run()
+		err = tui.Run(repo)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)

@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
@@ -17,6 +18,90 @@ var (
 	priorityBStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FF6700"))
 	priorityCStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#0FFF95"))
 )
+
+func (m model) View() string {
+	// First build the main view
+	var mainView string
+	if m.filtering {
+		mainView += fmt.Sprintf("\nFilter: %s", m.filter)
+	}
+	mainView += "\n\n"
+
+	// Iterate over our choices
+	for i, choice := range m.choices {
+		cursor := " "
+		if m.cursor == i {
+			cursor = ">"
+		}
+		mainView += fmt.Sprintf("%s ", cursor)
+		mainView += formatTodo(choice) + "\n"
+	}
+
+	mainView += "\nx: toggle | p: set priority | /: filter | a: add | q: quit\n"
+
+	// If we're setting priority, show the priority overlay
+	if m.setting {
+		width := 40
+		height := 3
+
+		popup := stylePrimaryBold.Render("Set Priority") + "\n"
+		popup += "Press A-D to set priority, ESC to cancel" + "\n"
+		popup += styleHelp.Render("(A is highest, D is lowest)")
+
+		overlay := stylePrimary.
+			Width(width).
+			Height(height).
+			Align(lipgloss.Center).
+			Border(lipgloss.RoundedBorder()).
+			Render(popup)
+
+		return lipgloss.Place(
+			lipgloss.Width(mainView),
+			lipgloss.Height(mainView),
+			lipgloss.Center,
+			lipgloss.Center,
+			overlay,
+		)
+	}
+
+	// If we're adding, overlay the popup on top
+	if m.adding {
+		mainWidth := lipgloss.Width(mainView)
+		width := int(float64(mainWidth) * 0.75)
+		height := 3
+
+		popup := stylePrimaryBold.Render("Add New Todo") + "\n"
+
+		// Create a Todo with proper priority parsing
+		text := m.input.Value()
+		priority := ""
+		if len(text) >= 3 && text[0] == '(' && text[2] == ')' {
+			priority = string(text[1])
+		}
+		popup += formatTodo(todotxtlib.Todo{
+			Text:     text,
+			Priority: priority,
+		}) + "\n"
+		popup += styleHelp.Render("(esc to cancel, enter to save)")
+
+		overlay := stylePrimary.
+			Width(width).
+			Height(height).
+			Align(lipgloss.Center).
+			Border(lipgloss.RoundedBorder()).
+			Render(popup)
+
+		return lipgloss.Place(
+			lipgloss.Width(mainView),
+			lipgloss.Height(mainView),
+			lipgloss.Center,
+			lipgloss.Center,
+			overlay,
+		)
+	}
+
+	return mainView
+}
 
 // formatTodo formats a single todo item for display in the TUI
 func formatTodo(todo todotxtlib.Todo) string {
