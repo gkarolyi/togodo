@@ -2,6 +2,7 @@ package todotxtlib
 
 import (
 	"bytes"
+	"strings"
 	"testing"
 )
 
@@ -14,8 +15,26 @@ func createTestTodos() []Todo {
 	}
 }
 
-// setupTestRepository creates a new repository with a buffer reader and writer
-func setupTestRepository(tb testing.TB) *Repository {
+// setupEmptyTestRepository creates a new Repository with an empty buffer for testing
+func setupEmptyTestRepository(tb testing.TB) (TodoRepository, *bytes.Buffer) {
+	// Create an empty buffer
+	var buf bytes.Buffer
+
+	// Create reader and writer that work with the buffer
+	reader := NewBufferReader(&buf)
+	writer := NewBufferWriter(&buf)
+
+	// Create repository with the buffer-based reader and writer
+	repo, err := NewFileRepository(reader, writer)
+	if err != nil {
+		tb.Fatalf("Failed to create test repository: %v", err)
+	}
+
+	return repo, &buf
+}
+
+// setupTestRepository creates a new Repository with pre-populated test data
+func setupTestRepository(tb testing.TB) (TodoRepository, *bytes.Buffer) {
 	// Create a buffer with test todos
 	var buf bytes.Buffer
 	for _, todo := range createTestTodos() {
@@ -27,18 +46,110 @@ func setupTestRepository(tb testing.TB) *Repository {
 	writer := NewBufferWriter(&buf)
 
 	// Create repository with the buffer-based reader and writer
-	repo, err := NewRepository(reader, writer)
+	repo, err := NewFileRepository(reader, writer)
 	if err != nil {
 		tb.Fatalf("Failed to create test repository: %v", err)
 	}
 
-	return repo
+	return repo, &buf
 }
 
-// Helper function to check if a string slice contains a value
-func contains(slice []string, value string) bool {
-	for _, item := range slice {
-		if item == value {
+// assertNoError asserts that the provided error is nil
+func assertNoError(tb testing.TB, err error) {
+	tb.Helper()
+	if err != nil {
+		tb.Fatalf("Expected no error, got: %v", err)
+	}
+}
+
+// assertError asserts that the provided error is not nil
+func assertError(tb testing.TB, err error) {
+	tb.Helper()
+	if err == nil {
+		tb.Fatal("Expected an error, but got nil")
+	}
+}
+
+// assertTodoCount asserts that the todo list has the expected number of items
+func assertTodoCount(tb testing.TB, todos []Todo, expectedCount int) {
+	tb.Helper()
+	if len(todos) != expectedCount {
+		tb.Fatalf("Expected %d todos, got %d", expectedCount, len(todos))
+	}
+}
+
+// assertContains asserts that the text contains the expected substring
+func assertContains(tb testing.TB, text, substring string) {
+	tb.Helper()
+	if !strings.Contains(text, substring) {
+		tb.Fatalf("Expected text to contain '%s', but it didn't. Text: '%s'", substring, text)
+	}
+}
+
+// assertNotContains asserts that the text does not contain the given substring
+func assertNotContains(tb testing.TB, text, substring string) {
+	tb.Helper()
+	if strings.Contains(text, substring) {
+		tb.Fatalf("Expected text to not contain '%s', but it did. Text: '%s'", substring, text)
+	}
+}
+
+// assertTodoText asserts that a todo has the expected text
+func assertTodoText(tb testing.TB, todo Todo, expectedText string) {
+	tb.Helper()
+	if todo.Text != expectedText {
+		tb.Fatalf("Expected todo text to be '%s', got '%s'", expectedText, todo.Text)
+	}
+}
+
+// assertTodoPriority asserts that a todo has the expected priority
+func assertTodoPriority(tb testing.TB, todo Todo, expectedPriority string) {
+	tb.Helper()
+	if todo.Priority != expectedPriority {
+		tb.Fatalf("Expected todo priority to be '%s', got '%s'", expectedPriority, todo.Priority)
+	}
+}
+
+// assertTodoCompleted asserts that a todo has the expected completion status
+func assertTodoCompleted(tb testing.TB, todo Todo, expectedCompleted bool) {
+	tb.Helper()
+	if todo.Done != expectedCompleted {
+		tb.Fatalf("Expected todo completed status to be %v, got %v", expectedCompleted, todo.Done)
+	}
+}
+
+// findTodoByText finds a todo in the list by its text content
+func findTodoByText(todos []Todo, text string) (Todo, bool) {
+	for _, todo := range todos {
+		if todo.Text == text {
+			return todo, true
+		}
+	}
+	return Todo{}, false
+}
+
+// assertTodoExists asserts that a todo with the given text exists in the list
+func assertTodoExists(tb testing.TB, todos []Todo, text string) {
+	tb.Helper()
+	_, found := findTodoByText(todos, text)
+	if !found {
+		tb.Fatalf("Expected to find todo with text '%s' in the list", text)
+	}
+}
+
+// assertTodoNotExists asserts that a todo with the given text does not exist in the list
+func assertTodoNotExists(tb testing.TB, todos []Todo, text string) {
+	tb.Helper()
+	_, found := findTodoByText(todos, text)
+	if found {
+		tb.Fatalf("Expected not to find todo with text '%s' in the list", text)
+	}
+}
+
+// containsTodo checks if any todo in the slice equals the target todo
+func containsTodo(todos []Todo, target Todo) bool {
+	for _, todo := range todos {
+		if todo.Equals(target) {
 			return true
 		}
 	}

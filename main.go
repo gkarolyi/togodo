@@ -2,7 +2,7 @@
 Copyright © 2024 Gergely Karolyi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
+of this software and associated documentation files ("the Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
@@ -23,14 +23,38 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"log"
 	"os"
 
 	"github.com/charmbracelet/fang"
 	"github.com/gkarolyi/togodo/cmd"
+	"github.com/gkarolyi/togodo/internal/cli"
+	"github.com/gkarolyi/togodo/internal/config"
+	"github.com/gkarolyi/togodo/todotxtlib"
 )
 
 func main() {
-	if err := fang.Execute(context.Background(), cmd.RootCmd()); err != nil {
+	err := config.InitConfig()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error initializing config: %v\n", err)
+		os.Exit(1)
+	}
+
+	todoTxtPath := config.GetTodoTxtPath()
+	reader := todotxtlib.NewFileReader(todoTxtPath)
+	writer := todotxtlib.NewFileWriter(todoTxtPath)
+
+	repo, err := todotxtlib.NewFileRepository(reader, writer)
+	if err != nil {
+		log.Fatalf("Failed to create repository: %v", err)
+	}
+
+	presenter := cli.NewPresenter()
+
+	rootCmd := cmd.NewRootCmd(repo, presenter)
+
+	if err := fang.Execute(context.Background(), rootCmd); err != nil {
 		os.Exit(1)
 	}
 }

@@ -9,7 +9,7 @@ import (
 )
 
 // Run starts the TUI interface
-func Run(repo *todotxtlib.Repository) error {
+func Run(repo todotxtlib.TodoRepository) error {
 	model := initialModel(repo)
 	p := tea.NewProgram(model)
 	_, err := p.Run()

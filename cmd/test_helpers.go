@@ -8,17 +8,15 @@ import (
 	"github.com/gkarolyi/togodo/todotxtlib"
 )
 
-// createTestTodos returns a slice of test todos for use in tests
-func createTestTodos() []todotxtlib.Todo {
-	return []todotxtlib.Todo{
-		todotxtlib.NewTodo("(A) test todo 1 +project2 @context1"),
-		todotxtlib.NewTodo("(B) test todo 2 +project1 @context2"),
-		todotxtlib.NewTodo("x (C) test todo 3 +project1 @context1"),
-	}
+// testTodos returns a slice of test todos for use in tests
+var testTodos = []todotxtlib.Todo{
+	todotxtlib.NewTodo("(A) test todo 1 +project2 @context1"),
+	todotxtlib.NewTodo("(B) test todo 2 +project1 @context2"),
+	todotxtlib.NewTodo("x (C) test todo 3 +project1 @context1"),
 }
 
 // setupEmptyTestRepository creates a new Repository with an empty buffer for testing
-func setupEmptyTestRepository(tb testing.TB) (*todotxtlib.Repository, *bytes.Buffer) {
+func setupEmptyTestRepository(tb testing.TB) (todotxtlib.TodoRepository, *bytes.Buffer) {
 	// Create an empty buffer
 	var buf bytes.Buffer
 
@@ -27,7 +25,7 @@ func setupEmptyTestRepository(tb testing.TB) (*todotxtlib.Repository, *bytes.Buf
 	writer := todotxtlib.NewBufferWriter(&buf)
 
 	// Create repository with the buffer-based reader and writer
-	repo, err := todotxtlib.NewRepository(reader, writer)
+	repo, err := todotxtlib.NewFileRepository(reader, writer)
 	if err != nil {
 		tb.Fatalf("Failed to create test repository: %v", err)
 	}
@@ -36,10 +34,10 @@ func setupEmptyTestRepository(tb testing.TB) (*todotxtlib.Repository, *bytes.Buf
 }
 
 // setupTestRepository creates a new Repository with pre-populated test data
-func setupTestRepository(tb testing.TB) (*todotxtlib.Repository, *bytes.Buffer) {
+func setupTestRepository(tb testing.TB) (todotxtlib.TodoRepository, *bytes.Buffer) {
 	// Create a buffer with test todos
 	var buf bytes.Buffer
-	for _, todo := range createTestTodos() {
+	for _, todo := range testTodos {
 		buf.WriteString(todo.Text + "\n")
 	}
 
@@ -48,7 +46,7 @@ func setupTestRepository(tb testing.TB) (*todotxtlib.Repository, *bytes.Buffer) 
 	writer := todotxtlib.NewBufferWriter(&buf)
 
 	// Create repository with the buffer-based reader and writer
-	repo, err := todotxtlib.NewRepository(reader, writer)
+	repo, err := todotxtlib.NewFileRepository(reader, writer)
 	if err != nil {
 		tb.Fatalf("Failed to create test repository: %v", err)
 	}
@@ -146,14 +144,4 @@ func assertTodoNotExists(tb testing.TB, todos []todotxtlib.Todo, text string) {
 	if found {
 		tb.Fatalf("Expected not to find todo with text '%s' in the list", text)
 	}
-}
-
-// Helper function to check if a string slice contains a value
-func contains(slice []string, value string) bool {
-	for _, item := range slice {
-		if item == value {
-			return true
-		}
-	}
-	return false
 }

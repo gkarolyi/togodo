@@ -25,41 +25,47 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/gkarolyi/togodo/internal/cli"
 	"github.com/gkarolyi/togodo/internal/config"
-	"github.com/gkarolyi/togodo/internal/injector"
 	"github.com/gkarolyi/togodo/internal/tui"
+	"github.com/gkarolyi/togodo/todotxtlib"
 	"github.com/spf13/cobra"
 )
 
-// rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
-	Use:   "togodo",
-	Short: "A CLI tool for managing your todo.txt",
-	Long:  `togodo is a CLI tool for managing your todo.txt file.`,
+// NewRootCmd creates the root command and its subcommands, injecting dependencies.
+func NewRootCmd(repo todotxtlib.TodoRepository, presenter *cli.Presenter) *cobra.Command {
+	rootCmd := &cobra.Command{
+		Use:   "togodo",
+		Short: "A CLI tool for managing your todo.txt",
+		Long:  `togodo is a CLI tool for managing your todo.txt file.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			err := tui.Run(repo)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+		},
+	}
 
-	Run: func(cmd *cobra.Command, args []string) {
-		repo, err := injector.CreateRepository()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		err = tui.Run(repo)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-	},
-}
-
-// RootCmd returns the root command for use with fang.Execute
-func RootCmd() *cobra.Command {
-	return rootCmd
-}
-
-func init() {
 	cobra.OnInitialize(initConfig)
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.PersistentFlags().StringP("file", "f", "", "Specify the todo.txt file to use")
+
+	// Set up persistent pre-run to handle --file flag globally
+	rootCmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {
+		if file, _ := cmd.Flags().GetString("file"); file != "" {
+			config.SetTodoTxtPath(file)
+		}
+	}
+
+	// Add subcommands
+	rootCmd.AddCommand(NewAddCmd(repo))
+	rootCmd.AddCommand(NewDoCmd(repo))
+	rootCmd.AddCommand(NewListCmd(repo, presenter))
+	rootCmd.AddCommand(NewPriCmd(repo))
+	rootCmd.AddCommand(NewTidyCmd(repo, presenter))
+	rootCmd.AddCommand(NewConfigCmd(presenter))
+
+	return rootCmd
 }
 
 // initConfig reads in config file and ENV variables.

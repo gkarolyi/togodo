@@ -51,7 +51,7 @@ func TestNewTodo(t *testing.T) {
 				Text:     "Buy groceries +shopping +food",
 				Done:     false,
 				Priority: "",
-				Projects: []string{"+shopping", "+food"},
+				Projects: []string{"+food", "+shopping"},
 				Contexts: []string{},
 			},
 		},
@@ -72,7 +72,7 @@ func TestNewTodo(t *testing.T) {
 			want: Todo{
 				Text:     "x (A) Buy groceries +shopping @store",
 				Done:     true,
-				Priority: "",
+				Priority: "A",
 				Projects: []string{"+shopping"},
 				Contexts: []string{"@store"},
 			},
@@ -208,6 +208,24 @@ func TestTodo_SetPriority(t *testing.T) {
 			priority: "",
 			want:     "Buy groceries",
 		},
+		{
+			name:     "set priority on done task",
+			todo:     Todo{Text: "x (C) Buy groceries", Priority: "C", Done: true},
+			priority: "A",
+			want:     "x (A) Buy groceries",
+		},
+		{
+			name:     "change priority on done task",
+			todo:     Todo{Text: "x (B) Buy groceries", Priority: "B", Done: true},
+			priority: "A",
+			want:     "x (A) Buy groceries",
+		},
+		{
+			name:     "remove priority from done task",
+			todo:     Todo{Text: "x (A) Buy groceries", Priority: "A", Done: true},
+			priority: "",
+			want:     "x Buy groceries",
+		},
 	}
 
 	for _, tt := range tests {
@@ -337,7 +355,7 @@ func TestTodo_SetProjects(t *testing.T) {
 			name:     "set new projects",
 			todo:     Todo{Text: "Buy groceries"},
 			projects: []string{"+shopping", "+food"},
-			want:     []string{"+shopping", "+food"},
+			want:     []string{"+food", "+shopping"},
 		},
 		{
 			name:     "replace existing projects",
@@ -380,7 +398,7 @@ func TestTodo_AddContext(t *testing.T) {
 			name:    "add to existing contexts",
 			todo:    Todo{Text: "Buy groceries", Contexts: []string{"@store"}},
 			context: "@home",
-			want:    []string{"@store", "@home"},
+			want:    []string{"@home", "@store"},
 		},
 		{
 			name:    "do not add duplicate context",

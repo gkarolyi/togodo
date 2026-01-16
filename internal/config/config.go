@@ -46,12 +46,17 @@ func GetTodoTxtPath() string {
 	path := viper.GetString("todo_txt_path")
 
 	// Expand tilde to home directory if needed
-	if len(path) > 0 && path[0] == '~' {
+	if len(path) > 1 && path[0] == '~' && path[1] == '/' {
 		homeDir, err := os.UserHomeDir()
 		if err == nil {
-			path = filepath.Join(homeDir, path[1:])
+			path = filepath.Join(homeDir, path[2:])
 		}
 	}
 
 	return path
+}
+
+// SetTodoTxtPath sets the todo.txt file path in the configuration
+func SetTodoTxtPath(path string) {
+	viper.Set("todo_txt_path", path)
 }

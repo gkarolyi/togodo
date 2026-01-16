@@ -1,25 +1,52 @@
 package todotxtlib
 
 import (
+	"bytes"
 	"fmt"
 	"sort"
 )
 
-// Repository handles storing and manipulating Todos
-type Repository struct {
+// TodoRepository defines the interface for storing and manipulating Todos.
+type TodoRepository interface {
+	Add(todoText string) (Todo, error)
+	Remove(index int) (Todo, error)
+	Update(index int, todo Todo) (Todo, error)
+	ToggleDone(index int) (Todo, error)
+	SetPriority(index int, priority string) (Todo, error)
+	SetContexts(index int, contexts []string) (Todo, error)
+	SetProjects(index int, projects []string) (Todo, error)
+	AddContext(index int, context string) (Todo, error)
+	AddProject(index int, project string) (Todo, error)
+	RemoveContext(index int, context string) (Todo, error)
+	RemoveProject(index int, project string) (Todo, error)
+	Filter(filter Filter) ([]Todo, error)
+	Search(query string) ([]Todo, error)
+	Sort(sort Sort)
+	SortDefault()
+	ListAll() ([]Todo, error)
+	ListTodos() ([]Todo, error)
+	ListDone() ([]Todo, error)
+	ListProjects() ([]string, error)
+	ListContexts() ([]string, error)
+	Save() error
+	WriteToString() (string, error)
+}
+
+// FileRepository handles storing and manipulating Todos in a file.
+type FileRepository struct {
 	todos  []Todo
 	reader Reader
 	writer Writer
 }
 
-// NewRepository creates a new repository with custom reader and writer
-func NewRepository(reader Reader, writer Writer) (*Repository, error) {
+// NewFileRepository creates a new repository with custom reader and writer
+func NewFileRepository(reader Reader, writer Writer) (TodoRepository, error) {
 	todos, err := reader.Read()
 	if err != nil {
 		return nil, err
 	}
 
-	return &Repository{
+	return &FileRepository{
 		todos:  todos,
 		reader: reader,
 		writer: writer,
@@ -27,14 +54,14 @@ func NewRepository(reader Reader, writer Writer) (*Repository, error) {
 }
 
 // Add adds a todo to the repository
-func (r *Repository) Add(todoText string) (Todo, error) {
+func (r *FileRepository) Add(todoText string) (Todo, error) {
 	newTodo := NewTodo(todoText)
 	r.todos = append(r.todos, newTodo)
 	return newTodo, nil
 }
 
 // Remove removes a todo from the repository
-func (r *Repository) Remove(index int) (Todo, error) {
+func (r *FileRepository) Remove(index int) (Todo, error) {
 	if index < 0 || index >= len(r.todos) {
 		return Todo{}, fmt.Errorf("index out of bounds")
 	}
@@ -44,7 +71,7 @@ func (r *Repository) Remove(index int) (Todo, error) {
 }
 
 // Update updates a todo in the repository
-func (r *Repository) Update(index int, todo Todo) (Todo, error) {
+func (r *FileRepository) Update(index int, todo Todo) (Todo, error) {
 	if index < 0 || index >= len(r.todos) {
 		return Todo{}, fmt.Errorf("index out of bounds")
 	}
@@ -53,7 +80,7 @@ func (r *Repository) Update(index int, todo Todo) (Todo, error) {
 }
 
 // ToggleDone toggles the done status of a todo
-func (r *Repository) ToggleDone(index int) (Todo, error) {
+func (r *FileRepository) ToggleDone(index int) (Todo, error) {
 	if index < 0 || index >= len(r.todos) {
 		return Todo{}, fmt.Errorf("index out of bounds")
 	}
@@ -62,7 +89,7 @@ func (r *Repository) ToggleDone(index int) (Todo, error) {
 }
 
 // SetPriority sets the priority of a todo
-func (r *Repository) SetPriority(index int, priority string) (Todo, error) {
+func (r *FileRepository) SetPriority(index int, priority string) (Todo, error) {
 	if index < 0 || index >= len(r.todos) {
 		return Todo{}, fmt.Errorf("index out of bounds")
 	}
@@ -71,7 +98,7 @@ func (r *Repository) SetPriority(index int, priority string) (Todo, error) {
 }
 
 // SetContexts sets the contexts of a todo
-func (r *Repository) SetContexts(index int, contexts []string) (Todo, error) {
+func (r *FileRepository) SetContexts(index int, contexts []string) (Todo, error) {
 	if index < 0 || index >= len(r.todos) {
 		return Todo{}, fmt.Errorf("index out of bounds")
 	}
@@ -80,7 +107,7 @@ func (r *Repository) SetContexts(index int, contexts []string) (Todo, error) {
 }
 
 // SetProjects sets the projects of a todo
-func (r *Repository) SetProjects(index int, projects []string) (Todo, error) {
+func (r *FileRepository) SetProjects(index int, projects []string) (Todo, error) {
 	if index < 0 || index >= len(r.todos) {
 		return Todo{}, fmt.Errorf("index out of bounds")
 	}
@@ -89,7 +116,7 @@ func (r *Repository) SetProjects(index int, projects []string) (Todo, error) {
 }
 
 // AddContext adds a context to a todo if it doesn't already exist
-func (r *Repository) AddContext(index int, context string) (Todo, error) {
+func (r *FileRepository) AddContext(index int, context string) (Todo, error) {
 	if index < 0 || index >= len(r.todos) {
 		return Todo{}, fmt.Errorf("index out of bounds")
 	}
@@ -98,7 +125,7 @@ func (r *Repository) AddContext(index int, context string) (Todo, error) {
 }
 
 // AddProject adds a project to a todo if it doesn't already exist
-func (r *Repository) AddProject(index int, project string) (Todo, error) {
+func (r *FileRepository) AddProject(index int, project string) (Todo, error) {
 	if index < 0 || index >= len(r.todos) {
 		return Todo{}, fmt.Errorf("index out of bounds")
 	}
@@ -107,7 +134,7 @@ func (r *Repository) AddProject(index int, project string) (Todo, error) {
 }
 
 // RemoveContext removes a context from a todo
-func (r *Repository) RemoveContext(index int, context string) (Todo, error) {
+func (r *FileRepository) RemoveContext(index int, context string) (Todo, error) {
 	if index < 0 || index >= len(r.todos) {
 		return Todo{}, fmt.Errorf("index out of bounds")
 	}
@@ -116,7 +143,7 @@ func (r *Repository) RemoveContext(index int, context string) (Todo, error) {
 }
 
 // RemoveProject removes a project from a todo
-func (r *Repository) RemoveProject(index int, project string) (Todo, error) {
+func (r *FileRepository) RemoveProject(index int, project string) (Todo, error) {
 	if index < 0 || index >= len(r.todos) {
 		return Todo{}, fmt.Errorf("index out of bounds")
 	}
@@ -125,13 +152,13 @@ func (r *Repository) RemoveProject(index int, project string) (Todo, error) {
 }
 
 // Filter returns todos that match all the specified criteria
-func (r Repository) Filter(filter Filter) ([]Todo, error) {
+func (r FileRepository) Filter(filter Filter) ([]Todo, error) {
 	return filter.Apply(r.todos), nil
 }
 
 // Search returns todos that match the search query.
 // If the query is empty, it returns all todos.
-func (r Repository) Search(query string) ([]Todo, error) {
+func (r FileRepository) Search(query string) ([]Todo, error) {
 	if query == "" {
 		return r.ListAll()
 	}
@@ -141,23 +168,23 @@ func (r Repository) Search(query string) ([]Todo, error) {
 }
 
 // Sort sorts the todos in the repository according to the specified criteria
-func (r *Repository) Sort(sort Sort) {
+func (r *FileRepository) Sort(sort Sort) {
 	sort.Apply(r.todos)
 }
 
 // SortDefault sorts the todos in the repository in default order, with done todos at the bottom.
-func (r *Repository) SortDefault() {
+func (r *FileRepository) SortDefault() {
 	sort := NewDefaultSort()
 	sort.Apply(r.todos)
 }
 
 // ListAll returns all todos
-func (r Repository) ListAll() ([]Todo, error) {
+func (r FileRepository) ListAll() ([]Todo, error) {
 	return r.todos, nil
 }
 
 // ListTodos returns all todos that are not done
-func (r Repository) ListTodos() ([]Todo, error) {
+func (r FileRepository) ListTodos() ([]Todo, error) {
 	notDone := []Todo{}
 	for _, todo := range r.todos {
 		if !todo.Done {
@@ -168,7 +195,7 @@ func (r Repository) ListTodos() ([]Todo, error) {
 }
 
 // ListDone returns all done todos
-func (r Repository) ListDone() ([]Todo, error) {
+func (r FileRepository) ListDone() ([]Todo, error) {
 	done := []Todo{}
 	for _, todo := range r.todos {
 		if todo.Done {
@@ -179,7 +206,7 @@ func (r Repository) ListDone() ([]Todo, error) {
 }
 
 // ListProjects returns all unique projects sorted alphabetically
-func (r Repository) ListProjects() ([]string, error) {
+func (r FileRepository) ListProjects() ([]string, error) {
 	projectMap := make(map[string]struct{})
 	for _, todo := range r.todos {
 		for _, project := range todo.Projects {
@@ -197,7 +224,7 @@ func (r Repository) ListProjects() ([]string, error) {
 }
 
 // ListContexts returns all unique contexts sorted alphabetically
-func (r Repository) ListContexts() ([]string, error) {
+func (r FileRepository) ListContexts() ([]string, error) {
 	contextMap := make(map[string]struct{})
 	for _, todo := range r.todos {
 		for _, context := range todo.Contexts {
@@ -215,6 +242,17 @@ func (r Repository) ListContexts() ([]string, error) {
 }
 
 // Save saves the todos using the configured writer
-func (r *Repository) Save() error {
+func (r *FileRepository) Save() error {
 	return r.writer.Write(r.todos)
+}
+
+// WriteToString returns the todos as a string representation
+func (r *FileRepository) WriteToString() (string, error) {
+	var buffer bytes.Buffer
+	writer := NewBufferWriter(&buffer)
+	err := writer.Write(r.todos)
+	if err != nil {
+		return "", err
+	}
+	return buffer.String(), nil
 }

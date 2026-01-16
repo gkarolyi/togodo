@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -25,7 +26,6 @@ func TestExecuteAdd_SingleTask(t *testing.T) {
 func TestExecuteAdd_MultipleTasks(t *testing.T) {
 	repo, _ := setupEmptyTestRepository(t)
 
-	// Test adding multiple tasks
 	args := []string{
 		"(A) first task +project1 @context1",
 		"(B) second task +project2 @context2",
@@ -40,30 +40,25 @@ func TestExecuteAdd_MultipleTasks(t *testing.T) {
 	assertNoError(t, err)
 	assertTodoCount(t, todos, 3)
 
-	// Check that tasks are properly sorted (priority tasks first)
-	foundFirst := false
-	foundSecond := false
-	foundThird := false
-	for _, todo := range todos {
-		if todo.Text == "(A) first task +project1 @context1" {
-			foundFirst = true
-		}
-		if todo.Text == "(B) second task +project2 @context2" {
-			foundSecond = true
-		}
-		if todo.Text == "third task without priority" {
-			foundThird = true
-		}
+	// Check that tasks are in correct sorted order
+	output, err := repo.WriteToString()
+	assertNoError(t, err)
+
+	lines := strings.Split(strings.TrimSpace(output), "\n")
+	expectedOrder := []string{
+		"(A) first task +project1 @context1",
+		"(B) second task +project2 @context2",
+		"third task without priority",
 	}
 
-	if !foundFirst {
-		t.Error("First task not found in repository")
+	if len(lines) != len(expectedOrder) {
+		t.Fatalf("Expected %d lines, got %d", len(expectedOrder), len(lines))
 	}
-	if !foundSecond {
-		t.Error("Second task not found in repository")
-	}
-	if !foundThird {
-		t.Error("Third task not found in repository")
+
+	for i, expected := range expectedOrder {
+		if lines[i] != expected {
+			t.Errorf("Line %d: expected '%s', got '%s'", i+1, expected, lines[i])
+		}
 	}
 }
 
@@ -119,16 +114,12 @@ func TestExecuteAdd_WithExistingTasks(t *testing.T) {
 	assertNoError(t, err)
 	assertTodoCount(t, todos, initialCount+1)
 
-	// Check that the new high priority task is sorted correctly
-	found := false
-	for _, todo := range todos {
-		if todo.Text == "(A) new high priority task" {
-			found = true
-			break
-		}
-	}
-	if !found {
-		t.Error("New task not found in repository")
+	// Check that the new high priority task is present
+	output, err := repo.WriteToString()
+	assertNoError(t, err)
+
+	if !strings.Contains(output, "(A) new high priority task") {
+		t.Error("New high priority task not found")
 	}
 }
 
@@ -153,24 +144,26 @@ func TestExecuteAdd_SortingBehavior(t *testing.T) {
 	assertNoError(t, err)
 	assertTodoCount(t, todos, 4)
 
-	// Check that high priority tasks come first
-	priorityTasks := 0
-	for i, todo := range todos {
-		if todo.Priority != "" {
-			priorityTasks++
-			// Priority tasks should come before non-priority tasks
-			if i >= len(todos)-1 {
-				continue // Last item, can't check next
-			}
-			nextTodo := todos[i+1]
-			if todo.Priority == "" && nextTodo.Priority != "" {
-				t.Errorf("Priority task found after non-priority task at position %d", i)
-			}
-		}
+	// Verify the actual order using output
+	output, err := repo.WriteToString()
+	assertNoError(t, err)
+
+	lines := strings.Split(strings.TrimSpace(output), "\n")
+	expectedOrder := []string{
+		"(A) high priority task",
+		"(B) medium priority task",
+		"(C) low priority task",
+		"no priority task",
 	}
 
-	if priorityTasks != 3 {
-		t.Errorf("Expected 3 priority tasks, found %d", priorityTasks)
+	if len(lines) != len(expectedOrder) {
+		t.Fatalf("Expected %d lines, got %d", len(expectedOrder), len(lines))
+	}
+
+	for i, expected := range expectedOrder {
+		if lines[i] != expected {
+			t.Errorf("Line %d: expected '%s', got '%s'", i+1, expected, lines[i])
+		}
 	}
 }
 
@@ -209,6 +202,7 @@ func TestExecuteAdd_DuplicateTasks(t *testing.T) {
 	assertNoError(t, err)
 	assertTodoCount(t, todos, 2)
 
+	// Count duplicates by filtering
 	duplicateCount := 0
 	for _, todo := range todos {
 		if todo.Text == "(A) duplicate task +project @context" {

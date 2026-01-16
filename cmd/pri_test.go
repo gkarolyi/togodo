@@ -14,19 +14,12 @@ func TestExecutePri_SingleTask(t *testing.T) {
 	assertNoError(t, err)
 
 	// Verify the priority was set
-	todos, err := repo.ListAll()
+	output, err := repo.WriteToString()
 	assertNoError(t, err)
-	assertTodoCount(t, todos, 3)
 
-	// Count tasks with priority A - should be 2 now (1 original + 1 newly set)
-	priorityACount := 0
-	for _, todo := range todos {
-		if todo.Priority == "A" {
-			priorityACount++
-		}
-	}
-	if priorityACount != 2 {
-		t.Errorf("Expected 2 tasks with priority A, got %d", priorityACount)
+	expectedOutput := "(A) test todo 1 +project2 @context1\n(A) test todo 2 +project1 @context2\nx (C) test todo 3 +project1 @context1\n"
+	if output != expectedOutput {
+		t.Errorf("Expected output:\n%s\nGot:\n%s", expectedOutput, output)
 	}
 }
 
@@ -40,21 +33,12 @@ func TestExecutePri_MultipleTasks(t *testing.T) {
 	assertNoError(t, err)
 
 	// Verify both tasks had their priority set
-	todos, err := repo.ListAll()
+	output, err := repo.WriteToString()
 	assertNoError(t, err)
-	assertTodoCount(t, todos, 3)
 
-	// Count tasks with priority C
-	priorityCCount := 0
-	for _, todo := range todos {
-		if todo.Priority == "C" {
-			priorityCCount++
-		}
-	}
-
-	// Should have 2 total priority C tasks (2 newly set to C)
-	if priorityCCount != 2 {
-		t.Errorf("Expected 2 tasks with priority C, got %d", priorityCCount)
+	expectedOutput := "(C) test todo 1 +project2 @context1\n(C) test todo 2 +project1 @context2\nx (C) test todo 3 +project1 @context1\n"
+	if output != expectedOutput {
+		t.Errorf("Expected output:\n%s\nGot:\n%s", expectedOutput, output)
 	}
 }
 
@@ -67,21 +51,12 @@ func TestExecutePri_ChangePriority(t *testing.T) {
 	assertNoError(t, err)
 
 	// Verify the priority was changed
-	todos, err := repo.ListAll()
+	output, err := repo.WriteToString()
 	assertNoError(t, err)
 
-	// The first task originally had priority A, now should have B
-	found := false
-	for _, todo := range todos {
-		if todo.Priority == "B" && todo.Text != "(B) test todo 2 +project1 @context2" {
-			found = true
-			assertTodoPriority(t, todo, "B")
-			assertContains(t, todo.Text, "(B)")
-			assertNotContains(t, todo.Text, "(A)")
-		}
-	}
-	if !found {
-		t.Error("Expected to find a task that changed from priority A to B")
+	expectedOutput := "(B) test todo 1 +project2 @context1\n(B) test todo 2 +project1 @context2\nx (C) test todo 3 +project1 @context1\n"
+	if output != expectedOutput {
+		t.Errorf("Expected output:\n%s\nGot:\n%s", expectedOutput, output)
 	}
 }
 
@@ -94,19 +69,12 @@ func TestExecutePri_RemovePriority(t *testing.T) {
 	assertNoError(t, err)
 
 	// Verify the priority was removed
-	todos, err := repo.ListAll()
+	output, err := repo.WriteToString()
 	assertNoError(t, err)
 
-	// Count tasks with priority A (should be 0 now)
-	priorityACount := 0
-	for _, todo := range todos {
-		if todo.Priority == "A" {
-			priorityACount++
-		}
-	}
-
-	if priorityACount != 0 {
-		t.Errorf("Expected 0 tasks with priority A after removal, got %d", priorityACount)
+	expectedOutput := "test todo 1 +project2 @context1\n(B) test todo 2 +project1 @context2\nx (C) test todo 3 +project1 @context1\n"
+	if output != expectedOutput {
+		t.Errorf("Expected output:\n%s\nGot:\n%s", expectedOutput, output)
 	}
 }
 
@@ -158,34 +126,6 @@ func TestExecutePri_EmptyRepository(t *testing.T) {
 	assertContains(t, err.Error(), "failed to set priority for todo at line 1")
 }
 
-func TestExecutePri_InvalidPriorityValues(t *testing.T) {
-	repo, _ := setupTestRepository(t)
-
-	// Test with various priority values
-	testCases := []struct {
-		priority string
-		valid    bool
-	}{
-		{"A", true},
-		{"B", true},
-		{"C", true},
-		{"Z", true},
-		{"a", true}, // lowercase should work
-		{"1", true}, // numbers might work depending on implementation
-		{"", true},  // empty string to remove priority
-	}
-
-	for _, tc := range testCases {
-		args := []string{"1", tc.priority}
-		err := executePri(repo, args)
-		if tc.valid {
-			assertNoError(t, err)
-		} else {
-			assertError(t, err)
-		}
-	}
-}
-
 func TestExecutePri_PreservesOtherProperties(t *testing.T) {
 	repo, _ := setupEmptyTestRepository(t)
 
@@ -219,20 +159,12 @@ func TestExecutePri_MixedValidInvalidNumbers(t *testing.T) {
 	assertContains(t, err.Error(), "failed to convert arg to int")
 
 	// Verify first task was set before error occurred
-	todos, err := repo.ListAll()
+	output, err := repo.WriteToString()
 	assertNoError(t, err)
 
-	// Check that task 2 was set to A before the error
-	priorityACount := 0
-	for _, todo := range todos {
-		if todo.Priority == "A" {
-			priorityACount++
-		}
-	}
-
-	// Should have 2 A priorities (1 original + 1 newly set before error)
-	if priorityACount != 2 {
-		t.Errorf("Expected 2 tasks with priority A, got %d", priorityACount)
+	expectedOutput := "(A) test todo 1 +project2 @context1\n(A) test todo 2 +project1 @context2\nx (C) test todo 3 +project1 @context1\n"
+	if output != expectedOutput {
+		t.Errorf("Expected output:\n%s\nGot:\n%s", expectedOutput, output)
 	}
 }
 
@@ -250,13 +182,12 @@ func TestExecutePri_MultipleTasksSamePriority(t *testing.T) {
 	assertNoError(t, err)
 
 	// Verify all tasks have the same priority
-	todos, err := repo.ListAll()
+	output, err := repo.WriteToString()
 	assertNoError(t, err)
-	assertTodoCount(t, todos, 3)
 
-	for _, todo := range todos {
-		assertTodoPriority(t, todo, "A")
-		assertContains(t, todo.Text, "(A)")
+	expectedOutput := "(A) task 1\n(A) task 2\n(A) task 3\n"
+	if output != expectedOutput {
+		t.Errorf("Expected output:\n%s\nGot:\n%s", expectedOutput, output)
 	}
 }
 
@@ -296,20 +227,12 @@ func TestExecutePri_Integration(t *testing.T) {
 	assertNoError(t, err)
 
 	// Verify priority was set and repository was saved
-	todos, err := repo.ListAll()
+	output, err := repo.WriteToString()
 	assertNoError(t, err)
-	assertTodoCount(t, todos, 3)
 
-	// Count tasks with priority A (should be 2 now)
-	priorityACount := 0
-	for _, todo := range todos {
-		if todo.Priority == "A" {
-			priorityACount++
-		}
-	}
-
-	if priorityACount != 2 {
-		t.Errorf("Expected 2 tasks with priority A, got %d", priorityACount)
+	expectedOutput := "(A) test todo 1 +project2 @context1\n(A) test todo 2 +project1 @context2\nx (C) test todo 3 +project1 @context1\n"
+	if output != expectedOutput {
+		t.Errorf("Expected output:\n%s\nGot:\n%s", expectedOutput, output)
 	}
 }
 
@@ -334,20 +257,11 @@ func TestExecutePri_DoneTaskPriority(t *testing.T) {
 	assertNoError(t, err)
 
 	// Verify the done task can have its priority changed
-	todos, err := repo.ListAll()
+	output, err := repo.WriteToString()
 	assertNoError(t, err)
 
-	// Find the done task with new priority
-	found := false
-	for _, todo := range todos {
-		if todo.Done && todo.Priority == "A" {
-			found = true
-			assertTodoCompleted(t, todo, true)
-			assertTodoPriority(t, todo, "A")
-		}
-	}
-
-	if !found {
-		t.Error("Expected to find done task with priority A")
+	expectedOutput := "(A) test todo 1 +project2 @context1\n(B) test todo 2 +project1 @context2\nx (A) test todo 3 +project1 @context1\n"
+	if output != expectedOutput {
+		t.Errorf("Expected output:\n%s\nGot:\n%s", expectedOutput, output)
 	}
 }

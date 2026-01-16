@@ -1,12 +1,11 @@
 package cmd
 
 import (
-	"github.com/gkarolyi/togodo/internal/injector"
 	"github.com/gkarolyi/togodo/todotxtlib"
 	"github.com/spf13/cobra"
 )
 
-func executeAdd(repo *todotxtlib.Repository, args []string) error {
+func executeAdd(repo todotxtlib.TodoRepository, args []string) error {
 	for _, todoText := range args {
 		_, err := repo.Add(todoText)
 		if err != nil {
@@ -18,10 +17,12 @@ func executeAdd(repo *todotxtlib.Repository, args []string) error {
 	return repo.Save()
 }
 
-var addCmd = &cobra.Command{
-	Use:   "add [TASK]",
-	Short: "Add a new todo item to the list",
-	Long: `Adds a new task to the list and prints the newly added task.
+// NewAddCmd creates a new cobra command for adding todos.
+func NewAddCmd(repo todotxtlib.TodoRepository) *cobra.Command {
+	return &cobra.Command{
+		Use:   "add [TASK]",
+		Short: "Add a new todo item to the list",
+		Long: `Adds a new task to the list and prints the newly added task.
 If [TASK] contains multiple lines, each line is added as a separate task.
 
 # add "Buy milk" to the list
@@ -33,17 +34,10 @@ Buy eggs
 Buy bread"
 `,
 
-	Args:    cobra.MinimumNArgs(1),
-	Aliases: []string{"a"},
-	RunE: func(cmd *cobra.Command, args []string) error {
-		repo, err := injector.CreateRepository()
-		if err != nil {
-			return err
-		}
-		return executeAdd(repo, args)
-	},
-}
-
-func init() {
-	rootCmd.AddCommand(addCmd)
+		Args:    cobra.MinimumNArgs(1),
+		Aliases: []string{"a"},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return executeAdd(repo, args)
+		},
+	}
 }

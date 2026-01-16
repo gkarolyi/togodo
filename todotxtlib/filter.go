@@ -1,6 +1,10 @@
 package todotxtlib
 
-import "strings"
+import (
+	"slices"
+	"strconv"
+	"strings"
+)
 
 // Filter holds criteria for filtering todos
 type Filter struct {
@@ -27,11 +31,8 @@ func (f Filter) Apply(todos []Todo) []Todo {
 // matches checks if a todo matches all the filter criteria
 func (f Filter) matches(todo Todo) bool {
 	// Check done status
-	if f.Done != "" {
-		wantDone := f.Done == "true"
-		if todo.Done != wantDone {
-			return false
-		}
+	if f.Done != "" && strconv.FormatBool(todo.Done) != f.Done {
+		return false
 	}
 
 	// Check priority
@@ -40,31 +41,13 @@ func (f Filter) matches(todo Todo) bool {
 	}
 
 	// Check project
-	if f.Project != "" {
-		found := false
-		for _, project := range todo.Projects {
-			if project == f.Project {
-				found = true
-				break
-			}
-		}
-		if !found {
-			return false
-		}
+	if f.Project != "" && !slices.Contains(todo.Projects, f.Project) {
+		return false
 	}
 
 	// Check context
-	if f.Context != "" {
-		found := false
-		for _, context := range todo.Contexts {
-			if context == f.Context {
-				found = true
-				break
-			}
-		}
-		if !found {
-			return false
-		}
+	if f.Context != "" && !slices.Contains(todo.Contexts, f.Context) {
+		return false
 	}
 
 	// Check text content

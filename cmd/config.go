@@ -7,15 +7,16 @@ import (
 	"strings"
 
 	"github.com/gkarolyi/togodo/internal/cli"
-	"github.com/gkarolyi/togodo/internal/injector"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-var configCmd = &cobra.Command{
-	Use:   "config [key] [value]",
-	Short: "View or set configuration options",
-	Long: `
+// NewConfigCmd creates a new cobra command for viewing or setting configuration options.
+func NewConfigCmd(presenter *cli.Presenter) *cobra.Command {
+	return &cobra.Command{
+		Use:   "config [key] [value]",
+		Short: "View or set configuration options",
+		Long: `
 View or set configuration options for togodo.
 
 Examples:
@@ -25,11 +26,11 @@ Examples:
 
 Configuration is stored in ~/.config/togodo/config.toml`,
 
-	Args: cobra.MaximumNArgs(2),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		presenter := injector.CreateCLIPresenter()
-		return executeConfig(presenter, args)
-	},
+		Args: cobra.MaximumNArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return executeConfig(presenter, args)
+		},
+	}
 }
 
 func executeConfig(presenter *cli.Presenter, args []string) error {
@@ -139,8 +140,4 @@ func ensureConfigFile() error {
 	}
 
 	return nil
-}
-
-func init() {
-	rootCmd.AddCommand(configCmd)
 }

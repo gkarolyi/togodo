@@ -17,7 +17,7 @@ type model struct {
 	choices    []todotxtlib.Todo // items on the to-do list
 	cursor     int               // which to-do list item our cursor is pointing at
 	selected   map[int]struct{}  // which to-do items are selected
-	repository *todotxtlib.Repository
+	repository todotxtlib.TodoRepository
 	filtering  bool            // whether we're currently filtering
 	filter     string          // the current filter string
 	adding     bool            // whether we're currently adding a new item
@@ -25,7 +25,7 @@ type model struct {
 	setting    bool            // whether we're currently setting priority
 }
 
-func initialModel(repository *todotxtlib.Repository) model {
+func initialModel(repository todotxtlib.TodoRepository) model {
 	ti := textinput.New()
 	ti.Placeholder = "Enter new todo item..."
 	ti.CharLimit = 150

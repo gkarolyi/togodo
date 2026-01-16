@@ -2,12 +2,11 @@ package cmd
 
 import (
 	"github.com/gkarolyi/togodo/internal/cli"
-	"github.com/gkarolyi/togodo/internal/injector"
 	"github.com/gkarolyi/togodo/todotxtlib"
 	"github.com/spf13/cobra"
 )
 
-func executeTidy(repo *todotxtlib.Repository, presenter *cli.Presenter) error {
+func executeTidy(repo todotxtlib.TodoRepository, presenter *cli.Presenter) error {
 	// Get all done todos before removing them
 	doneTodos, err := repo.ListDone()
 	if err != nil {
@@ -47,25 +46,19 @@ func executeTidy(repo *todotxtlib.Repository, presenter *cli.Presenter) error {
 	return nil
 }
 
-var tidyCmd = &cobra.Command{
-	Use:   "tidy",
-	Short: "Tidy up your todo.txt by removing done tasks",
-	Long: `Cleans up your todo.txt by removing done tasks, and prints the tasks that were removed.
+// NewTidyCmd creates a new cobra command for tidying todos.
+func NewTidyCmd(repo todotxtlib.TodoRepository, presenter *cli.Presenter) *cobra.Command {
+	return &cobra.Command{
+		Use:   "tidy",
+		Short: "Tidy up your todo.txt by removing done tasks",
+		Long: `Cleans up your todo.txt by removing done tasks, and prints the tasks that were removed.
 
 # tidy up your todo.txt
 togodo tidy`,
-	Args:    cobra.NoArgs,
-	Aliases: []string{"clean"},
-	RunE: func(cmd *cobra.Command, args []string) error {
-		repo, err := injector.CreateRepository()
-		if err != nil {
-			return err
-		}
-		presenter := injector.CreateCLIPresenter()
-		return executeTidy(repo, presenter)
-	},
-}
-
-func init() {
-	rootCmd.AddCommand(tidyCmd)
+		Args:    cobra.NoArgs,
+		Aliases: []string{"clean"},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return executeTidy(repo, presenter)
+		},
+	}
 }

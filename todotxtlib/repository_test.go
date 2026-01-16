@@ -4,22 +4,23 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 )
 
-func TestNewRepository(t *testing.T) {
+func TestNewFileRepository(t *testing.T) {
 	t.Run("with a buffer reader and writer", func(t *testing.T) {
 		t.Run("creates new repository with empty buffer", func(t *testing.T) {
 			var buf bytes.Buffer
 			reader := NewBufferReader(&buf)
 			writer := NewBufferWriter(&buf)
 
-			repo, err := NewRepository(reader, writer)
+			repo, err := NewFileRepository(reader, writer)
 			if err != nil {
-				t.Fatalf("NewRepository() error = %v, want nil", err)
+				t.Fatalf("NewFileRepository() error = %v, want nil", err)
 			}
 			if repo == nil {
-				t.Fatal("NewRepository() returned nil repository")
+				t.Fatal("NewFileRepository() returned nil repository")
 			}
 
 			todos, err := repo.ListTodos()
@@ -37,9 +38,9 @@ func TestNewRepository(t *testing.T) {
 			reader := NewBufferReader(&buf)
 			writer := NewBufferWriter(&buf)
 
-			repo, err := NewRepository(reader, writer)
+			repo, err := NewFileRepository(reader, writer)
 			if err != nil {
-				t.Fatalf("NewRepository() error = %v, want nil", err)
+				t.Fatalf("NewFileRepository() error = %v, want nil", err)
 			}
 
 			todos, err := repo.ListAll()
@@ -60,9 +61,9 @@ func TestNewRepository(t *testing.T) {
 			reader := NewFileReader(tempFile)
 			writer := NewFileWriter(tempFile)
 
-			repo, err := NewRepository(reader, writer)
+			repo, err := NewFileRepository(reader, writer)
 			if err != nil {
-				t.Fatalf("NewRepository() error = %v, want nil", err)
+				t.Fatalf("NewFileRepository() error = %v, want nil", err)
 			}
 
 			todos, err := repo.ListAll()
@@ -89,9 +90,9 @@ func TestNewRepository(t *testing.T) {
 			reader := NewFileReader(tempFile)
 			writer := NewFileWriter(tempFile)
 
-			repo, err := NewRepository(reader, writer)
+			repo, err := NewFileRepository(reader, writer)
 			if err != nil {
-				t.Fatalf("NewRepository() error = %v, want nil", err)
+				t.Fatalf("NewFileRepository() error = %v, want nil", err)
 			}
 
 			todos, err := repo.ListAll()
@@ -106,7 +107,7 @@ func TestNewRepository(t *testing.T) {
 }
 
 func TestRepository_Add(t *testing.T) {
-	repo := setupTestRepository(t)
+	repo, _ := setupTestRepository(t)
 
 	t.Run("adds new todo", func(t *testing.T) {
 		todo, err := repo.Add("Test todo 3")
@@ -128,7 +129,7 @@ func TestRepository_Add(t *testing.T) {
 }
 
 func TestRepository_Remove(t *testing.T) {
-	repo := setupTestRepository(t)
+	repo, _ := setupTestRepository(t)
 
 	t.Run("removes todo by index", func(t *testing.T) {
 		todo, err := repo.Remove(0)
@@ -157,7 +158,7 @@ func TestRepository_Remove(t *testing.T) {
 }
 
 func TestRepository_Update(t *testing.T) {
-	repo := setupTestRepository(t)
+	repo, _ := setupTestRepository(t)
 
 	t.Run("updates todo by index", func(t *testing.T) {
 		todo, err := repo.Update(0, NewTodo("Test todo 1 updated"))
@@ -178,7 +179,7 @@ func TestRepository_Update(t *testing.T) {
 }
 
 func TestRepository_ToggleDone(t *testing.T) {
-	repo := setupTestRepository(t)
+	repo, _ := setupTestRepository(t)
 
 	t.Run("sets a not done todo to done", func(t *testing.T) {
 		todo, err := repo.ToggleDone(0)
@@ -202,7 +203,7 @@ func TestRepository_ToggleDone(t *testing.T) {
 }
 
 func TestRepository_SetPriority(t *testing.T) {
-	repo := setupTestRepository(t)
+	repo, _ := setupTestRepository(t)
 
 	t.Run("sets priority for a todo", func(t *testing.T) {
 		todo, err := repo.SetPriority(0, "A")
@@ -223,7 +224,7 @@ func TestRepository_SetPriority(t *testing.T) {
 }
 
 func TestRepository_SetContexts(t *testing.T) {
-	repo := setupTestRepository(t)
+	repo, _ := setupTestRepository(t)
 
 	t.Run("sets contexts for a todo", func(t *testing.T) {
 		todo, err := repo.SetContexts(0, []string{"@work", "@home"})
@@ -233,8 +234,8 @@ func TestRepository_SetContexts(t *testing.T) {
 		if len(todo.Contexts) != 2 {
 			t.Errorf("SetContexts() returned todo with %d contexts, want 2", len(todo.Contexts))
 		}
-		if todo.Contexts[0] != "@work" || todo.Contexts[1] != "@home" {
-			t.Errorf("SetContexts() returned contexts %v, want [@work @home]", todo.Contexts)
+		if todo.Contexts[0] != "@home" || todo.Contexts[1] != "@work" {
+			t.Errorf("SetContexts() returned contexts %v, want [@home @work]", todo.Contexts)
 		}
 	})
 
@@ -247,7 +248,7 @@ func TestRepository_SetContexts(t *testing.T) {
 }
 
 func TestRepository_SetProjects(t *testing.T) {
-	repo := setupTestRepository(t)
+	repo, _ := setupTestRepository(t)
 
 	t.Run("sets projects for a todo", func(t *testing.T) {
 		todo, err := repo.SetProjects(0, []string{"+work", "+home"})
@@ -257,8 +258,8 @@ func TestRepository_SetProjects(t *testing.T) {
 		if len(todo.Projects) != 2 {
 			t.Errorf("SetProjects() returned todo with %d projects, want 2", len(todo.Projects))
 		}
-		if todo.Projects[0] != "+work" || todo.Projects[1] != "+home" {
-			t.Errorf("SetProjects() returned projects %v, want [+work +home]", todo.Projects)
+		if todo.Projects[0] != "+home" || todo.Projects[1] != "+work" {
+			t.Errorf("SetProjects() returned projects %v, want [+home +work]", todo.Projects)
 		}
 	})
 
@@ -271,14 +272,14 @@ func TestRepository_SetProjects(t *testing.T) {
 }
 
 func TestRepository_AddContext(t *testing.T) {
-	repo := setupTestRepository(t)
+	repo, _ := setupTestRepository(t)
 
 	t.Run("adds context to a todo", func(t *testing.T) {
 		todo, err := repo.AddContext(0, "@work")
 		if err != nil {
 			t.Errorf("AddContext() error = %v, want nil", err)
 		}
-		if !contains(todo.Contexts, "@work") {
+		if !slices.Contains(todo.Contexts, "@work") {
 			t.Error("AddContext() did not add @work context")
 		}
 	})
@@ -308,14 +309,14 @@ func TestRepository_AddContext(t *testing.T) {
 }
 
 func TestRepository_AddProject(t *testing.T) {
-	repo := setupTestRepository(t)
+	repo, _ := setupTestRepository(t)
 
 	t.Run("adds project to a todo", func(t *testing.T) {
 		todo, err := repo.AddProject(0, "+work")
 		if err != nil {
 			t.Errorf("AddProject() error = %v, want nil", err)
 		}
-		if !contains(todo.Projects, "+work") {
+		if !slices.Contains(todo.Projects, "+work") {
 			t.Error("AddProject() did not add +work project")
 		}
 	})
@@ -345,14 +346,14 @@ func TestRepository_AddProject(t *testing.T) {
 }
 
 func TestRepository_RemoveContext(t *testing.T) {
-	repo := setupTestRepository(t)
+	repo, _ := setupTestRepository(t)
 
 	t.Run("removes context from a todo", func(t *testing.T) {
 		todo, err := repo.RemoveContext(0, "@context1")
 		if err != nil {
 			t.Errorf("RemoveContext() error = %v, want nil", err)
 		}
-		if contains(todo.Contexts, "@context1") {
+		if slices.Contains(todo.Contexts, "@context1") {
 			t.Error("RemoveContext() did not remove @context1 context")
 		}
 	})
@@ -366,14 +367,14 @@ func TestRepository_RemoveContext(t *testing.T) {
 }
 
 func TestRepository_RemoveProject(t *testing.T) {
-	repo := setupTestRepository(t)
+	repo, _ := setupTestRepository(t)
 
 	t.Run("removes project from a todo", func(t *testing.T) {
 		todo, err := repo.RemoveProject(0, "+project2")
 		if err != nil {
 			t.Errorf("RemoveProject() error = %v, want nil", err)
 		}
-		if contains(todo.Projects, "+project2") {
+		if slices.Contains(todo.Projects, "+project2") {
 			t.Error("RemoveProject() did not remove +project2 project")
 		}
 	})
@@ -387,7 +388,7 @@ func TestRepository_RemoveProject(t *testing.T) {
 }
 
 func TestRepository_Filter(t *testing.T) {
-	repo := setupTestRepository(t)
+	repo, _ := setupTestRepository(t)
 
 	t.Run("filters todos with a combined filter", func(t *testing.T) {
 		filter := Filter{
@@ -410,7 +411,7 @@ func TestRepository_Filter(t *testing.T) {
 }
 
 func TestRepository_Search(t *testing.T) {
-	repo := setupTestRepository(t)
+	repo, _ := setupTestRepository(t)
 
 	t.Run("searches todos by text", func(t *testing.T) {
 		filtered, err := repo.Search("test todo 1")
@@ -464,7 +465,7 @@ func TestRepository_Sort(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			repo := setupTestRepository(t)
+			repo, _ := setupTestRepository(t)
 
 			// Sort the todos
 			repo.Sort(tt.sort)
@@ -491,7 +492,7 @@ func TestRepository_Sort(t *testing.T) {
 }
 
 func TestRepository_ListTodos(t *testing.T) {
-	repo := setupTestRepository(t)
+	repo, _ := setupTestRepository(t)
 
 	t.Run("returns all todos that are not done", func(t *testing.T) {
 		todos, err := repo.ListTodos()
@@ -505,7 +506,7 @@ func TestRepository_ListTodos(t *testing.T) {
 }
 
 func TestRepository_ListDone(t *testing.T) {
-	repo := setupTestRepository(t)
+	repo, _ := setupTestRepository(t)
 
 	t.Run("returns only done todos", func(t *testing.T) {
 		done, err := repo.ListDone()
@@ -522,7 +523,7 @@ func TestRepository_ListDone(t *testing.T) {
 }
 
 func TestRepository_ListProjects(t *testing.T) {
-	repo := setupTestRepository(t)
+	repo, _ := setupTestRepository(t)
 
 	t.Run("returns unique sorted projects", func(t *testing.T) {
 		projects, err := repo.ListProjects()
@@ -539,7 +540,7 @@ func TestRepository_ListProjects(t *testing.T) {
 }
 
 func TestRepository_ListContexts(t *testing.T) {
-	repo := setupTestRepository(t)
+	repo, _ := setupTestRepository(t)
 
 	t.Run("returns unique sorted contexts", func(t *testing.T) {
 		contexts, err := repo.ListContexts()
@@ -561,9 +562,9 @@ func TestRepository_Save(t *testing.T) {
 		reader := NewBufferReader(&buf)
 		writer := NewBufferWriter(&buf)
 
-		repo, err := NewRepository(reader, writer)
+		repo, err := NewFileRepository(reader, writer)
 		if err != nil {
-			t.Fatalf("NewRepository() error = %v, want nil", err)
+			t.Fatalf("NewFileRepository() error = %v, want nil", err)
 		}
 
 		// Add some todos

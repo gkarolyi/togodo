@@ -257,3 +257,4 @@ func TestExecuteDo_PreservePriorityWhenToggling(t *testing.T) {
 	assertContains(t, undoneTask.Text, "@context")
 	assertNotContains(t, undoneTask.Text, "x ")
 }
+

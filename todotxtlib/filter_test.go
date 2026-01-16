@@ -1,12 +1,13 @@
 package todotxtlib
 
 import (
+	"slices"
 	"strings"
 	"testing"
 )
 
 func TestFilter_Apply(t *testing.T) {
-	repo := setupTestRepository(t)
+	repo, _ := setupTestRepository(t)
 	todos, err := repo.ListAll()
 	if err != nil {
 		t.Fatalf("ListAll() error = %v", err)
@@ -46,14 +47,7 @@ func TestFilter_Apply(t *testing.T) {
 			t.Errorf("Filter.Apply() returned %d todos, want 2", len(filtered))
 		}
 		for _, todo := range filtered {
-			found := false
-			for _, project := range todo.Projects {
-				if project == "+project1" {
-					found = true
-					break
-				}
-			}
-			if !found {
+			if !slices.Contains(todo.Projects, "+project1") {
 				t.Error("Filter.Apply() returned todo without +project1")
 			}
 		}
@@ -67,14 +61,7 @@ func TestFilter_Apply(t *testing.T) {
 			t.Errorf("Filter.Apply() returned %d todos, want 2", len(filtered))
 		}
 		for _, todo := range filtered {
-			found := false
-			for _, context := range todo.Contexts {
-				if context == "@context1" {
-					found = true
-					break
-				}
-			}
-			if !found {
+			if !slices.Contains(todo.Contexts, "@context1") {
 				t.Error("Filter.Apply() returned todo without @context1")
 			}
 		}
@@ -110,14 +97,7 @@ func TestFilter_Apply(t *testing.T) {
 		if todo.Priority != "A" {
 			t.Errorf("Filter.Apply() returned todo with priority %s, want A", todo.Priority)
 		}
-		found := false
-		for _, project := range todo.Projects {
-			if project == "+project2" {
-				found = true
-				break
-			}
-		}
-		if !found {
+		if !slices.Contains(todo.Projects, "+project2") {
 			t.Error("Filter.Apply() returned todo without +project2")
 		}
 	})
