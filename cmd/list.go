@@ -9,12 +9,17 @@ import (
 )
 
 func executeList(repo todotxtlib.TodoRepository, presenter *cli.Presenter, searchQuery string) error {
-	todos, err := repo.Search(searchQuery)
+	todos, err := executeListSearch(repo, searchQuery)
 	if err != nil {
 		return err
 	}
 
 	return presenter.PrintList(todos)
+}
+
+// executeListSearch performs the search operation and returns the results
+func executeListSearch(repo todotxtlib.TodoRepository, searchQuery string) ([]todotxtlib.Todo, error) {
+	return repo.Search(searchQuery)
 }
 
 // NewListCmd creates a new cobra command for listing todos.

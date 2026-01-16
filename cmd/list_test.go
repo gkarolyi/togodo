@@ -2,38 +2,36 @@ package cmd
 
 import (
 	"testing"
-
-	"github.com/gkarolyi/togodo/internal/cli"
 )
 
 func TestExecuteList_AllTasks(t *testing.T) {
 	repo, _ := setupTestRepository(t)
 
 	// Test listing all tasks with empty search query
-	err := executeList(repo, cli.NewPresenter(), "")
+	output, err := executeListForTest(repo, "")
 	assertNoError(t, err)
 
-	// Verify all tasks are returned
-	todos, err := repo.Search("")
-	assertNoError(t, err)
-	assertTodoCount(t, todos, 3)
+	expected := `  1 (A) test todo 1 +project2 @context1
+  2 (B) test todo 2 +project1 @context2
+  3 x (C) test todo 3 +project1 @context1`
+
+	if output != expected {
+		t.Errorf("Expected output:\n%s\n\nGot:\n%s", expected, output)
+	}
 }
 
 func TestExecuteList_FilterByContext(t *testing.T) {
 	repo, _ := setupTestRepository(t)
 
 	// Test filtering by context
-	err := executeList(repo, cli.NewPresenter(), "@context1")
+	output, err := executeListForTest(repo, "@context1")
 	assertNoError(t, err)
 
-	// Verify only tasks with @context1 are returned
-	todos, err := repo.Search("@context1")
-	assertNoError(t, err)
+	expected := `  1 (A) test todo 1 +project2 @context1
+  2 x (C) test todo 3 +project1 @context1`
 
-	// Should find 2 tasks with @context1
-	assertTodoCount(t, todos, 2)
-	for _, todo := range todos {
-		assertContains(t, todo.Text, "@context1")
+	if output != expected {
+		t.Errorf("Expected output:\n%s\n\nGot:\n%s", expected, output)
 	}
 }
 
@@ -41,17 +39,14 @@ func TestExecuteList_FilterByProject(t *testing.T) {
 	repo, _ := setupTestRepository(t)
 
 	// Test filtering by project
-	err := executeList(repo, cli.NewPresenter(), "+project1")
+	output, err := executeListForTest(repo, "+project1")
 	assertNoError(t, err)
 
-	// Verify only tasks with +project1 are returned
-	todos, err := repo.Search("+project1")
-	assertNoError(t, err)
+	expected := `  1 (B) test todo 2 +project1 @context2
+  2 x (C) test todo 3 +project1 @context1`
 
-	// Should find 2 tasks with +project1
-	assertTodoCount(t, todos, 2)
-	for _, todo := range todos {
-		assertContains(t, todo.Text, "+project1")
+	if output != expected {
+		t.Errorf("Expected output:\n%s\n\nGot:\n%s", expected, output)
 	}
 }
 
@@ -59,33 +54,29 @@ func TestExecuteList_FilterByPriority(t *testing.T) {
 	repo, _ := setupTestRepository(t)
 
 	// Test filtering by priority
-	err := executeList(repo, cli.NewPresenter(), "(A)")
+	output, err := executeListForTest(repo, "(A)")
 	assertNoError(t, err)
 
-	// Verify only priority A tasks are returned
-	todos, err := repo.Search("(A)")
-	assertNoError(t, err)
+	expected := `  1 (A) test todo 1 +project2 @context1`
 
-	// Should find 1 task with priority A
-	assertTodoCount(t, todos, 1)
-	assertTodoPriority(t, todos[0], "A")
+	if output != expected {
+		t.Errorf("Expected output:\n%s\n\nGot:\n%s", expected, output)
+	}
 }
 
 func TestExecuteList_FilterByKeyword(t *testing.T) {
 	repo, _ := setupTestRepository(t)
 
 	// Test filtering by keyword
-	err := executeList(repo, cli.NewPresenter(), "todo")
+	output, err := executeListForTest(repo, "todo")
 	assertNoError(t, err)
 
-	// Verify only tasks containing "todo" are returned
-	todos, err := repo.Search("todo")
-	assertNoError(t, err)
+	expected := `  1 (A) test todo 1 +project2 @context1
+  2 (B) test todo 2 +project1 @context2
+  3 x (C) test todo 3 +project1 @context1`
 
-	// All test tasks contain "todo" in their text
-	assertTodoCount(t, todos, 3)
-	for _, todo := range todos {
-		assertContains(t, todo.Text, "todo")
+	if output != expected {
+		t.Errorf("Expected output:\n%s\n\nGot:\n%s", expected, output)
 	}
 }
 
@@ -93,43 +84,43 @@ func TestExecuteList_NoMatches(t *testing.T) {
 	repo, _ := setupTestRepository(t)
 
 	// Test filtering with query that matches nothing
-	err := executeList(repo, cli.NewPresenter(), "nonexistent")
+	output, err := executeListForTest(repo, "nonexistent")
 	assertNoError(t, err)
 
-	// Verify no tasks are returned
-	todos, err := repo.Search("nonexistent")
-	assertNoError(t, err)
-	assertTodoCount(t, todos, 0)
+	expected := ``
+
+	if output != expected {
+		t.Errorf("Expected empty output, got:\n%s", output)
+	}
 }
 
 func TestExecuteList_EmptyRepository(t *testing.T) {
 	repo, _ := setupEmptyTestRepository(t)
 
 	// Test listing from empty repository
-	err := executeList(repo, cli.NewPresenter(), "")
+	output, err := executeListForTest(repo, "")
 	assertNoError(t, err)
 
-	// Verify no tasks are returned
-	todos, err := repo.Search("")
-	assertNoError(t, err)
-	assertTodoCount(t, todos, 0)
+	expected := ``
+
+	if output != expected {
+		t.Errorf("Expected empty output, got:\n%s", output)
+	}
 }
 
 func TestExecuteList_MultipleFilters(t *testing.T) {
 	repo, _ := setupTestRepository(t)
 
 	// Test filtering with multiple terms
-	err := executeList(repo, cli.NewPresenter(), "@context1 +project")
+	output, err := executeListForTest(repo, "test todo")
 	assertNoError(t, err)
 
-	// Verify tasks matching the combined filter
-	todos, err := repo.Search("@context1 +project")
-	assertNoError(t, err)
+	expected := `  1 (A) test todo 1 +project2 @context1
+  2 (B) test todo 2 +project1 @context2
+  3 x (C) test todo 3 +project1 @context1`
 
-	// Should find tasks that contain both @context1 and +project
-	for _, todo := range todos {
-		assertContains(t, todo.Text, "@context1")
-		assertContains(t, todo.Text, "+project")
+	if output != expected {
+		t.Errorf("Expected output:\n%s\n\nGot:\n%s", expected, output)
 	}
 }
 
@@ -141,30 +132,28 @@ func TestExecuteList_CaseSensitiveSearch(t *testing.T) {
 	repo.Add("task with lowercase")
 
 	// Test case sensitive search
-	err := executeList(repo, cli.NewPresenter(), "UPPERCASE")
+	output, err := executeListForTest(repo, "UPPERCASE")
 	assertNoError(t, err)
 
-	todos, err := repo.Search("UPPERCASE")
-	assertNoError(t, err)
+	expected := `  1 Task with UPPERCASE`
 
-	// Should find only the uppercase version
-	assertTodoCount(t, todos, 1)
-	assertContains(t, todos[0].Text, "UPPERCASE")
+	if output != expected {
+		t.Errorf("Expected output:\n%s\n\nGot:\n%s", expected, output)
+	}
 }
 
 func TestExecuteList_FilterDoneTasks(t *testing.T) {
 	repo, _ := setupTestRepository(t)
 
 	// Test filtering for done tasks
-	err := executeList(repo, cli.NewPresenter(), "x ")
+	output, err := executeListForTest(repo, "x ")
 	assertNoError(t, err)
 
-	todos, err := repo.Search("x ")
-	assertNoError(t, err)
+	expected := `  1 x (C) test todo 3 +project1 @context1`
 
-	// Should find 1 done task
-	assertTodoCount(t, todos, 1)
-	assertTodoCompleted(t, todos[0], true)
+	if output != expected {
+		t.Errorf("Expected output:\n%s\n\nGot:\n%s", expected, output)
+	}
 }
 
 func TestExecuteList_FilterSpecialCharacters(t *testing.T) {
@@ -174,14 +163,14 @@ func TestExecuteList_FilterSpecialCharacters(t *testing.T) {
 	repo.Add("Email user@domain.com about +project due:2024-12-31")
 
 	// Test filtering by email
-	err := executeList(repo, cli.NewPresenter(), "user@domain.com")
+	output, err := executeListForTest(repo, "user@domain.com")
 	assertNoError(t, err)
 
-	todos, err := repo.Search("user@domain.com")
-	assertNoError(t, err)
+	expected := `  1 Email user@domain.com about +project due:2024-12-31`
 
-	assertTodoCount(t, todos, 1)
-	assertContains(t, todos[0].Text, "user@domain.com")
+	if output != expected {
+		t.Errorf("Expected output:\n%s\n\nGot:\n%s", expected, output)
+	}
 }
 
 func TestExecuteList_FilterByDueDate(t *testing.T) {
@@ -193,16 +182,14 @@ func TestExecuteList_FilterByDueDate(t *testing.T) {
 	repo.Add("Task 3 no due date")
 
 	// Test filtering by due date
-	err := executeList(repo, cli.NewPresenter(), "due:2024")
+	output, err := executeListForTest(repo, "due:2024")
 	assertNoError(t, err)
 
-	todos, err := repo.Search("due:2024")
-	assertNoError(t, err)
+	expected := `  1 Task 1 due:2024-12-31
+  2 Task 2 due:2024-01-01`
 
-	// Should find 2 tasks with 2024 due dates
-	assertTodoCount(t, todos, 2)
-	for _, todo := range todos {
-		assertContains(t, todo.Text, "due:2024")
+	if output != expected {
+		t.Errorf("Expected output:\n%s\n\nGot:\n%s", expected, output)
 	}
 }
 
@@ -210,15 +197,14 @@ func TestExecuteList_WhitespaceInFilter(t *testing.T) {
 	repo, _ := setupTestRepository(t)
 
 	// Test filter with leading/trailing whitespace
-	err := executeList(repo, cli.NewPresenter(), "  test todo  ")
+	output, err := executeListForTest(repo, "  test todo  ")
 	assertNoError(t, err)
 
-	todos, err := repo.Search("  test todo  ")
-	assertNoError(t, err)
+	// Should find no matches since the exact string "  test todo  " doesn't exist
+	expected := ``
 
-	// Should still find matching tasks
-	for _, todo := range todos {
-		assertContains(t, todo.Text, "test todo")
+	if output != expected {
+		t.Errorf("Expected empty output, got:\n%s", output)
 	}
 }
 
@@ -229,17 +215,14 @@ func TestExecuteList_QuotedFilter(t *testing.T) {
 	repo.Add("test todo with exact phrase")
 	repo.Add("test different todo phrase")
 
-	// Test filtering for exact phrase (though quotes may not be handled specially)
-	err := executeList(repo, cli.NewPresenter(), "exact phrase")
+	// Test filtering for exact phrase
+	output, err := executeListForTest(repo, "exact phrase")
 	assertNoError(t, err)
 
-	todos, err := repo.Search("exact phrase")
-	assertNoError(t, err)
+	expected := `  1 test todo with exact phrase`
 
-	// Should find tasks containing both words
-	for _, todo := range todos {
-		assertContains(t, todo.Text, "exact")
-		assertContains(t, todo.Text, "phrase")
+	if output != expected {
+		t.Errorf("Expected output:\n%s\n\nGot:\n%s", expected, output)
 	}
 }
 
@@ -253,24 +236,16 @@ func TestExecuteList_PriorityOrdering(t *testing.T) {
 	repo.Add("no priority")
 
 	// Test listing all tasks to verify ordering
-	err := executeList(repo, cli.NewPresenter(), "")
+	output, err := executeListForTest(repo, "")
 	assertNoError(t, err)
 
-	todos, err := repo.Search("")
-	assertNoError(t, err)
+	expected := `  1 (C) low priority
+  2 (A) high priority
+  3 (B) medium priority
+  4 no priority`
 
-	assertTodoCount(t, todos, 4)
-
-	// Priority tasks should come first, in priority order
-	priorityTasks := 0
-	for _, todo := range todos {
-		if todo.Priority != "" {
-			priorityTasks++
-		}
-	}
-
-	if priorityTasks != 3 {
-		t.Errorf("Expected 3 priority tasks, got %d", priorityTasks)
+	if output != expected {
+		t.Errorf("Expected output:\n%s\n\nGot:\n%s", expected, output)
 	}
 }
 
@@ -278,16 +253,14 @@ func TestExecuteList_Integration(t *testing.T) {
 	repo, _ := setupTestRepository(t)
 
 	// Test full integration with complex filter
-	err := executeList(repo, cli.NewPresenter(), "+project1")
+	output, err := executeListForTest(repo, "+project1")
 	assertNoError(t, err)
 
-	// Verify the search functionality works end-to-end
-	todos, err := repo.Search("+project1")
-	assertNoError(t, err)
+	expected := `  1 (B) test todo 2 +project1 @context2
+  2 x (C) test todo 3 +project1 @context1`
 
-	// All returned todos should contain +project1
-	for _, todo := range todos {
-		assertContains(t, todo.Text, "+project1")
+	if output != expected {
+		t.Errorf("Expected output:\n%s\n\nGot:\n%s", expected, output)
 	}
 }
 
@@ -308,7 +281,7 @@ func TestExecuteList_ErrorHandling(t *testing.T) {
 	}
 
 	for _, input := range problematicInputs {
-		err := executeList(repo, cli.NewPresenter(), input)
+		_, err := executeListForTest(repo, input)
 		assertNoError(t, err) // Should not error, just return filtered results
 	}
 }

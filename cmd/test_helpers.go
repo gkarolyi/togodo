@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/gkarolyi/togodo/internal/cli"
 	"github.com/gkarolyi/togodo/todotxtlib"
 )
 
@@ -70,14 +71,6 @@ func assertError(tb testing.TB, err error) {
 	}
 }
 
-// assertTodoCount asserts that the todo list has the expected number of items
-func assertTodoCount(tb testing.TB, todos []todotxtlib.Todo, expectedCount int) {
-	tb.Helper()
-	if len(todos) != expectedCount {
-		tb.Fatalf("Expected %d todos, got %d", expectedCount, len(todos))
-	}
-}
-
 // assertContains asserts that the text contains the expected substring
 func assertContains(tb testing.TB, text, substring string) {
 	tb.Helper()
@@ -86,62 +79,16 @@ func assertContains(tb testing.TB, text, substring string) {
 	}
 }
 
-// assertNotContains asserts that the text does not contain the given substring
-func assertNotContains(tb testing.TB, text, substring string) {
-	tb.Helper()
-	if strings.Contains(text, substring) {
-		tb.Fatalf("Expected text to not contain '%s', but it did. Text: '%s'", substring, text)
+// executeListForTest executes the list search and returns formatted output for testing
+func executeListForTest(repo todotxtlib.TodoRepository, searchQuery string) (string, error) {
+	todos, err := executeListSearch(repo, searchQuery)
+	if err != nil {
+		return "", err
 	}
-}
 
-// assertTodoText asserts that a todo has the expected text
-func assertTodoText(tb testing.TB, todo todotxtlib.Todo, expectedText string) {
-	tb.Helper()
-	if todo.Text != expectedText {
-		tb.Fatalf("Expected todo text to be '%s', got '%s'", expectedText, todo.Text)
-	}
-}
+	// Format results similar to how the list command would display them
+	formatter := cli.NewPlainFormatter()
+	formatted := formatter.FormatList(todos)
 
-// assertTodoPriority asserts that a todo has the expected priority
-func assertTodoPriority(tb testing.TB, todo todotxtlib.Todo, expectedPriority string) {
-	tb.Helper()
-	if todo.Priority != expectedPriority {
-		tb.Fatalf("Expected todo priority to be '%s', got '%s'", expectedPriority, todo.Priority)
-	}
-}
-
-// assertTodoCompleted asserts that a todo has the expected completion status
-func assertTodoCompleted(tb testing.TB, todo todotxtlib.Todo, expectedCompleted bool) {
-	tb.Helper()
-	if todo.Done != expectedCompleted {
-		tb.Fatalf("Expected todo completed status to be %v, got %v", expectedCompleted, todo.Done)
-	}
-}
-
-// findTodoByText finds a todo in the list by its text content
-func findTodoByText(todos []todotxtlib.Todo, text string) (todotxtlib.Todo, bool) {
-	for _, todo := range todos {
-		if todo.Text == text {
-			return todo, true
-		}
-	}
-	return todotxtlib.Todo{}, false
-}
-
-// assertTodoExists asserts that a todo with the given text exists in the list
-func assertTodoExists(tb testing.TB, todos []todotxtlib.Todo, text string) {
-	tb.Helper()
-	_, found := findTodoByText(todos, text)
-	if !found {
-		tb.Fatalf("Expected to find todo with text '%s' in the list", text)
-	}
-}
-
-// assertTodoNotExists asserts that a todo with the given text does not exist in the list
-func assertTodoNotExists(tb testing.TB, todos []todotxtlib.Todo, text string) {
-	tb.Helper()
-	_, found := findTodoByText(todos, text)
-	if found {
-		tb.Fatalf("Expected not to find todo with text '%s' in the list", text)
-	}
+	return strings.Join(formatted, "\n"), nil
 }
