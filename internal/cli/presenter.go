@@ -17,6 +17,14 @@ func NewPresenter() *Presenter {
 	}
 }
 
+// NewPresenterWithDeps creates a presenter with injected dependencies (for testing)
+func NewPresenterWithDeps(formatter TodoFormatter, output OutputWriter) *Presenter {
+	return &Presenter{
+		formatter: formatter,
+		output:    output,
+	}
+}
+
 // Print prints a single todo item
 func (p *Presenter) Print(todo todotxtlib.Todo) error {
 	formatted := p.formatter.Format(todo)

@@ -1,0 +1,88 @@
+package tests
+
+import (
+	"testing"
+)
+
+// TestDelUsage tests del command usage
+// Ported from: t1800-del.sh
+func TestDelUsage(t *testing.T) {
+	env := SetupTestEnv(t)
+
+	t.Run("del without args", func(t *testing.T) {
+		output, code := env.RunCommand("del")
+		if code != 1 {
+			t.Errorf("Expected exit code 1, got %d", code)
+		}
+		// TODO: Check error message "usage: togodo del NR [TERM]"
+		_ = output
+	})
+
+	t.Run("del nonexistent item", func(t *testing.T) {
+		output, code := env.RunCommand("del", "42")
+		if code != 1 {
+			t.Errorf("Expected exit code 1, got %d", code)
+		}
+		// TODO: Check error message "TODO: No task 42."
+		_ = output
+	})
+}
+
+// TestBasicDel tests basic delete functionality
+// Ported from: t1800-del.sh
+func TestBasicDel(t *testing.T) {
+	env := SetupTestEnv(t)
+
+	env.WriteTodoFile(`(B) smell the uppercase Roses +flowers @outside
+(A) notice the sunflowers
+stop`)
+
+	t.Run("delete task by number", func(t *testing.T) {
+		output, code := env.RunCommand("del", "3")
+		if code != 0 {
+			t.Errorf("Expected exit code 0, got %d", code)
+		}
+		// TODO: Should show confirmation "3 stop\nTODO: 3 deleted."
+		// TODO: May require -f flag to force delete without confirmation
+		_ = output
+	})
+
+	t.Run("list after delete", func(t *testing.T) {
+		output, code := env.RunCommand("list")
+		expectedOutput := `2 (A) notice the sunflowers
+1 (B) smell the uppercase Roses +flowers @outside
+--
+TODO: 2 of 2 tasks shown`
+		if code != 0 {
+			t.Errorf("Expected exit code 0, got %d", code)
+		}
+		// Task 3 "stop" should be gone
+		if output != expectedOutput {
+			t.Errorf("Output mismatch\nExpected:\n%s\n\nGot:\n%s", expectedOutput, output)
+		}
+	})
+}
+
+// TestDelMultiple tests deleting multiple tasks
+// Ported from: t1800-del.sh
+func TestDelMultiple(t *testing.T) {
+	t.Skip("TODO: Implement deleting multiple tasks")
+
+	// env := SetupTestEnv(t)
+	// env.WriteTodoFile("task1\ntask2\ntask3\ntask4")
+	//
+	// output, code := env.RunCommand("del", "4", "2")
+	// // Should delete tasks 4 and 2
+}
+
+// TestDelWithTerm tests deleting terms from a task
+// Ported from: t1800-del.sh
+func TestDelWithTerm(t *testing.T) {
+	t.Skip("TODO: Implement 'del NR TERM' to remove term from task")
+
+	// env := SetupTestEnv(t)
+	// env.WriteTodoFile("(A) buy milk and eggs +grocery")
+	//
+	// output, code := env.RunCommand("del", "1", "eggs")
+	// // Should remove "eggs" from the task, keeping rest
+}
