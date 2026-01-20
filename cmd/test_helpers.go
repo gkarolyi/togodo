@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"bytes"
+	"fmt"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -252,4 +254,45 @@ func removeDoneTodos(tb testing.TB, repo todotxtlib.TodoRepository) []todotxtlib
 	}
 
 	return doneTodos
+}
+
+// parseLineNumbers converts command line arguments to 0-based indices
+// Line numbers in the command line are 1-based, but we need 0-based indices for the repository
+func parseLineNumbers(args []string) ([]int, error) {
+	indices := make([]int, 0, len(args))
+
+	for _, arg := range args {
+		lineNum, err := strconv.Atoi(arg)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert arg to int: %w", err)
+		}
+		if lineNum <= 0 {
+			return nil, fmt.Errorf("line number must be positive, got %d", lineNum)
+		}
+		// Convert 1-based line number to 0-based index
+		indices = append(indices, lineNum-1)
+	}
+
+	return indices, nil
+}
+
+// parsePriorityArgs parses arguments for the priority command
+// Format: [LINE_NUMBER...] [PRIORITY]
+// Returns: indices (0-based), priority, error
+func parsePriorityArgs(args []string) ([]int, string, error) {
+	if len(args) < 2 {
+		return nil, "", fmt.Errorf("expected at least 2 arguments (line number and priority)")
+	}
+
+	// Last argument is the priority
+	priority := args[len(args)-1]
+
+	// All other arguments are line numbers
+	lineArgs := args[:len(args)-1]
+	indices, err := parseLineNumbers(lineArgs)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return indices, priority, nil
 }

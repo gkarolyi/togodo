@@ -57,14 +57,14 @@ func NewRootCmd(repo todotxtlib.TodoRepository, presenter *cli.Presenter) *cobra
 		}
 	}
 
-	// Add subcommands
-	// TODO: These will be migrated to internal/cli
-	// rootCmd.AddCommand(NewAddCmd(repo, presenter))
-	// rootCmd.AddCommand(NewDoCmd(repo, presenter))
-	// rootCmd.AddCommand(NewListCmd(repo, presenter))
-	// rootCmd.AddCommand(NewPriCmd(repo, presenter))
-	// rootCmd.AddCommand(NewTidyCmd(repo, presenter))
-	// rootCmd.AddCommand(NewConfigCmd(presenter))
+	// Add subcommands from internal/cli
+	rootCmd.AddCommand(cli.NewAddCmd(repo))
+	rootCmd.AddCommand(cli.NewListCmd(repo))
+	rootCmd.AddCommand(cli.NewDoCmd(repo))
+	rootCmd.AddCommand(cli.NewPriCmd(repo))
+	rootCmd.AddCommand(cli.NewTidyCmd(repo))
+	// TODO: Config command needs to be migrated
+	// rootCmd.AddCommand(cli.NewConfigCmd(presenter))
 
 	return rootCmd
 }
