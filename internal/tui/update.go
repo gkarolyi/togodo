@@ -78,7 +78,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case tea.KeyBackspace:
 				if len(m.filter) > 0 {
 					m.filter = m.filter[:len(m.filter)-1]
-					filteredTodos, _ := m.repository.Search(m.filter)
+					filter := todotxtlib.Filter{Text: m.filter}
+					filteredTodos, _ := m.repository.Filter(filter)
 					m.choices = filteredTodos
 					if m.cursor >= len(m.choices) {
 						m.cursor = len(m.choices) - 1
@@ -90,7 +91,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			default:
 				m.filter += msg.String()
-				filteredTodos, _ := m.repository.Search(m.filter)
+				filter := todotxtlib.Filter{Text: m.filter}
+				filteredTodos, _ := m.repository.Filter(filter)
 				m.choices = filteredTodos
 				if m.cursor >= len(m.choices) {
 					m.cursor = len(m.choices) - 1

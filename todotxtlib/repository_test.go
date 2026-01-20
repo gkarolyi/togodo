@@ -414,25 +414,27 @@ func TestRepository_Search(t *testing.T) {
 	repo, _ := setupTestRepository(t)
 
 	t.Run("searches todos by text", func(t *testing.T) {
-		filtered, err := repo.Search("test todo 1")
+		filter := Filter{Text: "test todo 1"}
+		filtered, err := repo.Filter(filter)
 		if err != nil {
-			t.Errorf("Search() error = %v, want nil", err)
+			t.Errorf("Filter() error = %v, want nil", err)
 		}
 		if len(filtered) != 1 {
-			t.Errorf("Search() returned %d todos, want 1", len(filtered))
+			t.Errorf("Filter() returned %d todos, want 1", len(filtered))
 		}
 		if !filtered[0].Equals(NewTodo("(A) test todo 1 +project2 @context1")) {
-			t.Errorf("Search() returned todo %v, want (A) test todo 1 +project2 @context1", filtered[0].Text)
+			t.Errorf("Filter() returned todo %v, want (A) test todo 1 +project2 @context1", filtered[0].Text)
 		}
 	})
 
 	t.Run("returns empty list for non-matching query", func(t *testing.T) {
-		filtered, err := repo.Search("non-matching")
+		filter := Filter{Text: "non-matching"}
+		filtered, err := repo.Filter(filter)
 		if err != nil {
-			t.Errorf("Search() error = %v, want nil", err)
+			t.Errorf("Filter() error = %v, want nil", err)
 		}
 		if len(filtered) != 0 {
-			t.Errorf("Search() returned %d todos, want 0", len(filtered))
+			t.Errorf("Filter() returned %d todos, want 0", len(filtered))
 		}
 	})
 }

@@ -21,7 +21,6 @@ type TodoRepository interface {
 	RemoveContext(index int, context string) (Todo, error)
 	RemoveProject(index int, project string) (Todo, error)
 	Filter(filter Filter) ([]Todo, error)
-	Search(query string) ([]Todo, error)
 	Sort(sort *Sort)
 	ListAll() ([]Todo, error)
 	ListTodos() ([]Todo, error)

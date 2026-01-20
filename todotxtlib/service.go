@@ -120,5 +120,9 @@ func (s *DefaultTodoService) RemoveDoneTodos() ([]Todo, error) {
 // SearchTodos searches for todos matching the given query
 // Returns matching todos
 func (s *DefaultTodoService) SearchTodos(query string) ([]Todo, error) {
-	return s.repo.Search(query)
+	if query == "" {
+		return s.repo.ListAll()
+	}
+	filter := Filter{Text: query}
+	return s.repo.Filter(filter)
 }
