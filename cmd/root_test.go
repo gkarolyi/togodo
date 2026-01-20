@@ -4,15 +4,13 @@ import (
 	"testing"
 
 	"github.com/gkarolyi/togodo/internal/cli"
-	"github.com/gkarolyi/togodo/todotxtlib"
 )
 
 func TestNewRootCmd(t *testing.T) {
 	repo, _ := setupEmptyTestRepository(t)
-	service := todotxtlib.NewTodoService(repo)
 	presenter := cli.NewPresenter()
 
-	rootCmd := NewRootCmd(service, repo, presenter)
+	rootCmd := NewRootCmd(repo, presenter)
 
 	if rootCmd == nil {
 		t.Fatal("NewRootCmd() returned nil")

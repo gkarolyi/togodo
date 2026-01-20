@@ -16,7 +16,6 @@ type TestEnvironment struct {
 	buffer      *bytes.Buffer
 	output      *bytes.Buffer
 	repo        todotxtlib.TodoRepository
-	service     todotxtlib.TodoService
 	presenter   *cli.Presenter
 	rootCmd     *cobra.Command
 	t           *testing.T
@@ -69,9 +68,6 @@ func SetupTestEnv(t *testing.T) *TestEnvironment {
 		t.Fatalf("Failed to create repository: %v", err)
 	}
 
-	// Create service
-	service := todotxtlib.NewTodoService(repo)
-
 	// Create presenter with buffer output
 	outputWriter := NewBufferOutputWriter(output)
 	formatter := cli.NewPlainFormatter()
@@ -81,13 +77,12 @@ func SetupTestEnv(t *testing.T) *TestEnvironment {
 		buffer:    buffer,
 		output:    output,
 		repo:      repo,
-		service:   service,
 		presenter: presenter,
 		t:         t,
 	}
 
 	// Create root command with injected dependencies
-	env.rootCmd = cmd.NewRootCmd(service, repo, env.presenter)
+	env.rootCmd = cmd.NewRootCmd(repo, env.presenter)
 
 	return env
 }
@@ -100,7 +95,7 @@ func (env *TestEnvironment) RunCommand(args ...string) (string, int) {
 	env.output.Reset()
 
 	// Reset command state
-	env.rootCmd = cmd.NewRootCmd(env.service, env.repo, env.presenter)
+	env.rootCmd = cmd.NewRootCmd(env.repo, env.presenter)
 	env.rootCmd.SetArgs(args)
 	env.rootCmd.SetOut(env.output)
 	env.rootCmd.SetErr(env.output)
@@ -137,10 +132,9 @@ func (env *TestEnvironment) WriteTodoFile(content string) {
 	}
 
 	env.repo = repo
-	env.service = todotxtlib.NewTodoService(repo)
 
-	// Recreate root command with new service
-	env.rootCmd = cmd.NewRootCmd(env.service, env.repo, env.presenter)
+	// Recreate root command with new repository
+	env.rootCmd = cmd.NewRootCmd(env.repo, env.presenter)
 }
 
 // ReadTodoFile returns the contents of the todo.txt buffer

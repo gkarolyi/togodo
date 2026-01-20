@@ -8,14 +8,12 @@ import (
 
 func TestTidyCmd_WithDoneTasks(t *testing.T) {
 	repo, buf := setupTestRepository(t)
-	service := todotxtlib.NewTodoService(repo)
 
 	// Mark one more task as done to have multiple done tasks
 	repo.ToggleDone(0)
 
 	// Execute tidy
-	todos, err := service.RemoveDoneTodos()
-	assertNoError(t, err)
+	todos := removeDoneTodos(t, repo)
 
 	// Verify two todos were removed
 	if len(todos) != 2 {
@@ -33,15 +31,13 @@ func TestTidyCmd_WithDoneTasks(t *testing.T) {
 
 func TestTidyCmd_NoDoneTasks(t *testing.T) {
 	repo, buf := setupEmptyTestRepository(t)
-	service := todotxtlib.NewTodoService(repo)
 
 	// Add only undone tasks
 	repo.Add("task 1")
 	repo.Add("task 2")
 
 	// Execute tidy
-	todos, err := service.RemoveDoneTodos()
-	assertNoError(t, err)
+	todos := removeDoneTodos(t, repo)
 
 	// Verify no todos were removed
 	if len(todos) != 0 {
@@ -60,11 +56,9 @@ func TestTidyCmd_NoDoneTasks(t *testing.T) {
 
 func TestTidyCmd_EmptyRepository(t *testing.T) {
 	repo, _ := setupEmptyTestRepository(t)
-	service := todotxtlib.NewTodoService(repo)
 
 	// Execute tidy on empty repository
-	todos, err := service.RemoveDoneTodos()
-	assertNoError(t, err)
+	todos := removeDoneTodos(t, repo)
 
 	// Verify no todos were removed
 	if len(todos) != 0 {
@@ -74,7 +68,6 @@ func TestTidyCmd_EmptyRepository(t *testing.T) {
 
 func TestTidyCmd_AllTasksDone(t *testing.T) {
 	repo, buf := setupEmptyTestRepository(t)
-	service := todotxtlib.NewTodoService(repo)
 
 	// Add tasks and mark them all as done
 	repo.Add("x task 1")
@@ -82,8 +75,7 @@ func TestTidyCmd_AllTasksDone(t *testing.T) {
 	repo.Add("x task 3")
 
 	// Execute tidy
-	todos, err := service.RemoveDoneTodos()
-	assertNoError(t, err)
+	todos := removeDoneTodos(t, repo)
 
 	// Verify all todos were removed
 	if len(todos) != 3 {
@@ -101,7 +93,6 @@ func TestTidyCmd_AllTasksDone(t *testing.T) {
 
 func TestTidyCmd_ReturnsRemovedTasks(t *testing.T) {
 	repo, _ := setupTestRepository(t)
-	service := todotxtlib.NewTodoService(repo)
 
 	// Mark additional task as done
 	repo.ToggleDone(0)
@@ -113,8 +104,7 @@ func TestTidyCmd_ReturnsRemovedTasks(t *testing.T) {
 	doneCount := len(doneTodos)
 
 	// Execute tidy
-	removedTodos, err := service.RemoveDoneTodos()
-	assertNoError(t, err)
+	removedTodos := removeDoneTodos(t, repo)
 
 	// Verify that done tasks were returned
 	if doneCount == 0 {

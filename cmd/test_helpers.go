@@ -81,8 +81,15 @@ func assertContains(tb testing.TB, text, substring string) {
 
 // executeListForTest executes the list search and returns formatted output for testing
 func executeListForTest(repo todotxtlib.TodoRepository, searchQuery string) (string, error) {
-	service := todotxtlib.NewTodoService(repo)
-	todos, err := service.SearchTodos(searchQuery)
+	// Search for todos
+	var todos []todotxtlib.Todo
+	var err error
+	if searchQuery == "" {
+		todos, err = repo.ListAll()
+	} else {
+		filter := todotxtlib.Filter{Text: searchQuery}
+		todos, err = repo.Filter(filter)
+	}
 	if err != nil {
 		return "", err
 	}
@@ -108,4 +115,141 @@ func getRepositoryString(tb testing.TB, repo todotxtlib.TodoRepository, buf *byt
 	}
 
 	return buf.String()
+}
+
+// addTodos adds multiple todos, sorts, and saves (mimics old service.AddTodos)
+func addTodos(tb testing.TB, repo todotxtlib.TodoRepository, texts []string) []todotxtlib.Todo {
+	tb.Helper()
+	addedTodos := make([]todotxtlib.Todo, 0, len(texts))
+
+	for _, text := range texts {
+		todo, err := repo.Add(text)
+		if err != nil {
+			tb.Fatalf("Failed to add todo: %v", err)
+		}
+		addedTodos = append(addedTodos, todo)
+	}
+
+	repo.Sort(nil)
+	if err := repo.Save(); err != nil {
+		tb.Fatalf("Failed to save todos: %v", err)
+	}
+
+	return addedTodos
+}
+
+// toggleTodos toggles the done status of todos at the given indices
+func toggleTodos(tb testing.TB, repo todotxtlib.TodoRepository, indices []int) []todotxtlib.Todo {
+	tb.Helper()
+	toggledTodos := make([]todotxtlib.Todo, 0, len(indices))
+
+	for _, index := range indices {
+		todo, err := repo.ToggleDone(index)
+		if err != nil {
+			tb.Fatalf("Failed to toggle todo at index %d: %v", index, err)
+		}
+		toggledTodos = append(toggledTodos, todo)
+	}
+
+	repo.Sort(nil)
+	if err := repo.Save(); err != nil {
+		tb.Fatalf("Failed to save todos: %v", err)
+	}
+
+	return toggledTodos
+}
+
+// toggleTodosWithError toggles the done status of todos at the given indices (returns error)
+func toggleTodosWithError(repo todotxtlib.TodoRepository, indices []int) ([]todotxtlib.Todo, error) {
+	toggledTodos := make([]todotxtlib.Todo, 0, len(indices))
+
+	for _, index := range indices {
+		todo, err := repo.ToggleDone(index)
+		if err != nil {
+			return nil, err
+		}
+		toggledTodos = append(toggledTodos, todo)
+	}
+
+	repo.Sort(nil)
+	if err := repo.Save(); err != nil {
+		return nil, err
+	}
+
+	return toggledTodos, nil
+}
+
+// setPriorities sets the priority for todos at the given indices
+func setPriorities(tb testing.TB, repo todotxtlib.TodoRepository, indices []int, priority string) []todotxtlib.Todo {
+	tb.Helper()
+	updatedTodos := make([]todotxtlib.Todo, 0, len(indices))
+
+	for _, index := range indices {
+		todo, err := repo.SetPriority(index, priority)
+		if err != nil {
+			tb.Fatalf("Failed to set priority for todo at index %d: %v", index, err)
+		}
+		updatedTodos = append(updatedTodos, todo)
+	}
+
+	// Note: Pri command doesn't sort - preserves user's order
+	if err := repo.Save(); err != nil {
+		tb.Fatalf("Failed to save todos: %v", err)
+	}
+
+	return updatedTodos
+}
+
+// setPrioritiesWithError sets the priority for todos at the given indices (returns error)
+func setPrioritiesWithError(repo todotxtlib.TodoRepository, indices []int, priority string) ([]todotxtlib.Todo, error) {
+	updatedTodos := make([]todotxtlib.Todo, 0, len(indices))
+
+	for _, index := range indices {
+		todo, err := repo.SetPriority(index, priority)
+		if err != nil {
+			return nil, err
+		}
+		updatedTodos = append(updatedTodos, todo)
+	}
+
+	// Note: Pri command doesn't sort - preserves user's order
+	if err := repo.Save(); err != nil {
+		return nil, err
+	}
+
+	return updatedTodos, nil
+}
+
+// removeDoneTodos removes all completed todos
+func removeDoneTodos(tb testing.TB, repo todotxtlib.TodoRepository) []todotxtlib.Todo {
+	tb.Helper()
+
+	// Get done todos before removing
+	doneFilter := todotxtlib.Filter{Done: "true"}
+	doneTodos, err := repo.Filter(doneFilter)
+	if err != nil {
+		tb.Fatalf("Failed to list done todos: %v", err)
+	}
+
+	// Get all todos to iterate
+	allTodos, err := repo.ListAll()
+	if err != nil {
+		tb.Fatalf("Failed to list all todos: %v", err)
+	}
+
+	// Remove backwards to avoid index shifting
+	for i := len(allTodos) - 1; i >= 0; i-- {
+		if allTodos[i].Done {
+			if _, err := repo.Remove(i); err != nil {
+				tb.Fatalf("Failed to remove todo at index %d: %v", i, err)
+			}
+		}
+	}
+
+	repo.Sort(nil)
+	if err := repo.Save(); err != nil {
+		tb.Fatalf("Failed to save todos: %v", err)
+	}
+
+	return doneTodos
 }

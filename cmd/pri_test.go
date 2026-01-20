@@ -2,20 +2,16 @@ package cmd
 
 import (
 	"testing"
-
-	"github.com/gkarolyi/togodo/todotxtlib"
 )
 
 func TestPriCmd_SingleTask(t *testing.T) {
 	repo, buf := setupTestRepository(t)
-	service := todotxtlib.NewTodoService(repo)
 
 	// Test setting priority for task 2 (which has priority B)
 	indices, priority, err := parsePriorityArgs([]string{"2", "A"})
 	assertNoError(t, err)
 
-	todos, err := service.SetPriorities(indices, priority)
-	assertNoError(t, err)
+	todos := setPriorities(t, repo, indices, priority)
 
 	if len(todos) != 1 {
 		t.Fatalf("Expected 1 todo, got %d", len(todos))
@@ -34,14 +30,12 @@ func TestPriCmd_SingleTask(t *testing.T) {
 
 func TestPriCmd_MultipleTasks(t *testing.T) {
 	repo, buf := setupTestRepository(t)
-	service := todotxtlib.NewTodoService(repo)
 
 	// Test setting priority for multiple tasks (tasks 1 and 2)
 	indices, priority, err := parsePriorityArgs([]string{"1", "2", "C"})
 	assertNoError(t, err)
 
-	todos, err := service.SetPriorities(indices, priority)
-	assertNoError(t, err)
+	todos := setPriorities(t, repo, indices, priority)
 
 	if len(todos) != 2 {
 		t.Fatalf("Expected 2 todos, got %d", len(todos))
@@ -60,14 +54,12 @@ func TestPriCmd_MultipleTasks(t *testing.T) {
 
 func TestPriCmd_RemovePriority(t *testing.T) {
 	repo, buf := setupTestRepository(t)
-	service := todotxtlib.NewTodoService(repo)
 
 	// Test removing priority by setting empty string
 	indices, priority, err := parsePriorityArgs([]string{"1", ""})
 	assertNoError(t, err)
 
-	todos, err := service.SetPriorities(indices, priority)
-	assertNoError(t, err)
+	todos := setPriorities(t, repo, indices, priority)
 
 	if len(todos) != 1 {
 		t.Fatalf("Expected 1 todo, got %d", len(todos))
@@ -86,15 +78,14 @@ func TestPriCmd_RemovePriority(t *testing.T) {
 
 func TestPriCmd_InvalidLineNumber(t *testing.T) {
 	repo, _ := setupTestRepository(t)
-	service := todotxtlib.NewTodoService(repo)
 
 	// Test with invalid line number (too high)
 	indices, priority, err := parsePriorityArgs([]string{"10", "A"})
 	assertNoError(t, err)
 
-	_, err = service.SetPriorities(indices, priority)
+	_, err = setPrioritiesWithError(repo, indices, priority)
 	assertError(t, err)
-	assertContains(t, err.Error(), "failed to set priority for todo at index 9")
+	assertContains(t, err.Error(), "index out of bounds")
 }
 
 func TestPriCmd_InvalidLineNumberFormat(t *testing.T) {
@@ -120,15 +111,14 @@ func TestPriCmd_NegativeLineNumber(t *testing.T) {
 
 func TestPriCmd_EmptyRepository(t *testing.T) {
 	repo, _ := setupEmptyTestRepository(t)
-	service := todotxtlib.NewTodoService(repo)
 
 	// Test setting priority on empty repository
 	indices, priority, err := parsePriorityArgs([]string{"1", "A"})
 	assertNoError(t, err)
 
-	_, err = service.SetPriorities(indices, priority)
+	_, err = setPrioritiesWithError(repo, indices, priority)
 	assertError(t, err)
-	assertContains(t, err.Error(), "failed to set priority for todo at index 0")
+	assertContains(t, err.Error(), "index out of bounds")
 }
 
 func TestPriCmd_MixedValidInvalidNumbers(t *testing.T) {
@@ -141,14 +131,12 @@ func TestPriCmd_MixedValidInvalidNumbers(t *testing.T) {
 
 func TestPriCmd_DoneTaskPriority(t *testing.T) {
 	repo, buf := setupTestRepository(t)
-	service := todotxtlib.NewTodoService(repo)
 
 	// Test setting priority on a done task (line 3 is done)
 	indices, priority, err := parsePriorityArgs([]string{"3", "A"})
 	assertNoError(t, err)
 
-	todos, err := service.SetPriorities(indices, priority)
-	assertNoError(t, err)
+	todos := setPriorities(t, repo, indices, priority)
 
 	if len(todos) != 1 {
 		t.Fatalf("Expected 1 todo, got %d", len(todos))

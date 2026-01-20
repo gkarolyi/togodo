@@ -2,20 +2,16 @@ package cmd
 
 import (
 	"testing"
-
-	"github.com/gkarolyi/togodo/todotxtlib"
 )
 
 func TestDoCmd_SingleTask(t *testing.T) {
 	repo, buf := setupTestRepository(t)
-	service := todotxtlib.NewTodoService(repo)
 
 	// Test toggling a task that's not done (line 1)
 	indices, err := parseLineNumbers([]string{"1"})
 	assertNoError(t, err)
 
-	todos, err := service.ToggleTodos(indices)
-	assertNoError(t, err)
+	todos := toggleTodos(t, repo, indices)
 
 	if len(todos) != 1 {
 		t.Fatalf("Expected 1 todo, got %d", len(todos))
@@ -34,14 +30,12 @@ func TestDoCmd_SingleTask(t *testing.T) {
 
 func TestDoCmd_MultipleTask(t *testing.T) {
 	repo, buf := setupTestRepository(t)
-	service := todotxtlib.NewTodoService(repo)
 
 	// Test toggling multiple tasks
 	indices, err := parseLineNumbers([]string{"1", "2"})
 	assertNoError(t, err)
 
-	todos, err := service.ToggleTodos(indices)
-	assertNoError(t, err)
+	todos := toggleTodos(t, repo, indices)
 
 	if len(todos) != 2 {
 		t.Fatalf("Expected 2 todos, got %d", len(todos))
@@ -60,14 +54,12 @@ func TestDoCmd_MultipleTask(t *testing.T) {
 
 func TestDoCmd_ToggleAlreadyDone(t *testing.T) {
 	repo, buf := setupTestRepository(t)
-	service := todotxtlib.NewTodoService(repo)
 
 	// Test toggling a task to not done
 	indices, err := parseLineNumbers([]string{"3"})
 	assertNoError(t, err)
 
-	todos, err := service.ToggleTodos(indices)
-	assertNoError(t, err)
+	todos := toggleTodos(t, repo, indices)
 
 	if len(todos) != 1 {
 		t.Fatalf("Expected 1 todo, got %d", len(todos))
@@ -86,15 +78,14 @@ func TestDoCmd_ToggleAlreadyDone(t *testing.T) {
 
 func TestDoCmd_InvalidLineNumber(t *testing.T) {
 	repo, _ := setupTestRepository(t)
-	service := todotxtlib.NewTodoService(repo)
 
 	// Test with invalid line number (too high)
 	indices, err := parseLineNumbers([]string{"10"})
 	assertNoError(t, err)
 
-	_, err = service.ToggleTodos(indices)
+	_, err = toggleTodosWithError(repo, indices)
 	assertError(t, err)
-	assertContains(t, err.Error(), "failed to toggle todo at index 9")
+	assertContains(t, err.Error(), "index out of bounds")
 }
 
 func TestDoCmd_InvalidLineNumberFormat(t *testing.T) {
@@ -120,15 +111,14 @@ func TestDoCmd_NegativeLineNumber(t *testing.T) {
 
 func TestDoCmd_EmptyRepository(t *testing.T) {
 	repo, _ := setupEmptyTestRepository(t)
-	service := todotxtlib.NewTodoService(repo)
 
 	// Test toggling on empty repository
 	indices, err := parseLineNumbers([]string{"1"})
 	assertNoError(t, err)
 
-	_, err = service.ToggleTodos(indices)
+	_, err = toggleTodosWithError(repo, indices)
 	assertError(t, err)
-	assertContains(t, err.Error(), "failed to toggle todo at index 0")
+	assertContains(t, err.Error(), "index out of bounds")
 }
 
 func TestDoCmd_MixedValidInvalidNumbers(t *testing.T) {

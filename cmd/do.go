@@ -26,7 +26,7 @@ func parseLineNumbers(args []string) ([]int, error) {
 }
 
 // NewDoCmd creates a new cobra command for toggling todos.
-func NewDoCmd(service todotxtlib.TodoService, presenter *cli.Presenter) *cobra.Command {
+func NewDoCmd(repo todotxtlib.TodoRepository, presenter *cli.Presenter) *cobra.Command {
 	return &cobra.Command{
 		Use:   "do [LINE NUMBER]...",
 		Short: "Toggle the done status of a todo item",
@@ -49,14 +49,24 @@ togodo do 1 2 3
 				return err
 			}
 
-			// Business logic - delegated to service
-			todos, err := service.ToggleTodos(indices)
-			if err != nil {
-				return err
+			// Toggle todos
+			toggledTodos := make([]todotxtlib.Todo, 0, len(indices))
+			for _, index := range indices {
+				todo, err := repo.ToggleDone(index)
+				if err != nil {
+					return fmt.Errorf("failed to toggle todo at index %d: %w", index, err)
+				}
+				toggledTodos = append(toggledTodos, todo)
 			}
 
-			// Presentation logic - handled by presenter
-			for _, todo := range todos {
+			// Sort and save
+			repo.Sort(nil)
+			if err := repo.Save(); err != nil {
+				return fmt.Errorf("failed to save todos: %w", err)
+			}
+
+			// Present
+			for _, todo := range toggledTodos {
 				presenter.Print(todo)
 			}
 			return nil

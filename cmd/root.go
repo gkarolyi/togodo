@@ -33,7 +33,7 @@ import (
 )
 
 // NewRootCmd creates the root command and its subcommands, injecting dependencies.
-func NewRootCmd(service todotxtlib.TodoService, repo todotxtlib.TodoRepository, presenter *cli.Presenter) *cobra.Command {
+func NewRootCmd(repo todotxtlib.TodoRepository, presenter *cli.Presenter) *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:   "togodo",
 		Short: "A CLI tool for managing your todo.txt",
@@ -58,11 +58,11 @@ func NewRootCmd(service todotxtlib.TodoService, repo todotxtlib.TodoRepository, 
 	}
 
 	// Add subcommands
-	rootCmd.AddCommand(NewAddCmd(service, presenter))
-	rootCmd.AddCommand(NewDoCmd(service, presenter))
-	rootCmd.AddCommand(NewListCmd(service, presenter))
-	rootCmd.AddCommand(NewPriCmd(service, presenter))
-	rootCmd.AddCommand(NewTidyCmd(service, presenter))
+	rootCmd.AddCommand(NewAddCmd(repo, presenter))
+	rootCmd.AddCommand(NewDoCmd(repo, presenter))
+	rootCmd.AddCommand(NewListCmd(repo, presenter))
+	rootCmd.AddCommand(NewPriCmd(repo, presenter))
+	rootCmd.AddCommand(NewTidyCmd(repo, presenter))
 	rootCmd.AddCommand(NewConfigCmd(presenter))
 
 	return rootCmd

@@ -27,7 +27,7 @@ func parsePriorityArgs(args []string) ([]int, string, error) {
 }
 
 // NewPriCmd creates a new cobra command for setting priority.
-func NewPriCmd(service todotxtlib.TodoService, presenter *cli.Presenter) *cobra.Command {
+func NewPriCmd(repo todotxtlib.TodoRepository, presenter *cli.Presenter) *cobra.Command {
 	return &cobra.Command{
 		Use:   "pri [LINE NUMBER]...",
 		Short: "Set the priority of a todo item",
@@ -49,14 +49,23 @@ togodo pri 1 2 3 B
 				return err
 			}
 
-			// Business logic - delegated to service
-			todos, err := service.SetPriorities(indices, priority)
-			if err != nil {
-				return err
+			// Set priorities
+			updatedTodos := make([]todotxtlib.Todo, 0, len(indices))
+			for _, index := range indices {
+				todo, err := repo.SetPriority(index, priority)
+				if err != nil {
+					return fmt.Errorf("failed to set priority for todo at index %d: %w", index, err)
+				}
+				updatedTodos = append(updatedTodos, todo)
 			}
 
-			// Presentation logic - handled by presenter
-			for _, todo := range todos {
+			// Note: Pri command doesn't sort - preserves user's order
+			if err := repo.Save(); err != nil {
+				return fmt.Errorf("failed to save todos: %w", err)
+			}
+
+			// Present
+			for _, todo := range updatedTodos {
 				presenter.Print(todo)
 			}
 			return nil

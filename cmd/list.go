@@ -9,7 +9,7 @@ import (
 )
 
 // NewListCmd creates a new cobra command for listing todos.
-func NewListCmd(service todotxtlib.TodoService, presenter *cli.Presenter) *cobra.Command {
+func NewListCmd(repo todotxtlib.TodoRepository, presenter *cli.Presenter) *cobra.Command {
 	return &cobra.Command{
 		Use:   "list [FILTER]",
 		Short: "List and filter items in your todo.txt",
@@ -28,13 +28,20 @@ togodo list '@work'
 		RunE: func(cmd *cobra.Command, args []string) error {
 			searchQuery := strings.Join(args, " ")
 
-			// Business logic - delegated to service
-			todos, err := service.SearchTodos(searchQuery)
+			// Search for todos
+			var todos []todotxtlib.Todo
+			var err error
+			if searchQuery == "" {
+				todos, err = repo.ListAll()
+			} else {
+				filter := todotxtlib.Filter{Text: searchQuery}
+				todos, err = repo.Filter(filter)
+			}
 			if err != nil {
 				return err
 			}
 
-			// Presentation logic - handled by presenter
+			// Present
 			return presenter.PrintList(todos)
 		},
 	}

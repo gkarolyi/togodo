@@ -3,17 +3,13 @@ package cmd
 import (
 	"strings"
 	"testing"
-
-	"github.com/gkarolyi/togodo/todotxtlib"
 )
 
 func TestAddCmd_SingleTask(t *testing.T) {
 	repo, buf := setupEmptyTestRepository(t)
-	service := todotxtlib.NewTodoService(repo)
 
 	// Test adding a single task
-	todos, err := service.AddTodos([]string{"(A) new task +project @context"})
-	assertNoError(t, err)
+	todos := addTodos(t, repo, []string{"(A) new task +project @context"})
 
 	// Verify the returned todos
 	if len(todos) != 1 {
@@ -31,15 +27,12 @@ func TestAddCmd_SingleTask(t *testing.T) {
 
 func TestAddCmd_MultipleTasks(t *testing.T) {
 	repo, buf := setupEmptyTestRepository(t)
-	service := todotxtlib.NewTodoService(repo)
 
-	todos, err := service.AddTodos([]string{
+	todos := addTodos(t, repo, []string{
 		"(A) first task +project1 @context1",
 		"(B) second task +project2 @context2",
 		"third task without priority",
 	})
-
-	assertNoError(t, err)
 
 	// Verify the returned todos
 	if len(todos) != 3 {
@@ -69,11 +62,9 @@ func TestAddCmd_MultipleTasks(t *testing.T) {
 
 func TestAddCmd_EmptyArgs(t *testing.T) {
 	repo, buf := setupEmptyTestRepository(t)
-	service := todotxtlib.NewTodoService(repo)
 
 	// Test adding with empty args (should not add anything)
-	todos, err := service.AddTodos([]string{})
-	assertNoError(t, err)
+	todos := addTodos(t, repo, []string{})
 
 	// Verify no todos were returned
 	if len(todos) != 0 {
@@ -91,7 +82,6 @@ func TestAddCmd_EmptyArgs(t *testing.T) {
 
 func TestAddCmd_SortingBehavior(t *testing.T) {
 	repo, buf := setupEmptyTestRepository(t)
-	service := todotxtlib.NewTodoService(repo)
 
 	// Add tasks in mixed priority order
 	tasks := []string{
@@ -102,8 +92,7 @@ func TestAddCmd_SortingBehavior(t *testing.T) {
 	}
 
 	for _, task := range tasks {
-		_, err := service.AddTodos([]string{task})
-		assertNoError(t, err)
+		addTodos(t, repo, []string{task})
 	}
 
 	// Verify the actual order using output
@@ -130,11 +119,9 @@ func TestAddCmd_SortingBehavior(t *testing.T) {
 
 func TestAddCmd_MultilineString(t *testing.T) {
 	repo, buf := setupEmptyTestRepository(t)
-	service := todotxtlib.NewTodoService(repo)
 
 	// Test adding a task that contains newlines (should be treated as one task)
-	todos, err := service.AddTodos([]string{"(A) task with\nnewline characters\nin the text"})
-	assertNoError(t, err)
+	todos := addTodos(t, repo, []string{"(A) task with\nnewline characters\nin the text"})
 
 	// Verify one todo was returned
 	if len(todos) != 1 {
@@ -152,14 +139,12 @@ func TestAddCmd_MultilineString(t *testing.T) {
 
 func TestAddCmd_DuplicateTasks(t *testing.T) {
 	repo, buf := setupEmptyTestRepository(t)
-	service := todotxtlib.NewTodoService(repo)
 
 	// Test adding duplicate tasks
-	todos, err := service.AddTodos([]string{
+	todos := addTodos(t, repo, []string{
 		"(A) duplicate task +project @context",
 		"(A) duplicate task +project @context",
 	})
-	assertNoError(t, err)
 
 	// Verify two todos were returned
 	if len(todos) != 2 {
