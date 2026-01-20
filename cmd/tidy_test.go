@@ -7,7 +7,7 @@ import (
 )
 
 func TestTidyCmd_WithDoneTasks(t *testing.T) {
-	repo, _ := setupTestRepository(t)
+	repo, buf := setupTestRepository(t)
 	service := todotxtlib.NewTodoService(repo)
 
 	// Mark one more task as done to have multiple done tasks
@@ -22,7 +22,7 @@ func TestTidyCmd_WithDoneTasks(t *testing.T) {
 		t.Fatalf("Expected 2 removed todos, got %d", len(todos))
 	}
 
-	output, err := repo.WriteToString()
+	output := getRepositoryString(t, repo, buf)
 
 	expectedOutput := "(B) test todo 2 +project1 @context2\n"
 
@@ -32,7 +32,7 @@ func TestTidyCmd_WithDoneTasks(t *testing.T) {
 }
 
 func TestTidyCmd_NoDoneTasks(t *testing.T) {
-	repo, _ := setupEmptyTestRepository(t)
+	repo, buf := setupEmptyTestRepository(t)
 	service := todotxtlib.NewTodoService(repo)
 
 	// Add only undone tasks
@@ -48,7 +48,7 @@ func TestTidyCmd_NoDoneTasks(t *testing.T) {
 		t.Fatalf("Expected 0 removed todos, got %d", len(todos))
 	}
 
-	output, err := repo.WriteToString()
+	output := getRepositoryString(t, repo, buf)
 
 	expectedOutput := "task 1\n" +
 		"task 2\n"
@@ -73,7 +73,7 @@ func TestTidyCmd_EmptyRepository(t *testing.T) {
 }
 
 func TestTidyCmd_AllTasksDone(t *testing.T) {
-	repo, _ := setupEmptyTestRepository(t)
+	repo, buf := setupEmptyTestRepository(t)
 	service := todotxtlib.NewTodoService(repo)
 
 	// Add tasks and mark them all as done
@@ -90,7 +90,7 @@ func TestTidyCmd_AllTasksDone(t *testing.T) {
 		t.Fatalf("Expected 3 removed todos, got %d", len(todos))
 	}
 
-	output, err := repo.WriteToString()
+	output := getRepositoryString(t, repo, buf)
 
 	expectedOutput := ""
 

@@ -1,7 +1,6 @@
 package todotxtlib
 
 import (
-	"bytes"
 	"fmt"
 	"sort"
 )
@@ -28,7 +27,6 @@ type TodoRepository interface {
 	ListProjects() ([]string, error)
 	ListContexts() ([]string, error)
 	Save() error
-	WriteToString() (string, error)
 }
 
 // FileRepository handles storing and manipulating Todos in a file.
@@ -239,15 +237,4 @@ func (r FileRepository) ListContexts() ([]string, error) {
 // Save saves the todos using the configured writer
 func (r *FileRepository) Save() error {
 	return r.writer.Write(r.todos)
-}
-
-// WriteToString returns the todos as a string representation
-func (r *FileRepository) WriteToString() (string, error) {
-	var buffer bytes.Buffer
-	writer := NewBufferWriter(&buffer)
-	err := writer.Write(r.todos)
-	if err != nil {
-		return "", err
-	}
-	return buffer.String(), nil
 }

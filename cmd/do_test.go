@@ -7,7 +7,7 @@ import (
 )
 
 func TestDoCmd_SingleTask(t *testing.T) {
-	repo, _ := setupTestRepository(t)
+	repo, buf := setupTestRepository(t)
 	service := todotxtlib.NewTodoService(repo)
 
 	// Test toggling a task that's not done (line 1)
@@ -21,7 +21,7 @@ func TestDoCmd_SingleTask(t *testing.T) {
 		t.Fatalf("Expected 1 todo, got %d", len(todos))
 	}
 
-	output, err := repo.WriteToString()
+	output := getRepositoryString(t, repo, buf)
 
 	expectedOutput := "(B) test todo 2 +project1 @context2\n" +
 		"x (A) test todo 1 +project2 @context1\n" +
@@ -33,7 +33,7 @@ func TestDoCmd_SingleTask(t *testing.T) {
 }
 
 func TestDoCmd_MultipleTask(t *testing.T) {
-	repo, _ := setupTestRepository(t)
+	repo, buf := setupTestRepository(t)
 	service := todotxtlib.NewTodoService(repo)
 
 	// Test toggling multiple tasks
@@ -47,7 +47,7 @@ func TestDoCmd_MultipleTask(t *testing.T) {
 		t.Fatalf("Expected 2 todos, got %d", len(todos))
 	}
 
-	output, err := repo.WriteToString()
+	output := getRepositoryString(t, repo, buf)
 
 	expectedOutput := "x (A) test todo 1 +project2 @context1\n" +
 		"x (B) test todo 2 +project1 @context2\n" +
@@ -59,7 +59,7 @@ func TestDoCmd_MultipleTask(t *testing.T) {
 }
 
 func TestDoCmd_ToggleAlreadyDone(t *testing.T) {
-	repo, _ := setupTestRepository(t)
+	repo, buf := setupTestRepository(t)
 	service := todotxtlib.NewTodoService(repo)
 
 	// Test toggling a task to not done
@@ -73,7 +73,7 @@ func TestDoCmd_ToggleAlreadyDone(t *testing.T) {
 		t.Fatalf("Expected 1 todo, got %d", len(todos))
 	}
 
-	output, err := repo.WriteToString()
+	output := getRepositoryString(t, repo, buf)
 
 	expectedOutput := "(A) test todo 1 +project2 @context1\n" +
 		"(B) test todo 2 +project1 @context2\n" +

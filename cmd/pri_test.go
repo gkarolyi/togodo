@@ -7,7 +7,7 @@ import (
 )
 
 func TestPriCmd_SingleTask(t *testing.T) {
-	repo, _ := setupTestRepository(t)
+	repo, buf := setupTestRepository(t)
 	service := todotxtlib.NewTodoService(repo)
 
 	// Test setting priority for task 2 (which has priority B)
@@ -21,7 +21,7 @@ func TestPriCmd_SingleTask(t *testing.T) {
 		t.Fatalf("Expected 1 todo, got %d", len(todos))
 	}
 
-	output, err := repo.WriteToString()
+	output := getRepositoryString(t, repo, buf)
 
 	expectedOutput := "(A) test todo 1 +project2 @context1\n" +
 		"(A) test todo 2 +project1 @context2\n" +
@@ -33,7 +33,7 @@ func TestPriCmd_SingleTask(t *testing.T) {
 }
 
 func TestPriCmd_MultipleTasks(t *testing.T) {
-	repo, _ := setupTestRepository(t)
+	repo, buf := setupTestRepository(t)
 	service := todotxtlib.NewTodoService(repo)
 
 	// Test setting priority for multiple tasks (tasks 1 and 2)
@@ -47,7 +47,7 @@ func TestPriCmd_MultipleTasks(t *testing.T) {
 		t.Fatalf("Expected 2 todos, got %d", len(todos))
 	}
 
-	output, err := repo.WriteToString()
+	output := getRepositoryString(t, repo, buf)
 
 	expectedOutput := "(C) test todo 1 +project2 @context1\n" +
 		"(C) test todo 2 +project1 @context2\n" +
@@ -59,7 +59,7 @@ func TestPriCmd_MultipleTasks(t *testing.T) {
 }
 
 func TestPriCmd_RemovePriority(t *testing.T) {
-	repo, _ := setupTestRepository(t)
+	repo, buf := setupTestRepository(t)
 	service := todotxtlib.NewTodoService(repo)
 
 	// Test removing priority by setting empty string
@@ -73,7 +73,7 @@ func TestPriCmd_RemovePriority(t *testing.T) {
 		t.Fatalf("Expected 1 todo, got %d", len(todos))
 	}
 
-	output, err := repo.WriteToString()
+	output := getRepositoryString(t, repo, buf)
 
 	expectedOutput := "test todo 1 +project2 @context1\n" +
 		"(B) test todo 2 +project1 @context2\n" +
@@ -140,7 +140,7 @@ func TestPriCmd_MixedValidInvalidNumbers(t *testing.T) {
 }
 
 func TestPriCmd_DoneTaskPriority(t *testing.T) {
-	repo, _ := setupTestRepository(t)
+	repo, buf := setupTestRepository(t)
 	service := todotxtlib.NewTodoService(repo)
 
 	// Test setting priority on a done task (line 3 is done)
@@ -155,7 +155,7 @@ func TestPriCmd_DoneTaskPriority(t *testing.T) {
 	}
 
 	// Verify the done task can have its priority changed
-	output, err := repo.WriteToString()
+	output := getRepositoryString(t, repo, buf)
 
 	expectedOutput := "(A) test todo 1 +project2 @context1\n" +
 		"(B) test todo 2 +project1 @context2\n" +

@@ -8,7 +8,7 @@ import (
 )
 
 func TestAddCmd_SingleTask(t *testing.T) {
-	repo, _ := setupEmptyTestRepository(t)
+	repo, buf := setupEmptyTestRepository(t)
 	service := todotxtlib.NewTodoService(repo)
 
 	// Test adding a single task
@@ -21,8 +21,7 @@ func TestAddCmd_SingleTask(t *testing.T) {
 	}
 
 	// Verify the task was saved
-	output, err := repo.WriteToString()
-	assertNoError(t, err)
+	output := getRepositoryString(t, repo, buf)
 
 	expectedOutput := "(A) new task +project @context\n"
 	if output != expectedOutput {
@@ -31,7 +30,7 @@ func TestAddCmd_SingleTask(t *testing.T) {
 }
 
 func TestAddCmd_MultipleTasks(t *testing.T) {
-	repo, _ := setupEmptyTestRepository(t)
+	repo, buf := setupEmptyTestRepository(t)
 	service := todotxtlib.NewTodoService(repo)
 
 	todos, err := service.AddTodos([]string{
@@ -48,8 +47,7 @@ func TestAddCmd_MultipleTasks(t *testing.T) {
 	}
 
 	// Check that tasks are in correct sorted order
-	output, err := repo.WriteToString()
-	assertNoError(t, err)
+	output := getRepositoryString(t, repo, buf)
 
 	lines := strings.Split(strings.TrimSpace(output), "\n")
 	expectedOrder := []string{
@@ -70,7 +68,7 @@ func TestAddCmd_MultipleTasks(t *testing.T) {
 }
 
 func TestAddCmd_EmptyArgs(t *testing.T) {
-	repo, _ := setupEmptyTestRepository(t)
+	repo, buf := setupEmptyTestRepository(t)
 	service := todotxtlib.NewTodoService(repo)
 
 	// Test adding with empty args (should not add anything)
@@ -83,8 +81,7 @@ func TestAddCmd_EmptyArgs(t *testing.T) {
 	}
 
 	// Verify no tasks were added
-	output, err := repo.WriteToString()
-	assertNoError(t, err)
+	output := getRepositoryString(t, repo, buf)
 
 	expectedOutput := ""
 	if output != expectedOutput {
@@ -93,7 +90,7 @@ func TestAddCmd_EmptyArgs(t *testing.T) {
 }
 
 func TestAddCmd_SortingBehavior(t *testing.T) {
-	repo, _ := setupEmptyTestRepository(t)
+	repo, buf := setupEmptyTestRepository(t)
 	service := todotxtlib.NewTodoService(repo)
 
 	// Add tasks in mixed priority order
@@ -110,8 +107,7 @@ func TestAddCmd_SortingBehavior(t *testing.T) {
 	}
 
 	// Verify the actual order using output
-	output, err := repo.WriteToString()
-	assertNoError(t, err)
+	output := getRepositoryString(t, repo, buf)
 
 	lines := strings.Split(strings.TrimSpace(output), "\n")
 	expectedOrder := []string{
@@ -133,7 +129,7 @@ func TestAddCmd_SortingBehavior(t *testing.T) {
 }
 
 func TestAddCmd_MultilineString(t *testing.T) {
-	repo, _ := setupEmptyTestRepository(t)
+	repo, buf := setupEmptyTestRepository(t)
 	service := todotxtlib.NewTodoService(repo)
 
 	// Test adding a task that contains newlines (should be treated as one task)
@@ -146,8 +142,7 @@ func TestAddCmd_MultilineString(t *testing.T) {
 	}
 
 	// Verify only one task was added
-	output, err := repo.WriteToString()
-	assertNoError(t, err)
+	output := getRepositoryString(t, repo, buf)
 
 	expectedOutput := "(A) task with\nnewline characters\nin the text\n"
 	if output != expectedOutput {
@@ -156,7 +151,7 @@ func TestAddCmd_MultilineString(t *testing.T) {
 }
 
 func TestAddCmd_DuplicateTasks(t *testing.T) {
-	repo, _ := setupEmptyTestRepository(t)
+	repo, buf := setupEmptyTestRepository(t)
 	service := todotxtlib.NewTodoService(repo)
 
 	// Test adding duplicate tasks
@@ -172,8 +167,7 @@ func TestAddCmd_DuplicateTasks(t *testing.T) {
 	}
 
 	// Verify both duplicate tasks were added
-	output, err := repo.WriteToString()
-	assertNoError(t, err)
+	output := getRepositoryString(t, repo, buf)
 
 	expectedOutput := "(A) duplicate task +project @context\n" +
 		"(A) duplicate task +project @context\n"

@@ -93,3 +93,19 @@ func executeListForTest(repo todotxtlib.TodoRepository, searchQuery string) (str
 
 	return strings.Join(formatted, "\n"), nil
 }
+
+// getRepositoryString saves the repository to the buffer and returns its string content
+func getRepositoryString(tb testing.TB, repo todotxtlib.TodoRepository, buf *bytes.Buffer) string {
+	tb.Helper()
+
+	// Reset buffer before saving to avoid appending to old content
+	buf.Reset()
+
+	// Save to buffer
+	err := repo.Save()
+	if err != nil {
+		tb.Fatalf("Failed to save repository: %v", err)
+	}
+
+	return buf.String()
+}
