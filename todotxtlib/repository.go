@@ -9,6 +9,7 @@ import (
 // TodoRepository defines the interface for storing and manipulating Todos.
 type TodoRepository interface {
 	Add(todoText string) (Todo, error)
+	Get(index int) (Todo, error)
 	Remove(index int) (Todo, error)
 	Update(index int, todo Todo) (Todo, error)
 	ToggleDone(index int) (Todo, error)
@@ -58,6 +59,14 @@ func (r *FileRepository) Add(todoText string) (Todo, error) {
 	newTodo := NewTodo(todoText)
 	r.todos = append(r.todos, newTodo)
 	return newTodo, nil
+}
+
+// Get returns a todo at the given index
+func (r *FileRepository) Get(index int) (Todo, error) {
+	if index < 0 || index >= len(r.todos) {
+		return Todo{}, fmt.Errorf("index out of bounds")
+	}
+	return r.todos[index], nil
 }
 
 // Remove removes a todo from the repository
