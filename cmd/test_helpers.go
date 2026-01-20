@@ -81,7 +81,8 @@ func assertContains(tb testing.TB, text, substring string) {
 
 // executeListForTest executes the list search and returns formatted output for testing
 func executeListForTest(repo todotxtlib.TodoRepository, searchQuery string) (string, error) {
-	todos, err := executeList(repo, searchQuery)
+	service := todotxtlib.NewTodoService(repo)
+	todos, err := service.SearchTodos(searchQuery)
 	if err != nil {
 		return "", err
 	}

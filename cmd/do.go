@@ -4,36 +4,29 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/gkarolyi/togodo/internal/cli"
 	"github.com/gkarolyi/togodo/todotxtlib"
 	"github.com/spf13/cobra"
 )
 
-func executeDo(repo todotxtlib.TodoRepository, args []string) ([]todotxtlib.Todo, error) {
-	var toggledTodos []todotxtlib.Todo
-
-	for _, arg := range args {
+// parseLineNumbers converts CLI line numbers (1-based) to repository indices (0-based)
+func parseLineNumbers(args []string) ([]int, error) {
+	indices := make([]int, len(args))
+	for i, arg := range args {
 		lineNumber, err := strconv.Atoi(arg)
 		if err != nil {
 			return nil, fmt.Errorf("failed to convert arg to int: %w", err)
 		}
-		todo, err := repo.ToggleDone(lineNumber - 1)
-		if err != nil {
-			return nil, fmt.Errorf("failed to toggle todo at line %d: %w", lineNumber, err)
+		if lineNumber < 1 {
+			return nil, fmt.Errorf("line number must be positive, got %d", lineNumber)
 		}
-		toggledTodos = append(toggledTodos, todo)
+		indices[i] = lineNumber - 1 // Convert to 0-based
 	}
-
-	repo.SortDefault()
-	err := repo.Save()
-	if err != nil {
-		return nil, err
-	}
-
-	return toggledTodos, nil
+	return indices, nil
 }
 
 // NewDoCmd creates a new cobra command for toggling todos.
-func NewDoCmd(repo todotxtlib.TodoRepository) *cobra.Command {
+func NewDoCmd(service todotxtlib.TodoService, presenter *cli.Presenter) *cobra.Command {
 	return &cobra.Command{
 		Use:   "do [LINE NUMBER]...",
 		Short: "Toggle the done status of a todo item",
@@ -50,8 +43,23 @@ togodo do 1 2 3
 		Args:    cobra.MinimumNArgs(1),
 		Aliases: []string{"x"},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			_, err := executeDo(repo, args)
-			return err
+			// Parse line numbers (convert from 1-based to 0-based)
+			indices, err := parseLineNumbers(args)
+			if err != nil {
+				return err
+			}
+
+			// Business logic - delegated to service
+			todos, err := service.ToggleTodos(indices)
+			if err != nil {
+				return err
+			}
+
+			// Presentation logic - handled by presenter
+			for _, todo := range todos {
+				presenter.Print(todo)
+			}
+			return nil
 		},
 	}
 }

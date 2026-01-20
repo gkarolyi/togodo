@@ -56,30 +56,33 @@ mise install
 ### Core Structure
 - **Entry Point**: `main.go` uses `fang.Execute()` with root command
 - **CLI Commands**: `/cmd/` directory with Cobra-based commands
-- **Core Logic**: `/todotxtlib/` handles todo.txt parsing and data management
+- **Service Layer**: `todotxtlib/service.go` provides high-level business operations
+- **Core Library**: `/todotxtlib/` handles todo.txt parsing, data management, and repository operations
 - **TUI Interface**: `/internal/tui/` implements Bubble Tea model/view/controller
 - **Formatting**: `/internal/cli/` handles output formatting and theming with Lipgloss
 - **Configuration**: `/internal/config/` manages configuration with Viper
 
 ### Key Patterns
-1. **Dependency Injection**: Dependencies (repository, presenter) are injected through command constructors in `cmd/root.go`
-2. **Repository Pattern**: `todotxtlib/repository.go` with pluggable readers/writers (FileReader, FileWriter, BufferWriter)
-3. **Command Wrappers**: `cmd/root.go` uses wrapper functions (`wrapAddCmd`, `wrapDoCmd`, etc.) to:
-   - Inject dependencies into command constructors
-   - Execute command logic (`executeAdd`, `executeDo`, etc.)
-   - Handle presentation via the Presenter
+1. **Dependency Injection**: Dependencies (service, repository, presenter) are injected through command constructors in `cmd/root.go`
+2. **Service Layer Pattern**: `todotxtlib/service.go` provides high-level business operations
+   - Encapsulates business logic and orchestration
+   - Coordinates repository operations (add, sort, save)
+   - Returns domain objects ([]Todo) for presentation
+   - Enables library reusability for external applications
+3. **Repository Pattern**: `todotxtlib/repository.go` with pluggable readers/writers (FileReader, FileWriter, BufferWriter)
 4. **Separation of Concerns**:
-   - Command structs define CLI interface (flags, usage, validation)
-   - Execute functions handle business logic
-   - Presenter handles output formatting
-   - Repository handles data persistence
+   - **Service Layer** (`todotxtlib/service.go`): Business logic and orchestration
+   - **Commands** (`cmd/*.go`): CLI interface (flags, usage, validation) and thin wrappers around service calls
+   - **Presenter** (`internal/cli/presenter.go`): Output formatting
+   - **Repository** (`todotxtlib/repository.go`): Data persistence and low-level operations
 
 ### Data Flow
-1. **CLI Execution**: `main.go` → config initialization → repository creation → root command construction with dependencies
-2. **File Operations**: Abstracted through `todotxtlib/reader.go` and `todotxtlib/writer.go`
-3. **Core Data Model**: `Todo` struct in `todotxtlib/todo.go` with priority, projects (+), contexts (@)
-4. **Filtering and Sorting**: Separated in `todotxtlib/filter.go` and `todotxtlib/sort.go`
-5. **Presentation**: `internal/cli/presenter.go` uses formatter and output writer for consistent display
+1. **CLI Execution**: `main.go` → config initialization → repository creation → **service creation** → root command construction with dependencies
+2. **Command Execution**: User input → Command validation → **Service method call** → Repository operations → Presentation
+3. **File Operations**: Abstracted through `todotxtlib/reader.go` and `todotxtlib/writer.go`
+4. **Core Data Model**: `Todo` struct in `todotxtlib/todo.go` with priority, projects (+), contexts (@)
+5. **Filtering and Sorting**: Separated in `todotxtlib/filter.go` and `todotxtlib/sort.go`
+6. **Presentation**: `internal/cli/presenter.go` uses formatter and output writer for consistent display
 
 ## Configuration
 

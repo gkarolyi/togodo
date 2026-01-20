@@ -1,32 +1,13 @@
 package cmd
 
 import (
+	"github.com/gkarolyi/togodo/internal/cli"
 	"github.com/gkarolyi/togodo/todotxtlib"
 	"github.com/spf13/cobra"
 )
 
-func executeAdd(repo todotxtlib.TodoRepository, args []string) ([]todotxtlib.Todo, error) {
-	var addedTodos []todotxtlib.Todo
-
-	for _, todoText := range args {
-		todo, err := repo.Add(todoText)
-		if err != nil {
-			return nil, err
-		}
-		addedTodos = append(addedTodos, todo)
-	}
-
-	repo.SortDefault()
-	err := repo.Save()
-	if err != nil {
-		return nil, err
-	}
-
-	return addedTodos, nil
-}
-
 // NewAddCmd creates a new cobra command for adding todos.
-func NewAddCmd(repo todotxtlib.TodoRepository) *cobra.Command {
+func NewAddCmd(service todotxtlib.TodoService, presenter *cli.Presenter) *cobra.Command {
 	return &cobra.Command{
 		Use:   "add [TASK]",
 		Short: "Add a new todo item to the list",
@@ -45,8 +26,17 @@ Buy bread"
 		Args:    cobra.MinimumNArgs(1),
 		Aliases: []string{"a"},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			_, err := executeAdd(repo, args)
-			return err
+			// Business logic - delegated to service
+			todos, err := service.AddTodos(args)
+			if err != nil {
+				return err
+			}
+
+			// Presentation logic - handled by presenter
+			for _, todo := range todos {
+				presenter.Print(todo)
+			}
+			return nil
 		},
 	}
 }

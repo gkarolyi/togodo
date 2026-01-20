@@ -3,22 +3,13 @@ package cmd
 import (
 	"strings"
 
+	"github.com/gkarolyi/togodo/internal/cli"
 	"github.com/gkarolyi/togodo/todotxtlib"
 	"github.com/spf13/cobra"
 )
 
-// executeList performs the list operation and returns the todos
-func executeList(repo todotxtlib.TodoRepository, searchQuery string) ([]todotxtlib.Todo, error) {
-	return repo.Search(searchQuery)
-}
-
-// executeListSearch performs the search operation and returns the results (legacy for tests)
-func executeListSearch(repo todotxtlib.TodoRepository, searchQuery string) ([]todotxtlib.Todo, error) {
-	return repo.Search(searchQuery)
-}
-
 // NewListCmd creates a new cobra command for listing todos.
-func NewListCmd(repo todotxtlib.TodoRepository) *cobra.Command {
+func NewListCmd(service todotxtlib.TodoService, presenter *cli.Presenter) *cobra.Command {
 	return &cobra.Command{
 		Use:   "list [FILTER]",
 		Short: "List and filter items in your todo.txt",
@@ -36,8 +27,15 @@ togodo list '@work'
 		Args:    cobra.ArbitraryArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			searchQuery := strings.Join(args, " ")
-			_, err := executeList(repo, searchQuery)
-			return err
+
+			// Business logic - delegated to service
+			todos, err := service.SearchTodos(searchQuery)
+			if err != nil {
+				return err
+			}
+
+			// Presentation logic - handled by presenter
+			return presenter.PrintList(todos)
 		},
 	}
 }

@@ -2,15 +2,24 @@ package cmd
 
 import (
 	"testing"
+
+	"github.com/gkarolyi/togodo/todotxtlib"
 )
 
-func TestExecuteDo_SingleTask(t *testing.T) {
+func TestDoCmd_SingleTask(t *testing.T) {
 	repo, _ := setupTestRepository(t)
+	service := todotxtlib.NewTodoService(repo)
 
 	// Test toggling a task that's not done (line 1)
-	args := []string{"1"}
-	_, err := executeDo(repo, args)
+	indices, err := parseLineNumbers([]string{"1"})
 	assertNoError(t, err)
+
+	todos, err := service.ToggleTodos(indices)
+	assertNoError(t, err)
+
+	if len(todos) != 1 {
+		t.Fatalf("Expected 1 todo, got %d", len(todos))
+	}
 
 	output, err := repo.WriteToString()
 
@@ -23,13 +32,20 @@ func TestExecuteDo_SingleTask(t *testing.T) {
 	}
 }
 
-func TestExecuteDo_MultipleTask(t *testing.T) {
+func TestDoCmd_MultipleTask(t *testing.T) {
 	repo, _ := setupTestRepository(t)
+	service := todotxtlib.NewTodoService(repo)
 
 	// Test toggling multiple tasks
-	args := []string{"1", "2"}
-	_, err := executeDo(repo, args)
+	indices, err := parseLineNumbers([]string{"1", "2"})
 	assertNoError(t, err)
+
+	todos, err := service.ToggleTodos(indices)
+	assertNoError(t, err)
+
+	if len(todos) != 2 {
+		t.Fatalf("Expected 2 todos, got %d", len(todos))
+	}
 
 	output, err := repo.WriteToString()
 
@@ -42,13 +58,20 @@ func TestExecuteDo_MultipleTask(t *testing.T) {
 	}
 }
 
-func TestExecuteDo_ToggleAlreadyDone(t *testing.T) {
+func TestDoCmd_ToggleAlreadyDone(t *testing.T) {
 	repo, _ := setupTestRepository(t)
+	service := todotxtlib.NewTodoService(repo)
 
 	// Test toggling a task to not done
-	args := []string{"3"}
-	_, err := executeDo(repo, args)
+	indices, err := parseLineNumbers([]string{"3"})
 	assertNoError(t, err)
+
+	todos, err := service.ToggleTodos(indices)
+	assertNoError(t, err)
+
+	if len(todos) != 1 {
+		t.Fatalf("Expected 1 todo, got %d", len(todos))
+	}
 
 	output, err := repo.WriteToString()
 
@@ -61,70 +84,57 @@ func TestExecuteDo_ToggleAlreadyDone(t *testing.T) {
 	}
 }
 
-func TestExecuteDo_InvalidLineNumber(t *testing.T) {
+func TestDoCmd_InvalidLineNumber(t *testing.T) {
 	repo, _ := setupTestRepository(t)
+	service := todotxtlib.NewTodoService(repo)
 
 	// Test with invalid line number (too high)
-	args := []string{"10"}
-	_, err := executeDo(repo, args)
+	indices, err := parseLineNumbers([]string{"10"})
+	assertNoError(t, err)
+
+	_, err = service.ToggleTodos(indices)
 	assertError(t, err)
-	assertContains(t, err.Error(), "failed to toggle todo at line 10")
+	assertContains(t, err.Error(), "failed to toggle todo at index 9")
 }
 
-func TestExecuteDo_InvalidLineNumberFormat(t *testing.T) {
-	repo, _ := setupTestRepository(t)
-
+func TestDoCmd_InvalidLineNumberFormat(t *testing.T) {
 	// Test with invalid line number format
-	args := []string{"abc"}
-	_, err := executeDo(repo, args)
+	_, err := parseLineNumbers([]string{"abc"})
 	assertError(t, err)
 	assertContains(t, err.Error(), "failed to convert arg to int")
 }
 
-func TestExecuteDo_ZeroLineNumber(t *testing.T) {
-	repo, _ := setupTestRepository(t)
-
+func TestDoCmd_ZeroLineNumber(t *testing.T) {
 	// Test with line number 0 (should fail - line numbers start at 1)
-	args := []string{"0"}
-	_, err := executeDo(repo, args)
+	_, err := parseLineNumbers([]string{"0"})
 	assertError(t, err)
+	assertContains(t, err.Error(), "line number must be positive")
 }
 
-func TestExecuteDo_NegativeLineNumber(t *testing.T) {
-	repo, _ := setupTestRepository(t)
-
+func TestDoCmd_NegativeLineNumber(t *testing.T) {
 	// Test with negative line number
-	args := []string{"-1"}
-	_, err := executeDo(repo, args)
+	_, err := parseLineNumbers([]string{"-1"})
 	assertError(t, err)
+	assertContains(t, err.Error(), "line number must be positive")
 }
 
-func TestExecuteDo_EmptyRepository(t *testing.T) {
+func TestDoCmd_EmptyRepository(t *testing.T) {
 	repo, _ := setupEmptyTestRepository(t)
+	service := todotxtlib.NewTodoService(repo)
 
 	// Test toggling on empty repository
-	args := []string{"1"}
-	_, err := executeDo(repo, args)
+	indices, err := parseLineNumbers([]string{"1"})
+	assertNoError(t, err)
+
+	_, err = service.ToggleTodos(indices)
 	assertError(t, err)
-	assertContains(t, err.Error(), "failed to toggle todo at line 1")
+	assertContains(t, err.Error(), "failed to toggle todo at index 0")
 }
 
-func TestExecuteDo_MixedValidInvalidNumbers(t *testing.T) {
-	repo, _ := setupTestRepository(t)
-
+func TestDoCmd_MixedValidInvalidNumbers(t *testing.T) {
 	// Test with mix of valid and invalid line numbers
-	args := []string{"1", "abc", "2"}
-	_, err := executeDo(repo, args)
+	// parseLineNumbers should fail early before any toggling happens
+	_, err := parseLineNumbers([]string{"1", "abc", "2"})
 	assertError(t, err)
 	assertContains(t, err.Error(), "failed to convert arg to int")
-
-	output, err := repo.WriteToString()
-
-	expectedOutput := "x (A) test todo 1 +project2 @context1\n" +
-		"(B) test todo 2 +project1 @context2\n" +
-		"x (C) test todo 3 +project1 @context1\n"
-
-	if output != expectedOutput {
-		t.Errorf("Expected output:\n%s\nGot:\n%s", expectedOutput, output)
-	}
 }

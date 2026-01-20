@@ -2,17 +2,25 @@ package cmd
 
 import (
 	"testing"
+
+	"github.com/gkarolyi/togodo/todotxtlib"
 )
 
-func TestExecuteTidy_WithDoneTasks(t *testing.T) {
+func TestTidyCmd_WithDoneTasks(t *testing.T) {
 	repo, _ := setupTestRepository(t)
+	service := todotxtlib.NewTodoService(repo)
 
 	// Mark one more task as done to have multiple done tasks
 	repo.ToggleDone(0)
 
 	// Execute tidy
-	_, err := executeTidy(repo)
+	todos, err := service.RemoveDoneTodos()
 	assertNoError(t, err)
+
+	// Verify two todos were removed
+	if len(todos) != 2 {
+		t.Fatalf("Expected 2 removed todos, got %d", len(todos))
+	}
 
 	output, err := repo.WriteToString()
 
@@ -23,16 +31,22 @@ func TestExecuteTidy_WithDoneTasks(t *testing.T) {
 	}
 }
 
-func TestExecuteTidy_NoDoneTasks(t *testing.T) {
+func TestTidyCmd_NoDoneTasks(t *testing.T) {
 	repo, _ := setupEmptyTestRepository(t)
+	service := todotxtlib.NewTodoService(repo)
 
 	// Add only undone tasks
 	repo.Add("task 1")
 	repo.Add("task 2")
 
 	// Execute tidy
-	_, err := executeTidy(repo)
+	todos, err := service.RemoveDoneTodos()
 	assertNoError(t, err)
+
+	// Verify no todos were removed
+	if len(todos) != 0 {
+		t.Fatalf("Expected 0 removed todos, got %d", len(todos))
+	}
 
 	output, err := repo.WriteToString()
 
@@ -44,16 +58,23 @@ func TestExecuteTidy_NoDoneTasks(t *testing.T) {
 	}
 }
 
-func TestExecuteTidy_EmptyRepository(t *testing.T) {
+func TestTidyCmd_EmptyRepository(t *testing.T) {
 	repo, _ := setupEmptyTestRepository(t)
+	service := todotxtlib.NewTodoService(repo)
 
 	// Execute tidy on empty repository
-	_, err := executeTidy(repo)
+	todos, err := service.RemoveDoneTodos()
 	assertNoError(t, err)
+
+	// Verify no todos were removed
+	if len(todos) != 0 {
+		t.Fatalf("Expected 0 removed todos, got %d", len(todos))
+	}
 }
 
-func TestExecuteTidy_AllTasksDone(t *testing.T) {
+func TestTidyCmd_AllTasksDone(t *testing.T) {
 	repo, _ := setupEmptyTestRepository(t)
+	service := todotxtlib.NewTodoService(repo)
 
 	// Add tasks and mark them all as done
 	repo.Add("x task 1")
@@ -61,8 +82,13 @@ func TestExecuteTidy_AllTasksDone(t *testing.T) {
 	repo.Add("x task 3")
 
 	// Execute tidy
-	_, err := executeTidy(repo)
+	todos, err := service.RemoveDoneTodos()
 	assertNoError(t, err)
+
+	// Verify all todos were removed
+	if len(todos) != 3 {
+		t.Fatalf("Expected 3 removed todos, got %d", len(todos))
+	}
 
 	output, err := repo.WriteToString()
 
@@ -73,8 +99,9 @@ func TestExecuteTidy_AllTasksDone(t *testing.T) {
 	}
 }
 
-func TestExecuteTidy_PrintsRemovedTasks(t *testing.T) {
+func TestTidyCmd_ReturnsRemovedTasks(t *testing.T) {
 	repo, _ := setupTestRepository(t)
+	service := todotxtlib.NewTodoService(repo)
 
 	// Mark additional task as done
 	repo.ToggleDone(0)
@@ -85,12 +112,15 @@ func TestExecuteTidy_PrintsRemovedTasks(t *testing.T) {
 	doneCount := len(doneTodos)
 
 	// Execute tidy
-	_, err = executeTidy(repo)
+	removedTodos, err := service.RemoveDoneTodos()
 	assertNoError(t, err)
 
-	// Verify that done tasks would have been printed
-	// (We can't easily test the actual printing without mocking the output)
+	// Verify that done tasks were returned
 	if doneCount == 0 {
 		t.Error("Expected to have some done tasks to remove")
+	}
+
+	if len(removedTodos) != doneCount {
+		t.Errorf("Expected %d removed todos, got %d", doneCount, len(removedTodos))
 	}
 }

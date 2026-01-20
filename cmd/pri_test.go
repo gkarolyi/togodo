@@ -2,15 +2,24 @@ package cmd
 
 import (
 	"testing"
+
+	"github.com/gkarolyi/togodo/todotxtlib"
 )
 
-func TestExecutePri_SingleTask(t *testing.T) {
+func TestPriCmd_SingleTask(t *testing.T) {
 	repo, _ := setupTestRepository(t)
+	service := todotxtlib.NewTodoService(repo)
 
 	// Test setting priority for task 2 (which has priority B)
-	args := []string{"2", "A"}
-	_, err := executePri(repo, args)
+	indices, priority, err := parsePriorityArgs([]string{"2", "A"})
 	assertNoError(t, err)
+
+	todos, err := service.SetPriorities(indices, priority)
+	assertNoError(t, err)
+
+	if len(todos) != 1 {
+		t.Fatalf("Expected 1 todo, got %d", len(todos))
+	}
 
 	output, err := repo.WriteToString()
 
@@ -23,13 +32,20 @@ func TestExecutePri_SingleTask(t *testing.T) {
 	}
 }
 
-func TestExecutePri_MultipleTasks(t *testing.T) {
+func TestPriCmd_MultipleTasks(t *testing.T) {
 	repo, _ := setupTestRepository(t)
+	service := todotxtlib.NewTodoService(repo)
 
 	// Test setting priority for multiple tasks (tasks 1 and 2)
-	args := []string{"1", "2", "C"}
-	_, err := executePri(repo, args)
+	indices, priority, err := parsePriorityArgs([]string{"1", "2", "C"})
 	assertNoError(t, err)
+
+	todos, err := service.SetPriorities(indices, priority)
+	assertNoError(t, err)
+
+	if len(todos) != 2 {
+		t.Fatalf("Expected 2 todos, got %d", len(todos))
+	}
 
 	output, err := repo.WriteToString()
 
@@ -42,13 +58,20 @@ func TestExecutePri_MultipleTasks(t *testing.T) {
 	}
 }
 
-func TestExecutePri_RemovePriority(t *testing.T) {
+func TestPriCmd_RemovePriority(t *testing.T) {
 	repo, _ := setupTestRepository(t)
+	service := todotxtlib.NewTodoService(repo)
 
 	// Test removing priority by setting empty string
-	args := []string{"1", ""}
-	_, err := executePri(repo, args)
+	indices, priority, err := parsePriorityArgs([]string{"1", ""})
 	assertNoError(t, err)
+
+	todos, err := service.SetPriorities(indices, priority)
+	assertNoError(t, err)
+
+	if len(todos) != 1 {
+		t.Fatalf("Expected 1 todo, got %d", len(todos))
+	}
 
 	output, err := repo.WriteToString()
 
@@ -61,81 +84,75 @@ func TestExecutePri_RemovePriority(t *testing.T) {
 	}
 }
 
-func TestExecutePri_InvalidLineNumber(t *testing.T) {
+func TestPriCmd_InvalidLineNumber(t *testing.T) {
 	repo, _ := setupTestRepository(t)
+	service := todotxtlib.NewTodoService(repo)
 
 	// Test with invalid line number (too high)
-	args := []string{"10", "A"}
-	_, err := executePri(repo, args)
+	indices, priority, err := parsePriorityArgs([]string{"10", "A"})
+	assertNoError(t, err)
+
+	_, err = service.SetPriorities(indices, priority)
 	assertError(t, err)
-	assertContains(t, err.Error(), "failed to set priority for todo at line 10")
+	assertContains(t, err.Error(), "failed to set priority for todo at index 9")
 }
 
-func TestExecutePri_InvalidLineNumberFormat(t *testing.T) {
-	repo, _ := setupTestRepository(t)
-
+func TestPriCmd_InvalidLineNumberFormat(t *testing.T) {
 	// Test with invalid line number format
-	args := []string{"abc", "A"}
-	_, err := executePri(repo, args)
+	_, _, err := parsePriorityArgs([]string{"abc", "A"})
 	assertError(t, err)
 	assertContains(t, err.Error(), "failed to convert arg to int")
 }
 
-func TestExecutePri_ZeroLineNumber(t *testing.T) {
-	repo, _ := setupTestRepository(t)
-
+func TestPriCmd_ZeroLineNumber(t *testing.T) {
 	// Test with line number 0 (should fail - line numbers start at 1)
-	args := []string{"0", "A"}
-	_, err := executePri(repo, args)
+	_, _, err := parsePriorityArgs([]string{"0", "A"})
 	assertError(t, err)
+	assertContains(t, err.Error(), "line number must be positive")
 }
 
-func TestExecutePri_NegativeLineNumber(t *testing.T) {
-	repo, _ := setupTestRepository(t)
-
+func TestPriCmd_NegativeLineNumber(t *testing.T) {
 	// Test with negative line number
-	args := []string{"-1", "A"}
-	_, err := executePri(repo, args)
+	_, _, err := parsePriorityArgs([]string{"-1", "A"})
 	assertError(t, err)
+	assertContains(t, err.Error(), "line number must be positive")
 }
 
-func TestExecutePri_EmptyRepository(t *testing.T) {
+func TestPriCmd_EmptyRepository(t *testing.T) {
 	repo, _ := setupEmptyTestRepository(t)
+	service := todotxtlib.NewTodoService(repo)
 
 	// Test setting priority on empty repository
-	args := []string{"1", "A"}
-	_, err := executePri(repo, args)
+	indices, priority, err := parsePriorityArgs([]string{"1", "A"})
+	assertNoError(t, err)
+
+	_, err = service.SetPriorities(indices, priority)
 	assertError(t, err)
-	assertContains(t, err.Error(), "failed to set priority for todo at line 1")
+	assertContains(t, err.Error(), "failed to set priority for todo at index 0")
 }
 
-func TestExecutePri_MixedValidInvalidNumbers(t *testing.T) {
-	repo, _ := setupTestRepository(t)
-
+func TestPriCmd_MixedValidInvalidNumbers(t *testing.T) {
 	// Test with mix of valid and invalid line numbers
-	args := []string{"2", "abc", "3", "A"}
-	_, err := executePri(repo, args)
+	// parsePriorityArgs should fail early before any setting happens
+	_, _, err := parsePriorityArgs([]string{"2", "abc", "3", "A"})
 	assertError(t, err)
 	assertContains(t, err.Error(), "failed to convert arg to int")
-
-	output, err := repo.WriteToString()
-
-	expectedOutput := "(A) test todo 1 +project2 @context1\n" +
-		"(A) test todo 2 +project1 @context2\n" +
-		"x (C) test todo 3 +project1 @context1\n"
-
-	if output != expectedOutput {
-		t.Errorf("Expected output:\n%s\nGot:\n%s", expectedOutput, output)
-	}
 }
 
-func TestExecutePri_DoneTaskPriority(t *testing.T) {
+func TestPriCmd_DoneTaskPriority(t *testing.T) {
 	repo, _ := setupTestRepository(t)
+	service := todotxtlib.NewTodoService(repo)
 
 	// Test setting priority on a done task (line 3 is done)
-	args := []string{"3", "A"}
-	_, err := executePri(repo, args)
+	indices, priority, err := parsePriorityArgs([]string{"3", "A"})
 	assertNoError(t, err)
+
+	todos, err := service.SetPriorities(indices, priority)
+	assertNoError(t, err)
+
+	if len(todos) != 1 {
+		t.Fatalf("Expected 1 todo, got %d", len(todos))
+	}
 
 	// Verify the done task can have its priority changed
 	output, err := repo.WriteToString()

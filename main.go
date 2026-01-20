@@ -50,9 +50,12 @@ func main() {
 		log.Fatalf("Failed to create repository: %v", err)
 	}
 
+	// Create service layer
+	service := todotxtlib.NewTodoService(repo)
+
 	presenter := cli.NewPresenter()
 
-	rootCmd := cmd.NewRootCmd(repo, presenter)
+	rootCmd := cmd.NewRootCmd(service, repo, presenter)
 
 	if err := fang.Execute(context.Background(), rootCmd); err != nil {
 		os.Exit(1)

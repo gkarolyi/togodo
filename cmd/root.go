@@ -24,7 +24,6 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/gkarolyi/togodo/internal/cli"
 	"github.com/gkarolyi/togodo/internal/config"
@@ -34,7 +33,7 @@ import (
 )
 
 // NewRootCmd creates the root command and its subcommands, injecting dependencies.
-func NewRootCmd(repo todotxtlib.TodoRepository, presenter *cli.Presenter) *cobra.Command {
+func NewRootCmd(service todotxtlib.TodoService, repo todotxtlib.TodoRepository, presenter *cli.Presenter) *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:   "togodo",
 		Short: "A CLI tool for managing your todo.txt",
@@ -58,91 +57,15 @@ func NewRootCmd(repo todotxtlib.TodoRepository, presenter *cli.Presenter) *cobra
 		}
 	}
 
-	// Add subcommands with presentation wrappers
-	rootCmd.AddCommand(wrapAddCmd(repo, presenter))
-	rootCmd.AddCommand(wrapDoCmd(repo, presenter))
-	rootCmd.AddCommand(wrapListCmd(repo, presenter))
-	rootCmd.AddCommand(wrapPriCmd(repo, presenter))
-	rootCmd.AddCommand(wrapTidyCmd(repo, presenter))
+	// Add subcommands
+	rootCmd.AddCommand(NewAddCmd(service, presenter))
+	rootCmd.AddCommand(NewDoCmd(service, presenter))
+	rootCmd.AddCommand(NewListCmd(service, presenter))
+	rootCmd.AddCommand(NewPriCmd(service, presenter))
+	rootCmd.AddCommand(NewTidyCmd(service, presenter))
 	rootCmd.AddCommand(NewConfigCmd(presenter))
 
 	return rootCmd
-}
-
-// Command wrappers that handle execution and presentation
-func wrapAddCmd(repo todotxtlib.TodoRepository, presenter *cli.Presenter) *cobra.Command {
-	cmd := NewAddCmd(repo)
-	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		todos, err := executeAdd(repo, args)
-		if err != nil {
-			return err
-		}
-		// Present added todos without line numbers
-		for _, todo := range todos {
-			presenter.Print(todo)
-		}
-		return nil
-	}
-	return cmd
-}
-
-func wrapDoCmd(repo todotxtlib.TodoRepository, presenter *cli.Presenter) *cobra.Command {
-	cmd := NewDoCmd(repo)
-	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		todos, err := executeDo(repo, args)
-		if err != nil {
-			return err
-		}
-		// Present toggled todos without line numbers
-		for _, todo := range todos {
-			presenter.Print(todo)
-		}
-		return nil
-	}
-	return cmd
-}
-
-func wrapListCmd(repo todotxtlib.TodoRepository, presenter *cli.Presenter) *cobra.Command {
-	cmd := NewListCmd(repo)
-	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		searchQuery := strings.Join(args, " ")
-		todos, err := executeList(repo, searchQuery)
-		if err != nil {
-			return err
-		}
-		// Present list with line numbers
-		return presenter.PrintList(todos)
-	}
-	return cmd
-}
-
-func wrapPriCmd(repo todotxtlib.TodoRepository, presenter *cli.Presenter) *cobra.Command {
-	cmd := NewPriCmd(repo)
-	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		todos, err := executePri(repo, args)
-		if err != nil {
-			return err
-		}
-		// Present updated todos without line numbers
-		for _, todo := range todos {
-			presenter.Print(todo)
-		}
-		return nil
-	}
-	return cmd
-}
-
-func wrapTidyCmd(repo todotxtlib.TodoRepository, presenter *cli.Presenter) *cobra.Command {
-	cmd := NewTidyCmd(repo)
-	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		todos, err := executeTidy(repo)
-		if err != nil {
-			return err
-		}
-		// Present removed todos with line numbers
-		return presenter.PrintList(todos)
-	}
-	return cmd
 }
 
 // initConfig reads in config file and ENV variables.

@@ -3,17 +3,24 @@ package cmd
 import (
 	"strings"
 	"testing"
+
+	"github.com/gkarolyi/togodo/todotxtlib"
 )
 
-func TestExecuteAdd_SingleTask(t *testing.T) {
+func TestAddCmd_SingleTask(t *testing.T) {
 	repo, _ := setupEmptyTestRepository(t)
+	service := todotxtlib.NewTodoService(repo)
 
 	// Test adding a single task
-	args := []string{"(A) new task +project @context"}
-	_, err := executeAdd(repo, args)
+	todos, err := service.AddTodos([]string{"(A) new task +project @context"})
 	assertNoError(t, err)
 
-	// Verify the task was added
+	// Verify the returned todos
+	if len(todos) != 1 {
+		t.Fatalf("Expected 1 todo, got %d", len(todos))
+	}
+
+	// Verify the task was saved
 	output, err := repo.WriteToString()
 	assertNoError(t, err)
 
@@ -23,17 +30,22 @@ func TestExecuteAdd_SingleTask(t *testing.T) {
 	}
 }
 
-func TestExecuteAdd_MultipleTasks(t *testing.T) {
+func TestAddCmd_MultipleTasks(t *testing.T) {
 	repo, _ := setupEmptyTestRepository(t)
+	service := todotxtlib.NewTodoService(repo)
 
-	args := []string{
+	todos, err := service.AddTodos([]string{
 		"(A) first task +project1 @context1",
 		"(B) second task +project2 @context2",
 		"third task without priority",
-	}
-	_, err := executeAdd(repo, args)
+	})
 
 	assertNoError(t, err)
+
+	// Verify the returned todos
+	if len(todos) != 3 {
+		t.Fatalf("Expected 3 todos, got %d", len(todos))
+	}
 
 	// Check that tasks are in correct sorted order
 	output, err := repo.WriteToString()
@@ -57,13 +69,18 @@ func TestExecuteAdd_MultipleTasks(t *testing.T) {
 	}
 }
 
-func TestExecuteAdd_EmptyArgs(t *testing.T) {
+func TestAddCmd_EmptyArgs(t *testing.T) {
 	repo, _ := setupEmptyTestRepository(t)
+	service := todotxtlib.NewTodoService(repo)
 
 	// Test adding with empty args (should not add anything)
-	args := []string{}
-	_, err := executeAdd(repo, args)
+	todos, err := service.AddTodos([]string{})
 	assertNoError(t, err)
+
+	// Verify no todos were returned
+	if len(todos) != 0 {
+		t.Fatalf("Expected 0 todos, got %d", len(todos))
+	}
 
 	// Verify no tasks were added
 	output, err := repo.WriteToString()
@@ -75,19 +92,20 @@ func TestExecuteAdd_EmptyArgs(t *testing.T) {
 	}
 }
 
-func TestExecuteAdd_SortingBehavior(t *testing.T) {
+func TestAddCmd_SortingBehavior(t *testing.T) {
 	repo, _ := setupEmptyTestRepository(t)
+	service := todotxtlib.NewTodoService(repo)
 
 	// Add tasks in mixed priority order
-	args := []string{
+	tasks := []string{
 		"no priority task",
 		"(C) low priority task",
 		"(A) high priority task",
 		"(B) medium priority task",
 	}
 
-	for _, arg := range args {
-		_, err := executeAdd(repo, []string{arg})
+	for _, task := range tasks {
+		_, err := service.AddTodos([]string{task})
 		assertNoError(t, err)
 	}
 
@@ -114,13 +132,18 @@ func TestExecuteAdd_SortingBehavior(t *testing.T) {
 	}
 }
 
-func TestExecuteAdd_MultilineString(t *testing.T) {
+func TestAddCmd_MultilineString(t *testing.T) {
 	repo, _ := setupEmptyTestRepository(t)
+	service := todotxtlib.NewTodoService(repo)
 
 	// Test adding a task that contains newlines (should be treated as one task)
-	args := []string{"(A) task with\nnewline characters\nin the text"}
-	_, err := executeAdd(repo, args)
+	todos, err := service.AddTodos([]string{"(A) task with\nnewline characters\nin the text"})
 	assertNoError(t, err)
+
+	// Verify one todo was returned
+	if len(todos) != 1 {
+		t.Fatalf("Expected 1 todo, got %d", len(todos))
+	}
 
 	// Verify only one task was added
 	output, err := repo.WriteToString()
@@ -132,16 +155,21 @@ func TestExecuteAdd_MultilineString(t *testing.T) {
 	}
 }
 
-func TestExecuteAdd_DuplicateTasks(t *testing.T) {
+func TestAddCmd_DuplicateTasks(t *testing.T) {
 	repo, _ := setupEmptyTestRepository(t)
+	service := todotxtlib.NewTodoService(repo)
 
 	// Test adding duplicate tasks
-	args := []string{
+	todos, err := service.AddTodos([]string{
 		"(A) duplicate task +project @context",
 		"(A) duplicate task +project @context",
-	}
-	_, err := executeAdd(repo, args)
+	})
 	assertNoError(t, err)
+
+	// Verify two todos were returned
+	if len(todos) != 2 {
+		t.Fatalf("Expected 2 todos, got %d", len(todos))
+	}
 
 	// Verify both duplicate tasks were added
 	output, err := repo.WriteToString()

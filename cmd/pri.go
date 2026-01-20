@@ -2,38 +2,32 @@ package cmd
 
 import (
 	"fmt"
-	"strconv"
 
+	"github.com/gkarolyi/togodo/internal/cli"
 	"github.com/gkarolyi/togodo/todotxtlib"
 	"github.com/spf13/cobra"
 )
 
-func executePri(repo todotxtlib.TodoRepository, args []string) ([]todotxtlib.Todo, error) {
-	var updatedTodos []todotxtlib.Todo
+// parsePriorityArgs parses CLI arguments for the pri command
+// Returns line indices (0-based) and the priority string
+func parsePriorityArgs(args []string) ([]int, string, error) {
+	if len(args) < 2 {
+		return nil, "", fmt.Errorf("pri requires at least a line number and priority")
+	}
+
 	priority := args[len(args)-1]
+	lineNumberArgs := args[:len(args)-1]
 
-	for _, arg := range args[:len(args)-1] {
-		lineNumber, err := strconv.Atoi(arg)
-		if err != nil {
-			return nil, fmt.Errorf("failed to convert arg to int: %w", err)
-		}
-		todo, err := repo.SetPriority(lineNumber-1, priority)
-		if err != nil {
-			return nil, fmt.Errorf("failed to set priority for todo at line %d: %w", lineNumber, err)
-		}
-		updatedTodos = append(updatedTodos, todo)
-	}
-
-	err := repo.Save()
+	indices, err := parseLineNumbers(lineNumberArgs)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
-	return updatedTodos, nil
+	return indices, priority, nil
 }
 
 // NewPriCmd creates a new cobra command for setting priority.
-func NewPriCmd(repo todotxtlib.TodoRepository) *cobra.Command {
+func NewPriCmd(service todotxtlib.TodoService, presenter *cli.Presenter) *cobra.Command {
 	return &cobra.Command{
 		Use:   "pri [LINE NUMBER]...",
 		Short: "Set the priority of a todo item",
@@ -46,11 +40,26 @@ togodo pri 1 A
 togodo pri 1 2 3 B
 `,
 
-		Args:    cobra.MinimumNArgs(1),
+		Args:    cobra.MinimumNArgs(2),
 		Aliases: []string{"p"},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			_, err := executePri(repo, args)
-			return err
+			// Parse priority arguments
+			indices, priority, err := parsePriorityArgs(args)
+			if err != nil {
+				return err
+			}
+
+			// Business logic - delegated to service
+			todos, err := service.SetPriorities(indices, priority)
+			if err != nil {
+				return err
+			}
+
+			// Presentation logic - handled by presenter
+			for _, todo := range todos {
+				presenter.Print(todo)
+			}
+			return nil
 		},
 	}
 }
