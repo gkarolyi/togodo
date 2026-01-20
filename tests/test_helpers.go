@@ -5,7 +5,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gkarolyi/togodo/cmd"
 	"github.com/gkarolyi/togodo/internal/cli"
 	"github.com/gkarolyi/togodo/todotxtlib"
 	"github.com/spf13/cobra"
@@ -82,7 +81,7 @@ func SetupTestEnv(t *testing.T) *TestEnvironment {
 	}
 
 	// Create root command with injected dependencies
-	env.rootCmd = cmd.NewRootCmd(repo, env.presenter)
+	env.rootCmd = cli.NewRootCmd(repo, env.presenter)
 
 	return env
 }
@@ -95,7 +94,7 @@ func (env *TestEnvironment) RunCommand(args ...string) (string, int) {
 	env.output.Reset()
 
 	// Reset command state
-	env.rootCmd = cmd.NewRootCmd(env.repo, env.presenter)
+	env.rootCmd = cli.NewRootCmd(env.repo, env.presenter)
 	env.rootCmd.SetArgs(args)
 	env.rootCmd.SetOut(env.output)
 	env.rootCmd.SetErr(env.output)
@@ -134,7 +133,7 @@ func (env *TestEnvironment) WriteTodoFile(content string) {
 	env.repo = repo
 
 	// Recreate root command with new repository
-	env.rootCmd = cmd.NewRootCmd(env.repo, env.presenter)
+	env.rootCmd = cli.NewRootCmd(env.repo, env.presenter)
 }
 
 // ReadTodoFile returns the contents of the todo.txt buffer
