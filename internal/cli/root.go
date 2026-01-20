@@ -19,13 +19,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-package cmd
+package cli
 
 import (
 	"fmt"
 	"os"
 
-	"github.com/gkarolyi/togodo/internal/cli"
 	"github.com/gkarolyi/togodo/internal/config"
 	"github.com/gkarolyi/togodo/internal/tui"
 	"github.com/gkarolyi/togodo/todotxtlib"
@@ -33,7 +32,7 @@ import (
 )
 
 // NewRootCmd creates the root command and its subcommands, injecting dependencies.
-func NewRootCmd(repo todotxtlib.TodoRepository, presenter *cli.Presenter) *cobra.Command {
+func NewRootCmd(repo todotxtlib.TodoRepository, presenter *Presenter) *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:   "togodo",
 		Short: "A CLI tool for managing your todo.txt",
@@ -58,13 +57,13 @@ func NewRootCmd(repo todotxtlib.TodoRepository, presenter *cli.Presenter) *cobra
 	}
 
 	// Add subcommands from internal/cli
-	rootCmd.AddCommand(cli.NewAddCmd(repo))
-	rootCmd.AddCommand(cli.NewListCmd(repo))
-	rootCmd.AddCommand(cli.NewDoCmd(repo))
-	rootCmd.AddCommand(cli.NewPriCmd(repo))
-	rootCmd.AddCommand(cli.NewTidyCmd(repo))
+	rootCmd.AddCommand(NewAddCmd(repo))
+	rootCmd.AddCommand(NewListCmd(repo))
+	rootCmd.AddCommand(NewDoCmd(repo))
+	rootCmd.AddCommand(NewPriCmd(repo))
+	rootCmd.AddCommand(NewTidyCmd(repo))
 	// TODO: Config command needs to be migrated
-	// rootCmd.AddCommand(cli.NewConfigCmd(presenter))
+	// rootCmd.AddCommand(NewConfigCmd(presenter))
 
 	return rootCmd
 }

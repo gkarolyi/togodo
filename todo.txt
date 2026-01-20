@@ -1,15 +1,15 @@
-(A) refactor to allow for end to end testing
+(A) add fish completions
+(A) tidy should remove blank lines and duplicates
 (A) write tests for commands as well
-(B) move done to done.txt instead of just deleting
 (B) only sort items on List, otherwise leave in place
-add fish completions
+New test task from CLI
+Test task via business layer
 add rename project and context +refactor
 add sorting to todotxtlib +refactor
 add user config
 graceful shutdown of tui @idea
 gracefully handle missing todo.txt file
+new test task
 save priority with shorthand so todo can be restored? @idea
 set sort object on repository and sort on each operation
-tidy should remove blank lines and duplicates
-x (A) Test refactoring completion
-x add tidy +refactor
+test task

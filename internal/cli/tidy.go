@@ -3,7 +3,7 @@ package cli
 import (
 	"fmt"
 
-	"github.com/gkarolyi/togodo/business"
+	"github.com/gkarolyi/togodo/cmd"
 	"github.com/gkarolyi/togodo/todotxtlib"
 	"github.com/spf13/cobra"
 )
@@ -21,7 +21,7 @@ togodo tidy
 		Aliases: []string{"clean"},
 		RunE: func(command *cobra.Command, args []string) error {
 			// Call business logic
-			result, err := business.Tidy(repo)
+			result, err := cmd.Tidy(repo)
 			if err != nil {
 				return err
 			}

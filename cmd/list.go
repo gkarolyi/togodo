@@ -1,4 +1,4 @@
-package business
+package cmd
 
 import (
 	"github.com/gkarolyi/togodo/todotxtlib"

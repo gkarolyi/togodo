@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/gkarolyi/togodo/business"
+	"github.com/gkarolyi/togodo/cmd"
 	"github.com/gkarolyi/togodo/todotxtlib"
 	"github.com/spf13/cobra"
 )
@@ -32,7 +32,7 @@ togodo do 1
 			index := lineNum - 1
 
 			// Call business logic
-			result, err := business.Do(repo, []int{index})
+			result, err := cmd.Do(repo, []int{index})
 			if err != nil {
 				return err
 			}

@@ -7,7 +7,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gkarolyi/togodo/internal/cli"
 	"github.com/gkarolyi/togodo/todotxtlib"
 )
 
@@ -97,8 +96,10 @@ func executeListForTest(repo todotxtlib.TodoRepository, searchQuery string) (str
 	}
 
 	// Format results similar to how the list command would display them
-	formatter := cli.NewPlainFormatter()
-	formatted := formatter.FormatList(todos)
+	formatted := make([]string, len(todos))
+	for i, todo := range todos {
+		formatted[i] = fmt.Sprintf("%3d %s", i+1, todo.Text)
+	}
 
 	return strings.Join(formatted, "\n"), nil
 }

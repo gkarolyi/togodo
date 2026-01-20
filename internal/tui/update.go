@@ -5,7 +5,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/gkarolyi/togodo/business"
+	"github.com/gkarolyi/togodo/cmd"
 	"github.com/gkarolyi/togodo/todotxtlib"
 )
 
@@ -35,7 +35,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 
 				if len(indices) > 0 {
-					_, err := business.SetPriority(m.repository, indices, priority)
+					_, err := cmd.SetPriority(m.repository, indices, priority)
 					if err != nil {
 						// TODO: Show error in UI
 					}
@@ -61,7 +61,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			case tea.KeyEnter:
 				if m.input.Value() != "" {
-					_, err := business.Add(m.repository, []string{m.input.Value()})
+					_, err := cmd.Add(m.repository, []string{m.input.Value()})
 					if err != nil {
 						// TODO: Show error in UI
 					}
@@ -152,7 +152,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			if len(indices) > 0 {
-				_, err := business.Do(m.repository, indices)
+				_, err := cmd.Do(m.repository, indices)
 				if err != nil {
 					// TODO: Show error in UI
 				}

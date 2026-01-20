@@ -28,7 +28,6 @@ import (
 	"os"
 
 	"github.com/charmbracelet/fang"
-	"github.com/gkarolyi/togodo/cmd"
 	"github.com/gkarolyi/togodo/internal/cli"
 	"github.com/gkarolyi/togodo/internal/config"
 	"github.com/gkarolyi/togodo/todotxtlib"
@@ -52,7 +51,7 @@ func main() {
 
 	presenter := cli.NewPresenter()
 
-	rootCmd := cmd.NewRootCmd(repo, presenter)
+	rootCmd := cli.NewRootCmd(repo, presenter)
 
 	if err := fang.Execute(context.Background(), rootCmd); err != nil {
 		os.Exit(1)

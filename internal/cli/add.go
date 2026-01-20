@@ -3,7 +3,7 @@ package cli
 import (
 	"fmt"
 
-	"github.com/gkarolyi/togodo/business"
+	"github.com/gkarolyi/togodo/cmd"
 	"github.com/gkarolyi/togodo/todotxtlib"
 	"github.com/spf13/cobra"
 )
@@ -25,7 +25,7 @@ togodo add Buy milk and eggs
 		Aliases: []string{"a"},
 		RunE: func(command *cobra.Command, args []string) error {
 			// Call business logic
-			result, err := business.Add(repo, args)
+			result, err := cmd.Add(repo, args)
 			if err != nil {
 				return err
 			}

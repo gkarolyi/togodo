@@ -1,4 +1,4 @@
-package business
+package cmd
 
 import (
 	"fmt"

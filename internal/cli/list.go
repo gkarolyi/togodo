@@ -3,7 +3,7 @@ package cli
 import (
 	"fmt"
 
-	"github.com/gkarolyi/togodo/business"
+	"github.com/gkarolyi/togodo/cmd"
 	"github.com/gkarolyi/togodo/todotxtlib"
 	"github.com/spf13/cobra"
 )
@@ -30,7 +30,7 @@ togodo list milk
 			}
 
 			// Call business logic
-			result, err := business.List(repo, searchQuery)
+			result, err := cmd.List(repo, searchQuery)
 			if err != nil {
 				return err
 			}

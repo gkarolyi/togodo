@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/gkarolyi/togodo/business"
+	"github.com/gkarolyi/togodo/cmd"
 	"github.com/gkarolyi/togodo/todotxtlib"
 	"github.com/spf13/cobra"
 )
@@ -36,7 +36,7 @@ togodo pri 1 A
 			priority := strings.ToUpper(args[1])
 
 			// Call business logic
-			result, err := business.SetPriority(repo, []int{index}, priority)
+			result, err := cmd.SetPriority(repo, []int{index}, priority)
 			if err != nil {
 				return err
 			}
