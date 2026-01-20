@@ -5,6 +5,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/gkarolyi/togodo/business"
 	"github.com/gkarolyi/togodo/todotxtlib"
 )
 
@@ -27,11 +28,23 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			case "a", "b", "c", "d", "A", "B", "C", "D":
 				priority := strings.ToUpper(msg.String())
+				// Convert selected map to slice of indices
+				indices := make([]int, 0, len(m.selected))
 				for i := range m.selected {
-					m.repository.SetPriority(i, priority)
+					indices = append(indices, i)
 				}
-				allTodos, _ := m.repository.ListAll()
-				m.choices = allTodos
+
+				if len(indices) > 0 {
+					_, err := business.SetPriority(m.repository, indices, priority)
+					if err != nil {
+						// TODO: Show error in UI
+					}
+
+					// Refresh display
+					allTodos, _ := m.repository.ListAll()
+					m.choices = allTodos
+					m.selected = make(map[int]struct{}) // Clear selection
+				}
 				m.setting = false
 				return m, nil
 			}
@@ -48,7 +61,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			case tea.KeyEnter:
 				if m.input.Value() != "" {
-					m.repository.Add(m.input.Value())
+					_, err := business.Add(m.repository, []string{m.input.Value()})
+					if err != nil {
+						// TODO: Show error in UI
+					}
+					// Refresh display
 					allTodos, _ := m.repository.ListAll()
 					m.choices = allTodos
 					m.adding = false
@@ -128,11 +145,23 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case "x":
+			// Convert selected map to slice of indices
+			indices := make([]int, 0, len(m.selected))
 			for i := range m.selected {
-				m.repository.ToggleDone(i)
+				indices = append(indices, i)
 			}
-			allTodos, _ := m.repository.ListAll()
-			m.choices = allTodos
+
+			if len(indices) > 0 {
+				_, err := business.Do(m.repository, indices)
+				if err != nil {
+					// TODO: Show error in UI
+				}
+
+				// Refresh display
+				allTodos, _ := m.repository.ListAll()
+				m.choices = allTodos
+				m.selected = make(map[int]struct{}) // Clear selection
+			}
 
 		case "/":
 			if !m.adding {
