@@ -9,7 +9,7 @@ func TestExecutePri_SingleTask(t *testing.T) {
 
 	// Test setting priority for task 2 (which has priority B)
 	args := []string{"2", "A"}
-	err := executePri(repo, args)
+	_, err := executePri(repo, args)
 	assertNoError(t, err)
 
 	output, err := repo.WriteToString()
@@ -28,7 +28,7 @@ func TestExecutePri_MultipleTasks(t *testing.T) {
 
 	// Test setting priority for multiple tasks (tasks 1 and 2)
 	args := []string{"1", "2", "C"}
-	err := executePri(repo, args)
+	_, err := executePri(repo, args)
 	assertNoError(t, err)
 
 	output, err := repo.WriteToString()
@@ -47,7 +47,7 @@ func TestExecutePri_RemovePriority(t *testing.T) {
 
 	// Test removing priority by setting empty string
 	args := []string{"1", ""}
-	err := executePri(repo, args)
+	_, err := executePri(repo, args)
 	assertNoError(t, err)
 
 	output, err := repo.WriteToString()
@@ -66,7 +66,7 @@ func TestExecutePri_InvalidLineNumber(t *testing.T) {
 
 	// Test with invalid line number (too high)
 	args := []string{"10", "A"}
-	err := executePri(repo, args)
+	_, err := executePri(repo, args)
 	assertError(t, err)
 	assertContains(t, err.Error(), "failed to set priority for todo at line 10")
 }
@@ -76,7 +76,7 @@ func TestExecutePri_InvalidLineNumberFormat(t *testing.T) {
 
 	// Test with invalid line number format
 	args := []string{"abc", "A"}
-	err := executePri(repo, args)
+	_, err := executePri(repo, args)
 	assertError(t, err)
 	assertContains(t, err.Error(), "failed to convert arg to int")
 }
@@ -86,7 +86,7 @@ func TestExecutePri_ZeroLineNumber(t *testing.T) {
 
 	// Test with line number 0 (should fail - line numbers start at 1)
 	args := []string{"0", "A"}
-	err := executePri(repo, args)
+	_, err := executePri(repo, args)
 	assertError(t, err)
 }
 
@@ -95,7 +95,7 @@ func TestExecutePri_NegativeLineNumber(t *testing.T) {
 
 	// Test with negative line number
 	args := []string{"-1", "A"}
-	err := executePri(repo, args)
+	_, err := executePri(repo, args)
 	assertError(t, err)
 }
 
@@ -104,7 +104,7 @@ func TestExecutePri_EmptyRepository(t *testing.T) {
 
 	// Test setting priority on empty repository
 	args := []string{"1", "A"}
-	err := executePri(repo, args)
+	_, err := executePri(repo, args)
 	assertError(t, err)
 	assertContains(t, err.Error(), "failed to set priority for todo at line 1")
 }
@@ -114,7 +114,7 @@ func TestExecutePri_MixedValidInvalidNumbers(t *testing.T) {
 
 	// Test with mix of valid and invalid line numbers
 	args := []string{"2", "abc", "3", "A"}
-	err := executePri(repo, args)
+	_, err := executePri(repo, args)
 	assertError(t, err)
 	assertContains(t, err.Error(), "failed to convert arg to int")
 
@@ -134,7 +134,7 @@ func TestExecutePri_DoneTaskPriority(t *testing.T) {
 
 	// Test setting priority on a done task (line 3 is done)
 	args := []string{"3", "A"}
-	err := executePri(repo, args)
+	_, err := executePri(repo, args)
 	assertNoError(t, err)
 
 	// Verify the done task can have its priority changed

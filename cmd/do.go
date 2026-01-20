@@ -8,20 +8,28 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func executeDo(repo todotxtlib.TodoRepository, args []string) error {
+func executeDo(repo todotxtlib.TodoRepository, args []string) ([]todotxtlib.Todo, error) {
+	var toggledTodos []todotxtlib.Todo
+
 	for _, arg := range args {
 		lineNumber, err := strconv.Atoi(arg)
 		if err != nil {
-			return fmt.Errorf("failed to convert arg to int: %w", err)
+			return nil, fmt.Errorf("failed to convert arg to int: %w", err)
 		}
-		_, err = repo.ToggleDone(lineNumber - 1)
+		todo, err := repo.ToggleDone(lineNumber - 1)
 		if err != nil {
-			return fmt.Errorf("failed to toggle todo at line %d: %w", lineNumber, err)
+			return nil, fmt.Errorf("failed to toggle todo at line %d: %w", lineNumber, err)
 		}
+		toggledTodos = append(toggledTodos, todo)
 	}
 
 	repo.SortDefault()
-	return repo.Save()
+	err := repo.Save()
+	if err != nil {
+		return nil, err
+	}
+
+	return toggledTodos, nil
 }
 
 // NewDoCmd creates a new cobra command for toggling todos.
@@ -42,7 +50,8 @@ togodo do 1 2 3
 		Args:    cobra.MinimumNArgs(1),
 		Aliases: []string{"x"},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return executeDo(repo, args)
+			_, err := executeDo(repo, args)
+			return err
 		},
 	}
 }

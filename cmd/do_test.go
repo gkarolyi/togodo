@@ -9,7 +9,7 @@ func TestExecuteDo_SingleTask(t *testing.T) {
 
 	// Test toggling a task that's not done (line 1)
 	args := []string{"1"}
-	err := executeDo(repo, args)
+	_, err := executeDo(repo, args)
 	assertNoError(t, err)
 
 	output, err := repo.WriteToString()
@@ -28,7 +28,7 @@ func TestExecuteDo_MultipleTask(t *testing.T) {
 
 	// Test toggling multiple tasks
 	args := []string{"1", "2"}
-	err := executeDo(repo, args)
+	_, err := executeDo(repo, args)
 	assertNoError(t, err)
 
 	output, err := repo.WriteToString()
@@ -47,7 +47,7 @@ func TestExecuteDo_ToggleAlreadyDone(t *testing.T) {
 
 	// Test toggling a task to not done
 	args := []string{"3"}
-	err := executeDo(repo, args)
+	_, err := executeDo(repo, args)
 	assertNoError(t, err)
 
 	output, err := repo.WriteToString()
@@ -66,7 +66,7 @@ func TestExecuteDo_InvalidLineNumber(t *testing.T) {
 
 	// Test with invalid line number (too high)
 	args := []string{"10"}
-	err := executeDo(repo, args)
+	_, err := executeDo(repo, args)
 	assertError(t, err)
 	assertContains(t, err.Error(), "failed to toggle todo at line 10")
 }
@@ -76,7 +76,7 @@ func TestExecuteDo_InvalidLineNumberFormat(t *testing.T) {
 
 	// Test with invalid line number format
 	args := []string{"abc"}
-	err := executeDo(repo, args)
+	_, err := executeDo(repo, args)
 	assertError(t, err)
 	assertContains(t, err.Error(), "failed to convert arg to int")
 }
@@ -86,7 +86,7 @@ func TestExecuteDo_ZeroLineNumber(t *testing.T) {
 
 	// Test with line number 0 (should fail - line numbers start at 1)
 	args := []string{"0"}
-	err := executeDo(repo, args)
+	_, err := executeDo(repo, args)
 	assertError(t, err)
 }
 
@@ -95,7 +95,7 @@ func TestExecuteDo_NegativeLineNumber(t *testing.T) {
 
 	// Test with negative line number
 	args := []string{"-1"}
-	err := executeDo(repo, args)
+	_, err := executeDo(repo, args)
 	assertError(t, err)
 }
 
@@ -104,7 +104,7 @@ func TestExecuteDo_EmptyRepository(t *testing.T) {
 
 	// Test toggling on empty repository
 	args := []string{"1"}
-	err := executeDo(repo, args)
+	_, err := executeDo(repo, args)
 	assertError(t, err)
 	assertContains(t, err.Error(), "failed to toggle todo at line 1")
 }
@@ -114,7 +114,7 @@ func TestExecuteDo_MixedValidInvalidNumbers(t *testing.T) {
 
 	// Test with mix of valid and invalid line numbers
 	args := []string{"1", "abc", "2"}
-	err := executeDo(repo, args)
+	_, err := executeDo(repo, args)
 	assertError(t, err)
 	assertContains(t, err.Error(), "failed to convert arg to int")
 

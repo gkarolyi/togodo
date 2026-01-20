@@ -5,16 +5,24 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func executeAdd(repo todotxtlib.TodoRepository, args []string) error {
+func executeAdd(repo todotxtlib.TodoRepository, args []string) ([]todotxtlib.Todo, error) {
+	var addedTodos []todotxtlib.Todo
+
 	for _, todoText := range args {
-		_, err := repo.Add(todoText)
+		todo, err := repo.Add(todoText)
 		if err != nil {
-			return err
+			return nil, err
 		}
+		addedTodos = append(addedTodos, todo)
 	}
 
 	repo.SortDefault()
-	return repo.Save()
+	err := repo.Save()
+	if err != nil {
+		return nil, err
+	}
+
+	return addedTodos, nil
 }
 
 // NewAddCmd creates a new cobra command for adding todos.
@@ -37,7 +45,8 @@ Buy bread"
 		Args:    cobra.MinimumNArgs(1),
 		Aliases: []string{"a"},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return executeAdd(repo, args)
+			_, err := executeAdd(repo, args)
+			return err
 		},
 	}
 }

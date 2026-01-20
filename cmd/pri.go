@@ -8,19 +8,28 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func executePri(repo todotxtlib.TodoRepository, args []string) error {
+func executePri(repo todotxtlib.TodoRepository, args []string) ([]todotxtlib.Todo, error) {
+	var updatedTodos []todotxtlib.Todo
 	priority := args[len(args)-1]
+
 	for _, arg := range args[:len(args)-1] {
 		lineNumber, err := strconv.Atoi(arg)
 		if err != nil {
-			return fmt.Errorf("failed to convert arg to int: %w", err)
+			return nil, fmt.Errorf("failed to convert arg to int: %w", err)
 		}
-		_, err = repo.SetPriority(lineNumber-1, priority)
+		todo, err := repo.SetPriority(lineNumber-1, priority)
 		if err != nil {
-			return fmt.Errorf("failed to set priority for todo at line %d: %w", lineNumber, err)
+			return nil, fmt.Errorf("failed to set priority for todo at line %d: %w", lineNumber, err)
 		}
+		updatedTodos = append(updatedTodos, todo)
 	}
-	return repo.Save()
+
+	err := repo.Save()
+	if err != nil {
+		return nil, err
+	}
+
+	return updatedTodos, nil
 }
 
 // NewPriCmd creates a new cobra command for setting priority.
@@ -40,7 +49,8 @@ togodo pri 1 2 3 B
 		Args:    cobra.MinimumNArgs(1),
 		Aliases: []string{"p"},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return executePri(repo, args)
+			_, err := executePri(repo, args)
+			return err
 		},
 	}
 }

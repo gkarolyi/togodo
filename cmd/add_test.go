@@ -10,7 +10,7 @@ func TestExecuteAdd_SingleTask(t *testing.T) {
 
 	// Test adding a single task
 	args := []string{"(A) new task +project @context"}
-	err := executeAdd(repo, args)
+	_, err := executeAdd(repo, args)
 	assertNoError(t, err)
 
 	// Verify the task was added
@@ -31,7 +31,7 @@ func TestExecuteAdd_MultipleTasks(t *testing.T) {
 		"(B) second task +project2 @context2",
 		"third task without priority",
 	}
-	err := executeAdd(repo, args)
+	_, err := executeAdd(repo, args)
 
 	assertNoError(t, err)
 
@@ -62,7 +62,7 @@ func TestExecuteAdd_EmptyArgs(t *testing.T) {
 
 	// Test adding with empty args (should not add anything)
 	args := []string{}
-	err := executeAdd(repo, args)
+	_, err := executeAdd(repo, args)
 	assertNoError(t, err)
 
 	// Verify no tasks were added
@@ -87,7 +87,7 @@ func TestExecuteAdd_SortingBehavior(t *testing.T) {
 	}
 
 	for _, arg := range args {
-		err := executeAdd(repo, []string{arg})
+		_, err := executeAdd(repo, []string{arg})
 		assertNoError(t, err)
 	}
 
@@ -119,7 +119,7 @@ func TestExecuteAdd_MultilineString(t *testing.T) {
 
 	// Test adding a task that contains newlines (should be treated as one task)
 	args := []string{"(A) task with\nnewline characters\nin the text"}
-	err := executeAdd(repo, args)
+	_, err := executeAdd(repo, args)
 	assertNoError(t, err)
 
 	// Verify only one task was added
@@ -140,7 +140,7 @@ func TestExecuteAdd_DuplicateTasks(t *testing.T) {
 		"(A) duplicate task +project @context",
 		"(A) duplicate task +project @context",
 	}
-	err := executeAdd(repo, args)
+	_, err := executeAdd(repo, args)
 	assertNoError(t, err)
 
 	// Verify both duplicate tasks were added

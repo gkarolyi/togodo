@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"testing"
-
-	"github.com/gkarolyi/togodo/internal/cli"
 )
 
 func TestExecuteTidy_WithDoneTasks(t *testing.T) {
@@ -13,7 +11,7 @@ func TestExecuteTidy_WithDoneTasks(t *testing.T) {
 	repo.ToggleDone(0)
 
 	// Execute tidy
-	err := executeTidy(repo, cli.NewPresenter())
+	_, err := executeTidy(repo)
 	assertNoError(t, err)
 
 	output, err := repo.WriteToString()
@@ -27,17 +25,19 @@ func TestExecuteTidy_WithDoneTasks(t *testing.T) {
 
 func TestExecuteTidy_NoDoneTasks(t *testing.T) {
 	repo, _ := setupEmptyTestRepository(t)
-	repo.Add("(A) task 1")
-	repo.Add("(B) task 2")
+
+	// Add only undone tasks
+	repo.Add("task 1")
+	repo.Add("task 2")
 
 	// Execute tidy
-	err := executeTidy(repo, cli.NewPresenter())
+	_, err := executeTidy(repo)
 	assertNoError(t, err)
 
 	output, err := repo.WriteToString()
 
-	expectedOutput := "(A) task 1\n" +
-		"(B) task 2\n"
+	expectedOutput := "task 1\n" +
+		"task 2\n"
 
 	if output != expectedOutput {
 		t.Errorf("Expected output:\n%s\nGot:\n%s", expectedOutput, output)
@@ -48,7 +48,7 @@ func TestExecuteTidy_EmptyRepository(t *testing.T) {
 	repo, _ := setupEmptyTestRepository(t)
 
 	// Execute tidy on empty repository
-	err := executeTidy(repo, cli.NewPresenter())
+	_, err := executeTidy(repo)
 	assertNoError(t, err)
 }
 
@@ -61,7 +61,7 @@ func TestExecuteTidy_AllTasksDone(t *testing.T) {
 	repo.Add("x task 3")
 
 	// Execute tidy
-	err := executeTidy(repo, cli.NewPresenter())
+	_, err := executeTidy(repo)
 	assertNoError(t, err)
 
 	output, err := repo.WriteToString()
@@ -85,7 +85,7 @@ func TestExecuteTidy_PrintsRemovedTasks(t *testing.T) {
 	doneCount := len(doneTodos)
 
 	// Execute tidy
-	err = executeTidy(repo, cli.NewPresenter())
+	_, err = executeTidy(repo)
 	assertNoError(t, err)
 
 	// Verify that done tasks would have been printed

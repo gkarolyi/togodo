@@ -4,7 +4,7 @@ import (
 	"github.com/gkarolyi/togodo/todotxtlib"
 )
 
-// Presenter handles formatting and outputting todos
+// Presenter handles formatting and outputting command results
 type Presenter struct {
 	formatter TodoFormatter
 	output    OutputWriter
