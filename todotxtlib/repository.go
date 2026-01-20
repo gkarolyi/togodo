@@ -163,17 +163,6 @@ func (r FileRepository) Filter(filter Filter) ([]Todo, error) {
 	return filter.Apply(r.todos), nil
 }
 
-// Search returns todos that match the search query.
-// If the query is empty, it returns all todos.
-func (r FileRepository) Search(query string) ([]Todo, error) {
-	if query == "" {
-		return r.ListAll()
-	}
-
-	filter := Filter{Text: query}
-	return filter.Apply(r.todos), nil
-}
-
 // Sort sorts the todos in the repository according to the specified criteria
 // Pass nil to use default sort
 func (r *FileRepository) Sort(sort *Sort) {
