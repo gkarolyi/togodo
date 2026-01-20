@@ -1,33 +1,32 @@
 package cmd
 
 import (
+	"bytes"
 	"testing"
+
+	"github.com/gkarolyi/togodo/todotxtlib"
 )
 
 func TestAdd(t *testing.T) {
-	repo, _ := setupEmptyTestRepository(t)
+	t.Run("adds single task", func(t *testing.T) {
+		// Setup
+		var buf bytes.Buffer
+		reader := todotxtlib.NewBufferReader(&buf)
+		writer := todotxtlib.NewBufferWriter(&buf)
+		repo, _ := todotxtlib.NewFileRepository(reader, writer)
 
-	result := Add(repo, []string{"Buy milk", "Call dentist"})
+		// Execute
+		result, err := Add(repo, []string{"test", "task"})
 
-	if len(result.Added) != 2 {
-		t.Errorf("Expected 2 added todos, got %d", len(result.Added))
-	}
-	if result.Added[0].Text != "Buy milk" {
-		t.Errorf("Expected first todo to be 'Buy milk', got '%s'", result.Added[0].Text)
-	}
-	if result.Added[1].Text != "Call dentist" {
-		t.Errorf("Expected second todo to be 'Call dentist', got '%s'", result.Added[1].Text)
-	}
-	if result.Error != nil {
-		t.Errorf("Expected no error, got %v", result.Error)
-	}
-
-	// Verify todos are in repository
-	todos, err := repo.ListAll()
-	if err != nil {
-		t.Fatalf("Failed to list todos: %v", err)
-	}
-	if len(todos) != 2 {
-		t.Errorf("Expected 2 todos in repository, got %d", len(todos))
-	}
+		// Assert
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if result.Todo.Text != "test task" {
+			t.Errorf("expected 'test task', got '%s'", result.Todo.Text)
+		}
+		if result.LineNumber != 1 {
+			t.Errorf("expected line number 1, got %d", result.LineNumber)
+		}
+	})
 }

@@ -1,29 +1,52 @@
 package cmd
 
-import "github.com/gkarolyi/togodo/todotxtlib"
+import (
+	"fmt"
+	"strings"
 
-// AddResult represents the result of an add operation
+	"github.com/gkarolyi/togodo/todotxtlib"
+)
+
+// AddResult contains the result of an Add operation
 type AddResult struct {
-	Added []todotxtlib.Todo
-	Error error
+	Todo       todotxtlib.Todo
+	LineNumber int
 }
 
-// Add adds multiple todos to the repository, sorts, and saves
-func Add(repo todotxtlib.TodoRepository, texts []string) AddResult {
-	addedTodos := make([]todotxtlib.Todo, 0, len(texts))
-
-	for _, text := range texts {
-		todo, err := repo.Add(text)
-		if err != nil {
-			return AddResult{Error: err}
-		}
-		addedTodos = append(addedTodos, todo)
+// Add adds a new todo task to the repository
+func Add(repo todotxtlib.TodoRepository, args []string) (AddResult, error) {
+	if len(args) == 0 {
+		return AddResult{}, fmt.Errorf("task text required")
 	}
 
+	// Join args into single task
+	text := strings.Join(args, " ")
+
+	// Add to repository
+	todo, err := repo.Add(text)
+	if err != nil {
+		return AddResult{}, fmt.Errorf("failed to add todo: %w", err)
+	}
+
+	// Sort and save
 	repo.Sort(nil)
 	if err := repo.Save(); err != nil {
-		return AddResult{Error: err}
+		return AddResult{}, fmt.Errorf("failed to save: %w", err)
 	}
 
-	return AddResult{Added: addedTodos}
+	// Find line number after sort
+	allTodos, err := repo.ListAll()
+	if err != nil {
+		return AddResult{}, fmt.Errorf("failed to list todos: %w", err)
+	}
+
+	lineNumber := 1
+	for i, t := range allTodos {
+		if t.Text == todo.Text && t.Priority == todo.Priority {
+			lineNumber = i + 1
+			break
+		}
+	}
+
+	return AddResult{Todo: todo, LineNumber: lineNumber}, nil
 }
