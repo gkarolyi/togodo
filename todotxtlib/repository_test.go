@@ -438,14 +438,17 @@ func TestRepository_Search(t *testing.T) {
 }
 
 func TestRepository_Sort(t *testing.T) {
+	defaultSort := NewDefaultSort()
+	descendingSort := Sort{Field: Text, Order: Descending}
+
 	tests := []struct {
 		name     string
-		sort     Sort
+		sort     *Sort
 		expected []Todo
 	}{
 		{
 			name: "sorts todos by text ascending with done items last",
-			sort: NewDefaultSort(),
+			sort: &defaultSort,
 			expected: []Todo{
 				NewTodo("(A) test todo 1 +project2 @context1"),
 				NewTodo("(B) test todo 2 +project1 @context2"),
@@ -454,11 +457,20 @@ func TestRepository_Sort(t *testing.T) {
 		},
 		{
 			name: "sorts todos by text descending with done items first",
-			sort: Sort{Field: Text, Order: Descending},
+			sort: &descendingSort,
 			expected: []Todo{
 				NewTodo("x (C) test todo 3 +project1 @context1"),
 				NewTodo("(B) test todo 2 +project1 @context2"),
 				NewTodo("(A) test todo 1 +project2 @context1"),
+			},
+		},
+		{
+			name: "nil sort uses default sort (ascending with done items last)",
+			sort: nil,
+			expected: []Todo{
+				NewTodo("(A) test todo 1 +project2 @context1"),
+				NewTodo("(B) test todo 2 +project1 @context2"),
+				NewTodo("x (C) test todo 3 +project1 @context1"),
 			},
 		},
 	}

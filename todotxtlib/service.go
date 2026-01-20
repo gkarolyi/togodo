@@ -34,7 +34,7 @@ func (s *DefaultTodoService) AddTodos(texts []string) ([]Todo, error) {
 		addedTodos = append(addedTodos, todo)
 	}
 
-	s.repo.SortDefault()
+	s.repo.Sort(nil)
 	if err := s.repo.Save(); err != nil {
 		return nil, fmt.Errorf("failed to save todos: %w", err)
 	}
@@ -55,7 +55,7 @@ func (s *DefaultTodoService) ToggleTodos(indices []int) ([]Todo, error) {
 		toggledTodos = append(toggledTodos, todo)
 	}
 
-	s.repo.SortDefault()
+	s.repo.Sort(nil)
 	if err := s.repo.Save(); err != nil {
 		return nil, fmt.Errorf("failed to save todos: %w", err)
 	}
@@ -109,7 +109,7 @@ func (s *DefaultTodoService) RemoveDoneTodos() ([]Todo, error) {
 		}
 	}
 
-	s.repo.SortDefault()
+	s.repo.Sort(nil)
 	if err := s.repo.Save(); err != nil {
 		return nil, fmt.Errorf("failed to save todos: %w", err)
 	}

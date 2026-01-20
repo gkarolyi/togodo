@@ -22,8 +22,7 @@ type TodoRepository interface {
 	RemoveProject(index int, project string) (Todo, error)
 	Filter(filter Filter) ([]Todo, error)
 	Search(query string) ([]Todo, error)
-	Sort(sort Sort)
-	SortDefault()
+	Sort(sort *Sort)
 	ListAll() ([]Todo, error)
 	ListTodos() ([]Todo, error)
 	ListDone() ([]Todo, error)
@@ -177,13 +176,12 @@ func (r FileRepository) Search(query string) ([]Todo, error) {
 }
 
 // Sort sorts the todos in the repository according to the specified criteria
-func (r *FileRepository) Sort(sort Sort) {
-	sort.Apply(r.todos)
-}
-
-// SortDefault sorts the todos in the repository in default order, with done todos at the bottom.
-func (r *FileRepository) SortDefault() {
-	sort := NewDefaultSort()
+// Pass nil to use default sort
+func (r *FileRepository) Sort(sort *Sort) {
+	if sort == nil {
+		defaultSort := NewDefaultSort()
+		sort = &defaultSort
+	}
 	sort.Apply(r.todos)
 }
 
