@@ -89,7 +89,8 @@ func (s *DefaultTodoService) SetPriorities(indices []int, priority string) ([]To
 // Returns the removed todos
 func (s *DefaultTodoService) RemoveDoneTodos() ([]Todo, error) {
 	// Get done todos before removing
-	doneTodos, err := s.repo.ListDone()
+	doneFilter := Filter{Done: "true"}
+	doneTodos, err := s.repo.Filter(doneFilter)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list done todos: %w", err)
 	}

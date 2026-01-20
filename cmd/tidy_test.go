@@ -107,7 +107,8 @@ func TestTidyCmd_ReturnsRemovedTasks(t *testing.T) {
 	repo.ToggleDone(0)
 
 	// Get done tasks before tidy
-	doneTodos, err := repo.ListDone()
+	doneFilter := todotxtlib.Filter{Done: "true"}
+	doneTodos, err := repo.Filter(doneFilter)
 	assertNoError(t, err)
 	doneCount := len(doneTodos)
 
