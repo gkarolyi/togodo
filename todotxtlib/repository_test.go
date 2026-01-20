@@ -556,6 +556,34 @@ func TestRepository_ListContexts(t *testing.T) {
 	})
 }
 
+func TestRepository_Get(t *testing.T) {
+	repo, _ := setupTestRepository(t)
+
+	t.Run("gets todo by index", func(t *testing.T) {
+		todo, err := repo.Get(0)
+		if err != nil {
+			t.Errorf("Get() error = %v, want nil", err)
+		}
+		if todo.Text != "(A) test todo 1 +project2 @context1" {
+			t.Errorf("Get() returned todo with text %s, want (A) test todo 1 +project2 @context1", todo.Text)
+		}
+	})
+
+	t.Run("returns error for invalid index", func(t *testing.T) {
+		_, err := repo.Get(999)
+		if err == nil {
+			t.Error("Get() expected error for invalid index, got nil")
+		}
+	})
+
+	t.Run("returns error for negative index", func(t *testing.T) {
+		_, err := repo.Get(-1)
+		if err == nil {
+			t.Error("Get() expected error for negative index, got nil")
+		}
+	})
+}
+
 func TestRepository_Save(t *testing.T) {
 	t.Run("saves todos to buffer", func(t *testing.T) {
 		var buf bytes.Buffer
