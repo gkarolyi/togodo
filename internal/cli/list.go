@@ -37,10 +37,10 @@ togodo list milk
 
 			// Format output to match todo.txt-cli
 			for i, todo := range result.Todos {
-				fmt.Printf("%d %s\n", i+1, todo.Text)
+				fmt.Fprintf(command.OutOrStdout(), "%d %s\n", i+1, todo.Text)
 			}
-			fmt.Println("--")
-			fmt.Printf("TODO: %d of %d tasks shown\n", result.ShownCount, result.TotalCount)
+			fmt.Fprintln(command.OutOrStdout(), "--")
+			fmt.Fprintf(command.OutOrStdout(), "TODO: %d of %d tasks shown\n", result.ShownCount, result.TotalCount)
 			return nil
 		},
 	}

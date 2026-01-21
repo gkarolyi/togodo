@@ -39,11 +39,11 @@ togodo do 1
 
 			// Format output to match todo.txt-cli
 			for _, todo := range result.ToggledTodos {
-				fmt.Printf("%d %s\n", lineNum, todo.Text)
+				fmt.Fprintf(command.OutOrStdout(), "%d %s\n", lineNum, todo.Text)
 				if todo.Done {
-					fmt.Printf("TODO: %d marked as done.\n", lineNum)
+					fmt.Fprintf(command.OutOrStdout(), "TODO: %d marked as done.\n", lineNum)
 				} else {
-					fmt.Printf("TODO: %d marked as TODO.\n", lineNum)
+					fmt.Fprintf(command.OutOrStdout(), "TODO: %d marked as TODO.\n", lineNum)
 				}
 			}
 			return nil

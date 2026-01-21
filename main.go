@@ -49,9 +49,7 @@ func main() {
 		log.Fatalf("Failed to create repository: %v", err)
 	}
 
-	presenter := cli.NewPresenter()
-
-	rootCmd := cli.NewRootCmd(repo, presenter)
+	rootCmd := cli.NewRootCmd(repo)
 
 	if err := fang.Execute(context.Background(), rootCmd); err != nil {
 		os.Exit(1)

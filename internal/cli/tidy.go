@@ -28,12 +28,12 @@ togodo tidy
 
 			// Format output to match todo.txt-cli
 			if len(result.RemovedTodos) == 0 {
-				fmt.Println("TODO: No completed tasks to remove.")
+				fmt.Fprintln(command.OutOrStdout(), "TODO: No completed tasks to remove.")
 			} else {
 				for _, todo := range result.RemovedTodos {
-					fmt.Println(todo.Text)
+					fmt.Fprintln(command.OutOrStdout(), todo.Text)
 				}
-				fmt.Printf("TODO: %d completed task(s) removed.\n", len(result.RemovedTodos))
+				fmt.Fprintf(command.OutOrStdout(), "TODO: %d completed task(s) removed.\n", len(result.RemovedTodos))
 			}
 			return nil
 		},

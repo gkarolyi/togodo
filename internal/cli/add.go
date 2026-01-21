@@ -31,8 +31,8 @@ togodo add Buy milk and eggs
 			}
 
 			// Format output to match todo.txt-cli
-			fmt.Printf("%d %s\n", result.LineNumber, result.Todo.Text)
-			fmt.Printf("TODO: %d added.\n", result.LineNumber)
+			fmt.Fprintf(command.OutOrStdout(), "%d %s\n", result.LineNumber, result.Todo.Text)
+			fmt.Fprintf(command.OutOrStdout(), "TODO: %d added.\n", result.LineNumber)
 			return nil
 		},
 	}

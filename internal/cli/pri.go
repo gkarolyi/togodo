@@ -43,8 +43,8 @@ togodo pri 1 A
 
 			// Format output to match todo.txt-cli
 			for _, todo := range result.UpdatedTodos {
-				fmt.Printf("%d %s\n", lineNum, todo.Text)
-				fmt.Printf("TODO: %d prioritized to (%s).\n", lineNum, priority)
+				fmt.Fprintf(command.OutOrStdout(), "%d %s\n", lineNum, todo.Text)
+				fmt.Fprintf(command.OutOrStdout(), "TODO: %d prioritized to (%s).\n", lineNum, priority)
 			}
 			return nil
 		},

@@ -12,39 +12,11 @@ import (
 
 // TestEnvironment holds the test setup for integration tests
 type TestEnvironment struct {
-	buffer      *bytes.Buffer
-	output      *bytes.Buffer
-	repo        todotxtlib.TodoRepository
-	presenter   *cli.Presenter
-	rootCmd     *cobra.Command
-	t           *testing.T
-}
-
-// BufferOutputWriter captures output to a buffer for testing
-type BufferOutputWriter struct {
-	buffer *bytes.Buffer
-}
-
-func NewBufferOutputWriter(buffer *bytes.Buffer) *BufferOutputWriter {
-	return &BufferOutputWriter{buffer: buffer}
-}
-
-func (w *BufferOutputWriter) WriteLine(line string) {
-	w.buffer.WriteString(line + "\n")
-}
-
-func (w *BufferOutputWriter) WriteLines(lines []string) {
-	for _, line := range lines {
-		w.WriteLine(line)
-	}
-}
-
-func (w *BufferOutputWriter) WriteError(err error) {
-	w.buffer.WriteString("Error: " + err.Error() + "\n")
-}
-
-func (w *BufferOutputWriter) Run() error {
-	return nil
+	buffer  *bytes.Buffer
+	output  *bytes.Buffer
+	repo    todotxtlib.TodoRepository
+	rootCmd *cobra.Command
+	t       *testing.T
 }
 
 // SetupTestEnv creates a new test environment with buffer-based repository
@@ -67,21 +39,15 @@ func SetupTestEnv(t *testing.T) *TestEnvironment {
 		t.Fatalf("Failed to create repository: %v", err)
 	}
 
-	// Create presenter with buffer output
-	outputWriter := NewBufferOutputWriter(output)
-	formatter := cli.NewPlainFormatter()
-	presenter := cli.NewPresenterWithDeps(formatter, outputWriter)
-
 	env := &TestEnvironment{
-		buffer:    buffer,
-		output:    output,
-		repo:      repo,
-		presenter: presenter,
-		t:         t,
+		buffer: buffer,
+		output: output,
+		repo:   repo,
+		t:      t,
 	}
 
 	// Create root command with injected dependencies
-	env.rootCmd = cli.NewRootCmd(repo, env.presenter)
+	env.rootCmd = cli.NewRootCmd(repo)
 
 	return env
 }
@@ -94,7 +60,7 @@ func (env *TestEnvironment) RunCommand(args ...string) (string, int) {
 	env.output.Reset()
 
 	// Reset command state
-	env.rootCmd = cli.NewRootCmd(env.repo, env.presenter)
+	env.rootCmd = cli.NewRootCmd(env.repo)
 	env.rootCmd.SetArgs(args)
 	env.rootCmd.SetOut(env.output)
 	env.rootCmd.SetErr(env.output)
@@ -133,7 +99,7 @@ func (env *TestEnvironment) WriteTodoFile(content string) {
 	env.repo = repo
 
 	// Recreate root command with new repository
-	env.rootCmd = cli.NewRootCmd(env.repo, env.presenter)
+	env.rootCmd = cli.NewRootCmd(env.repo)
 }
 
 // ReadTodoFile returns the contents of the todo.txt buffer
