@@ -20,9 +20,22 @@ togodo list
 
 # list tasks containing "milk"
 togodo list milk
+
+# list without colors
+togodo -p list
+togodo list --plain
 `,
 		Aliases: []string{"l", "ls"},
 		RunE: func(command *cobra.Command, args []string) error {
+			// Check for plain mode (either local or global flag)
+			plainMode, _ := command.Flags().GetBool("plain")
+			if !plainMode {
+				// Check parent (root) flag
+				if parent := command.Parent(); parent != nil {
+					plainMode, _ = parent.PersistentFlags().GetBool("plain")
+				}
+			}
+
 			// Get search filter if provided
 			searchQuery := ""
 			if len(args) > 0 {
@@ -35,9 +48,18 @@ togodo list milk
 				return err
 			}
 
-			// Format output to match todo.txt-cli
+			// Choose formatter based on plain flag
+			var formatter TodoFormatter
+			if plainMode {
+				formatter = NewPlainFormatter()
+			} else {
+				formatter = NewLipglossFormatter()
+			}
+
+			// Format output with optional highlighting
 			for i, todo := range result.Todos {
-				fmt.Fprintf(command.OutOrStdout(), "%d %s\n", result.LineNumbers[i], todo.Text)
+				formatted := formatter.Format(todo)
+				fmt.Fprintf(command.OutOrStdout(), "%d %s\n", result.LineNumbers[i], formatted)
 			}
 			fmt.Fprintln(command.OutOrStdout(), "--")
 			fmt.Fprintf(command.OutOrStdout(), "TODO: %d of %d tasks shown\n", result.ShownCount, result.TotalCount)

@@ -48,6 +48,7 @@ func NewRootCmd(repo todotxtlib.TodoRepository) *cobra.Command {
 
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().StringP("file", "f", "", "Specify the todo.txt file to use")
+	rootCmd.PersistentFlags().BoolP("plain", "p", false, "Plain output mode without colors/formatting")
 
 	// Set up persistent pre-run to handle --file flag globally
 	rootCmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {

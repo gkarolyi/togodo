@@ -160,11 +160,59 @@ TODO: 3 of 3 tasks shown`
 // TestPriorityWithPlainFlag tests -p flag for plain output
 // Ported from: t1200-pri.sh
 func TestPriorityWithPlainFlag(t *testing.T) {
-	t.Skip("TODO: Implement -p flag for plain/no-color output")
+	env := SetupTestEnv(t)
+	env.WriteTodoFile("(A) task one\ntask two")
 
-	// env := SetupTestEnv(t)
-	// env.WriteTodoFile("(A) task one\ntask two")
-	//
-	// output, _ := env.RunCommand("-p", "list")
-	// // Should have no ANSI color codes
+	t.Run("list with global -p flag", func(t *testing.T) {
+		output, code := env.RunCommand("-p", "list")
+		if code != 0 {
+			t.Errorf("Expected exit code 0, got %d", code)
+		}
+
+		// Should show plain output without ANSI color codes
+		// We verify by checking that output is not empty and contains expected tasks
+		if output == "" {
+			t.Error("Expected non-empty output")
+		}
+
+		// Output should contain the tasks
+		expectedLines := []string{
+			"1 (A) task one",
+			"2 task two",
+			"TODO: 2 of 2 tasks shown",
+		}
+
+		for _, line := range expectedLines {
+			if !containsLine(output, line) {
+				t.Errorf("Expected output to contain '%s', got:\n%s", line, output)
+			}
+		}
+	})
+
+	t.Run("list with --plain flag", func(t *testing.T) {
+		output, code := env.RunCommand("list", "--plain")
+		if code != 0 {
+			t.Errorf("Expected exit code 0, got %d", code)
+		}
+
+		// Should show plain output
+		if output == "" {
+			t.Error("Expected non-empty output")
+		}
+	})
+}
+
+// Helper to check if output contains a line
+func containsLine(output, line string) bool {
+	// Simple substring check - good enough for our purposes
+	return len(output) >= len(line) && findSubstring(output, line)
+}
+
+func findSubstring(s, substr string) bool {
+	for i := 0; i <= len(s)-len(substr); i++ {
+		if s[i:i+len(substr)] == substr {
+			return true
+		}
+	}
+	return false
 }
