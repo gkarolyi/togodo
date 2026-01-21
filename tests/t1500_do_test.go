@@ -133,11 +133,60 @@ func TestDoAlreadyDone(t *testing.T) {
 // TestDoMultipleWithComma tests marking multiple tasks with comma separator
 // Ported from: t1500-do.sh
 func TestDoMultipleWithComma(t *testing.T) {
-	t.Skip("TODO: Implement comma-separated task numbers (e.g., 'do 7,6')")
+	env := SetupTestEnv(t)
+	env.WriteTodoFile("task1\ntask2\ntask3\ntask4\ntask5")
 
-	// env := SetupTestEnv(t)
-	// env.WriteTodoFile("task1\ntask2\ntask3\ntask4\ntask5")
-	//
-	// output, code := env.RunCommand("do", "5,3,1")
-	// // Should mark tasks 5, 3, and 1 as done
+	t.Run("mark multiple tasks with comma separator", func(t *testing.T) {
+		output, code := env.RunCommand("do", "5,3,1")
+		if code != 0 {
+			t.Errorf("Expected exit code 0, got %d", code)
+		}
+
+		// Verify output format - should show each task marked done with completion date
+		// Expected format: "5 x YYYY-MM-DD task5\nTODO: 5 marked as done.\n3 x YYYY-MM-DD task3\n..."
+		// Each task completion is two lines: the task line + confirmation line
+		lines := regexp.MustCompile(`\n`).Split(output, -1)
+
+		// Should have 6 lines total (2 per task * 3 tasks)
+		if len(lines) != 6 {
+			t.Errorf("Expected 6 output lines (2 per task * 3 tasks), got %d\nOutput: %s", len(lines), output)
+		}
+
+		// Verify task lines (lines 0, 2, 4) match the completion date pattern
+		taskPattern := regexp.MustCompile(`^\d+ x \d{4}-\d{2}-\d{2} task\d+$`)
+		for i := 0; i < 6; i += 2 {
+			if !taskPattern.MatchString(lines[i]) {
+				t.Errorf("Expected line %d to match task pattern, got: %s", i, lines[i])
+			}
+		}
+
+		// Verify confirmation lines (lines 1, 3, 5)
+		confirmPattern := regexp.MustCompile(`^TODO: \d+ marked as done\.$`)
+		for i := 1; i < 6; i += 2 {
+			if !confirmPattern.MatchString(lines[i]) {
+				t.Errorf("Expected line %d to match confirmation pattern, got: %s", i, lines[i])
+			}
+		}
+	})
+
+	t.Run("list after marking done", func(t *testing.T) {
+		output, code := env.RunCommand("list")
+		if code != 0 {
+			t.Errorf("Expected exit code 0, got %d", code)
+		}
+
+		// All tasks should still be in todo.txt (completed tasks remain until archived)
+		// Incomplete tasks (2, 4) and completed tasks (1, 3, 5) should all be shown
+		// List sorts by priority then alphabetically, so order may vary
+		expectedOutput := `2 task2
+4 task4
+1 x 2026-01-21 task1
+3 x 2026-01-21 task3
+5 x 2026-01-21 task5
+--
+TODO: 5 of 5 tasks shown`
+		if output != expectedOutput {
+			t.Errorf("Output mismatch\nExpected:\n%s\n\nGot:\n%s", expectedOutput, output)
+		}
+	})
 }
