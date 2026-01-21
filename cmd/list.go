@@ -6,9 +6,10 @@ import (
 
 // ListResult contains the result of a List operation
 type ListResult struct {
-	Todos      []todotxtlib.Todo
-	TotalCount int
-	ShownCount int
+	Todos       []todotxtlib.Todo
+	LineNumbers []int
+	TotalCount  int
+	ShownCount  int
 }
 
 // List lists todos, optionally filtering by search query
@@ -22,19 +23,36 @@ func List(repo todotxtlib.TodoRepository, searchQuery string) (ListResult, error
 
 	// Filter if search query provided
 	var todos []todotxtlib.Todo
+	var lineNumbers []int
 	if searchQuery != "" {
 		filter := todotxtlib.Filter{Text: searchQuery}
-		todos, err = repo.Filter(filter)
+		filteredTodos, err := repo.Filter(filter)
 		if err != nil {
 			return ListResult{}, err
 		}
+		todos = filteredTodos
+
+		// Find line numbers in original list
+		for _, filteredTodo := range filteredTodos {
+			for i, originalTodo := range allTodos {
+				if originalTodo.Text == filteredTodo.Text {
+					lineNumbers = append(lineNumbers, i+1)
+					break
+				}
+			}
+		}
 	} else {
 		todos = allTodos
+		// Generate sequential line numbers for unfiltered list
+		for i := range allTodos {
+			lineNumbers = append(lineNumbers, i+1)
+		}
 	}
 
 	return ListResult{
-		Todos:      todos,
-		TotalCount: totalCount,
-		ShownCount: len(todos),
+		Todos:       todos,
+		LineNumbers: lineNumbers,
+		TotalCount:  totalCount,
+		ShownCount:  len(todos),
 	}, nil
 }
