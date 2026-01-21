@@ -7,9 +7,9 @@ import (
 // TestArchiveWithDuplicates tests archiving done tasks
 // Ported from: t1900-archive.sh
 func TestArchiveWithDuplicates(t *testing.T) {
-	env := SetupTestEnv(t)
+	env := SetupFileBasedTestEnv(t)
 
-	env.WriteTodoFile(`one
+	env.WriteTodoFileContent(`one
 two
 three
 one
@@ -29,7 +29,7 @@ four`)
 	})
 
 	t.Run("verify done task removed from todo.txt", func(t *testing.T) {
-		content := env.ReadTodoFile()
+		content := env.ReadTodoFileContent()
 		expectedContent := `one
 two
 three
@@ -41,7 +41,7 @@ four`
 	})
 
 	t.Run("verify done task in done.txt", func(t *testing.T) {
-		content := env.ReadDoneFile()
+		content := env.ReadDoneFileContent()
 		expectedContent := "x done"
 		if content != expectedContent {
 			t.Errorf("Done file content mismatch\nExpected:\n%s\n\nGot:\n%s", expectedContent, content)
@@ -69,9 +69,9 @@ TODO: 5 of 5 tasks shown`
 // TestArchiveWarning tests archive when no done tasks exist
 // Ported from: t1900-archive.sh
 func TestArchiveWarning(t *testing.T) {
-	env := SetupTestEnv(t)
+	env := SetupFileBasedTestEnv(t)
 
-	env.WriteTodoFile(`one
+	env.WriteTodoFileContent(`one
 two
 three`)
 

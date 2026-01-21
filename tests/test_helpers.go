@@ -2,21 +2,28 @@ package tests
 
 import (
 	"bytes"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/gkarolyi/togodo/internal/cli"
+	"github.com/gkarolyi/togodo/internal/config"
 	"github.com/gkarolyi/togodo/todotxtlib"
 	"github.com/spf13/cobra"
 )
 
 // TestEnvironment holds the test setup for integration tests
 type TestEnvironment struct {
-	buffer  *bytes.Buffer
-	output  *bytes.Buffer
-	repo    todotxtlib.TodoRepository
-	rootCmd *cobra.Command
-	t       *testing.T
+	buffer     *bytes.Buffer
+	doneBuffer *bytes.Buffer
+	output     *bytes.Buffer
+	repo       todotxtlib.TodoRepository
+	rootCmd    *cobra.Command
+	t          *testing.T
+	todoFile   string // Path to todo.txt file (for file-based tests)
+	doneFile   string // Path to done.txt file (for file-based tests)
+	tempDir    string // Temporary directory for file-based tests
 }
 
 // SetupTestEnv creates a new test environment with buffer-based repository
@@ -25,6 +32,9 @@ func SetupTestEnv(t *testing.T) *TestEnvironment {
 
 	// Create buffer for todo.txt content
 	buffer := &bytes.Buffer{}
+
+	// Create buffer for done.txt content
+	doneBuffer := &bytes.Buffer{}
 
 	// Create output buffer to capture command output
 	output := &bytes.Buffer{}
@@ -40,10 +50,11 @@ func SetupTestEnv(t *testing.T) *TestEnvironment {
 	}
 
 	env := &TestEnvironment{
-		buffer: buffer,
-		output: output,
-		repo:   repo,
-		t:      t,
+		buffer:     buffer,
+		doneBuffer: doneBuffer,
+		output:     output,
+		repo:       repo,
+		t:          t,
 	}
 
 	// Create root command with injected dependencies
@@ -115,11 +126,11 @@ func (env *TestEnvironment) ReadTodoFile() string {
 	return strings.TrimRight(content, "\n")
 }
 
-// ReadDoneFile returns the contents of done.txt (not yet implemented)
+// ReadDoneFile returns the contents of done.txt
 func (env *TestEnvironment) ReadDoneFile() string {
 	env.t.Helper()
-	// TODO: Implement done.txt support
-	return ""
+	content := env.doneBuffer.String()
+	return strings.TrimRight(content, "\n")
 }
 
 // AssertOutput runs command and asserts the output matches expected
@@ -170,4 +181,113 @@ func (env *TestEnvironment) AssertContains(output, expected string) {
 	if !strings.Contains(output, expected) {
 		env.t.Errorf("Output does not contain expected substring\nExpected substring: %s\nGot: %s", expected, output)
 	}
+}
+
+// SetupFileBasedTestEnv creates a test environment using temporary files
+// This is needed for commands like archive that work with multiple files
+func SetupFileBasedTestEnv(t *testing.T) *TestEnvironment {
+	t.Helper()
+
+	// Create temporary directory
+	tempDir := t.TempDir()
+	todoFile := filepath.Join(tempDir, "todo.txt")
+	doneFile := filepath.Join(tempDir, "done.txt")
+
+	// Create empty todo.txt
+	if err := os.WriteFile(todoFile, []byte(""), 0644); err != nil {
+		t.Fatalf("Failed to create todo.txt: %v", err)
+	}
+
+	// Set config to use our temp file
+	config.SetTodoTxtPath(todoFile)
+
+	// Create output buffer to capture command output
+	output := &bytes.Buffer{}
+
+	// Create file-based reader and writer
+	reader := todotxtlib.NewFileReader(todoFile)
+	writer := todotxtlib.NewFileWriter(todoFile)
+
+	// Create repository
+	repo, err := todotxtlib.NewFileRepository(reader, writer)
+	if err != nil {
+		t.Fatalf("Failed to create repository: %v", err)
+	}
+
+	env := &TestEnvironment{
+		output:   output,
+		repo:     repo,
+		t:        t,
+		todoFile: todoFile,
+		doneFile: doneFile,
+		tempDir:  tempDir,
+	}
+
+	// Create root command with injected dependencies
+	env.rootCmd = cli.NewRootCmd(repo)
+
+	return env
+}
+
+// WriteTodoFileContent writes content to the todo.txt file (for file-based tests)
+func (env *TestEnvironment) WriteTodoFileContent(content string) {
+	env.t.Helper()
+
+	if env.todoFile == "" {
+		env.t.Fatal("This test environment is not file-based")
+	}
+
+	// Write content to file
+	if err := os.WriteFile(env.todoFile, []byte(content), 0644); err != nil {
+		env.t.Fatalf("Failed to write todo.txt: %v", err)
+	}
+
+	// Recreate repository with new content
+	reader := todotxtlib.NewFileReader(env.todoFile)
+	writer := todotxtlib.NewFileWriter(env.todoFile)
+
+	repo, err := todotxtlib.NewFileRepository(reader, writer)
+	if err != nil {
+		env.t.Fatalf("Failed to recreate repository: %v", err)
+	}
+
+	env.repo = repo
+
+	// Recreate root command with new repository
+	env.rootCmd = cli.NewRootCmd(env.repo)
+}
+
+// ReadTodoFileContent returns the contents of the todo.txt file (for file-based tests)
+func (env *TestEnvironment) ReadTodoFileContent() string {
+	env.t.Helper()
+
+	if env.todoFile == "" {
+		env.t.Fatal("This test environment is not file-based")
+	}
+
+	content, err := os.ReadFile(env.todoFile)
+	if err != nil {
+		env.t.Fatalf("Failed to read todo.txt: %v", err)
+	}
+
+	return strings.TrimRight(string(content), "\n")
+}
+
+// ReadDoneFileContent returns the contents of the done.txt file (for file-based tests)
+func (env *TestEnvironment) ReadDoneFileContent() string {
+	env.t.Helper()
+
+	if env.doneFile == "" {
+		env.t.Fatal("This test environment is not file-based")
+	}
+
+	content, err := os.ReadFile(env.doneFile)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return ""
+		}
+		env.t.Fatalf("Failed to read done.txt: %v", err)
+	}
+
+	return strings.TrimRight(string(content), "\n")
 }
