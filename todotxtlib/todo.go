@@ -7,7 +7,7 @@ import (
 )
 
 var projectRe = regexp.MustCompile(`\+(\w+)`)
-var contextRe = regexp.MustCompile(`@\w+`)
+var contextRe = regexp.MustCompile(`@\S+`)
 var priorityRe = regexp.MustCompile(`^\(([A-Z])\)`)
 var doneRe = regexp.MustCompile(`^x `)
 var tagRe = regexp.MustCompile(`\w+:\S+`)
