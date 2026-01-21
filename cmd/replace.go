@@ -23,6 +23,8 @@ func Replace(repo todotxtlib.TodoRepository, index int, newText string) (Replace
 
 	// Create new todo with replaced text
 	newTodo := todotxtlib.NewTodo(newText)
+	// Preserve the line number from the old todo
+	newTodo.LineNumber = oldTodo.LineNumber
 
 	// Update in repository
 	updated, err := repo.Update(index, newTodo)

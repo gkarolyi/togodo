@@ -25,6 +25,8 @@ func Append(repo todotxtlib.TodoRepository, index int, text string) (AppendResul
 
 	// Create updated todo
 	updatedTodo := todotxtlib.NewTodo(newText)
+	// Preserve the line number from the old todo
+	updatedTodo.LineNumber = todo.LineNumber
 
 	// Update in repository
 	updated, err := repo.Update(index, updatedTodo)
@@ -39,6 +41,6 @@ func Append(repo todotxtlib.TodoRepository, index int, text string) (AppendResul
 
 	return AppendResult{
 		Todo:       updated,
-		LineNumber: index + 1,
+		LineNumber: updated.LineNumber,
 	}, nil
 }

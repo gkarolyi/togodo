@@ -15,9 +15,14 @@ type DepriResult struct {
 // Depri removes priority from a todo
 func Depri(repo todotxtlib.TodoRepository, index int) (DepriResult, error) {
 	// Get existing todo
-	_, err := repo.Get(index)
+	todo, err := repo.Get(index)
 	if err != nil {
 		return DepriResult{}, fmt.Errorf("failed to get todo: %w", err)
+	}
+
+	// Check if task has a priority to remove
+	if todo.Priority == "" {
+		return DepriResult{}, fmt.Errorf("TODO: %d is not prioritized.", todo.LineNumber)
 	}
 
 	// Remove priority by setting to empty string
@@ -33,6 +38,6 @@ func Depri(repo todotxtlib.TodoRepository, index int) (DepriResult, error) {
 
 	return DepriResult{
 		Todo:       updated,
-		LineNumber: index + 1,
+		LineNumber: updated.LineNumber,
 	}, nil
 }

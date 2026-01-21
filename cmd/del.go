@@ -27,6 +27,6 @@ func Del(repo todotxtlib.TodoRepository, index int) (DelResult, error) {
 
 	return DelResult{
 		DeletedTodo: deleted,
-		LineNumber:  index + 1,
+		LineNumber:  deleted.LineNumber,
 	}, nil
 }

@@ -16,6 +16,7 @@ type TodoRepository interface {
 	Filter(filter Filter) ([]Todo, error)
 	Sort(sort *Sort)
 	ListAll() ([]Todo, error)
+	FindIndexByLineNumber(lineNumber int) int
 	ListProjects() ([]string, error)
 	ListContexts() ([]string, error)
 	Save() error
@@ -114,6 +115,17 @@ func (r *FileRepository) Sort(sort *Sort) {
 // ListAll returns all todos
 func (r FileRepository) ListAll() ([]Todo, error) {
 	return r.todos, nil
+}
+
+// FindIndexByLineNumber finds the array index of a todo with the given line number
+// Returns -1 if not found
+func (r FileRepository) FindIndexByLineNumber(lineNumber int) int {
+	for i, todo := range r.todos {
+		if todo.LineNumber == lineNumber {
+			return i
+		}
+	}
+	return -1
 }
 
 // ListProjects returns all unique projects sorted alphabetically

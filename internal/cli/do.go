@@ -28,8 +28,11 @@ togodo do 1
 				return fmt.Errorf("invalid line number: %s", args[0])
 			}
 
-			// Convert to 0-based index
-			index := lineNum - 1
+			// Find the array index for this line number
+			index := repo.FindIndexByLineNumber(lineNum)
+			if index == -1 {
+				return fmt.Errorf("TODO: No task %d.", lineNum)
+			}
 
 			// Call business logic
 			result, err := cmd.Do(repo, []int{index})
@@ -39,11 +42,11 @@ togodo do 1
 
 			// Format output to match todo.txt-cli
 			for _, todo := range result.ToggledTodos {
-				fmt.Fprintf(command.OutOrStdout(), "%d %s\n", lineNum, todo.Text)
+				fmt.Fprintf(command.OutOrStdout(), "%d %s\n", todo.LineNumber, todo.Text)
 				if todo.Done {
-					fmt.Fprintf(command.OutOrStdout(), "TODO: %d marked as done.\n", lineNum)
+					fmt.Fprintf(command.OutOrStdout(), "TODO: %d marked as done.\n", todo.LineNumber)
 				} else {
-					fmt.Fprintf(command.OutOrStdout(), "TODO: %d marked as TODO.\n", lineNum)
+					fmt.Fprintf(command.OutOrStdout(), "TODO: %d marked as TODO.\n", todo.LineNumber)
 				}
 			}
 			return nil

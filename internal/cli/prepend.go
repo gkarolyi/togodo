@@ -29,8 +29,11 @@ togodo prepend 2 "really"
 				return fmt.Errorf("invalid line number: %s", args[0])
 			}
 
-			// Convert to 0-based index
-			index := lineNum - 1
+			// Find the array index for this line number
+			index := repo.FindIndexByLineNumber(lineNum)
+			if index == -1 {
+				return fmt.Errorf("TODO: No task %d.", lineNum)
+			}
 
 			// Get text to prepend
 			text := strings.Join(args[1:], " ")

@@ -36,6 +36,8 @@ func Prepend(repo todotxtlib.TodoRepository, index int, text string) (PrependRes
 
 	// Create updated todo
 	updatedTodo := todotxtlib.NewTodo(newText)
+	// Preserve the line number from the old todo
+	updatedTodo.LineNumber = todo.LineNumber
 
 	// Update in repository
 	updated, err := repo.Update(index, updatedTodo)
@@ -50,6 +52,6 @@ func Prepend(repo todotxtlib.TodoRepository, index int, text string) (PrependRes
 
 	return PrependResult{
 		Todo:       updated,
-		LineNumber: index + 1,
+		LineNumber: updated.LineNumber,
 	}, nil
 }

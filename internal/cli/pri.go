@@ -29,8 +29,11 @@ togodo pri 1 A
 				return fmt.Errorf("invalid line number: %s", args[0])
 			}
 
-			// Convert to 0-based index
-			index := lineNum - 1
+			// Find the array index for this line number
+			index := repo.FindIndexByLineNumber(lineNum)
+			if index == -1 {
+				return fmt.Errorf("TODO: No task %d.", lineNum)
+			}
 
 			// Get priority (normalize to uppercase)
 			priority := strings.ToUpper(args[1])
@@ -42,9 +45,18 @@ togodo pri 1 A
 			}
 
 			// Format output to match todo.txt-cli
-			for _, todo := range result.UpdatedTodos {
+			for i, todo := range result.UpdatedTodos {
 				fmt.Fprintf(command.OutOrStdout(), "%d %s\n", lineNum, todo.Text)
-				fmt.Fprintf(command.OutOrStdout(), "TODO: %d prioritized (%s).\n", lineNum, priority)
+
+				// Show appropriate message based on whether it was a re-prioritization
+				oldPriority := result.OldPriorities[i]
+				if oldPriority != "" {
+					// Re-prioritization: task already had a priority
+					fmt.Fprintf(command.OutOrStdout(), "TODO: %d re-prioritized from (%s) to (%s).\n", lineNum, oldPriority, priority)
+				} else {
+					// First-time prioritization
+					fmt.Fprintf(command.OutOrStdout(), "TODO: %d prioritized (%s).\n", lineNum, priority)
+				}
 			}
 			return nil
 		},
