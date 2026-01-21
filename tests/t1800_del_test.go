@@ -104,11 +104,34 @@ TODO: 2 of 2 tasks shown`
 // TestDelWithTerm tests deleting terms from a task
 // Ported from: t1800-del.sh
 func TestDelWithTerm(t *testing.T) {
-	t.Skip("TODO: Implement 'del NR TERM' to remove term from task")
+	env := SetupTestEnv(t)
+	env.WriteTodoFile("(A) buy milk and eggs +grocery")
 
-	// env := SetupTestEnv(t)
-	// env.WriteTodoFile("(A) buy milk and eggs +grocery")
-	//
-	// output, code := env.RunCommand("del", "1", "eggs")
-	// // Should remove "eggs" from the task, keeping rest
+	t.Run("remove term from task", func(t *testing.T) {
+		output, code := env.RunCommand("del", "1", "eggs")
+		if code != 0 {
+			t.Errorf("Expected exit code 0, got %d", code)
+		}
+
+		// Should show modified task and confirmation
+		expectedOutput := `1 (A) buy milk and +grocery
+TODO: Removed 'eggs' from task.`
+		if output != expectedOutput {
+			t.Errorf("Output mismatch\nExpected:\n%s\n\nGot:\n%s", expectedOutput, output)
+		}
+	})
+
+	t.Run("list after term removal", func(t *testing.T) {
+		output, code := env.RunCommand("list")
+		expectedOutput := `1 (A) buy milk and +grocery
+--
+TODO: 1 of 1 tasks shown`
+		if code != 0 {
+			t.Errorf("Expected exit code 0, got %d", code)
+		}
+
+		if output != expectedOutput {
+			t.Errorf("Output mismatch\nExpected:\n%s\n\nGot:\n%s", expectedOutput, output)
+		}
+	})
 }

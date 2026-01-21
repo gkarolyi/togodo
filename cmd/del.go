@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/gkarolyi/togodo/todotxtlib"
 )
@@ -9,6 +10,12 @@ import (
 // DelResult contains the result of a Del operation
 type DelResult struct {
 	DeletedTodos []todotxtlib.Todo
+}
+
+// DelTermResult contains the result of removing a term from a task
+type DelTermResult struct {
+	ModifiedTodo todotxtlib.Todo
+	RemovedTerm  string
 }
 
 // Del deletes todos from the repository by indices (0-based)
@@ -59,4 +66,69 @@ func Del(repo todotxtlib.TodoRepository, indices []int) (DelResult, error) {
 	return DelResult{
 		DeletedTodos: deletedTodos,
 	}, nil
+}
+
+// DelTerm removes a term from a task at the given index
+func DelTerm(repo todotxtlib.TodoRepository, index int, term string) (DelTermResult, error) {
+	// Get the todo
+	todo, err := repo.Get(index)
+	if err != nil {
+		return DelTermResult{}, fmt.Errorf("failed to get todo: %w", err)
+	}
+
+	// Remove the term from the text (case-sensitive, whole word match)
+	oldText := todo.Text
+	newText := removeTerm(todo.Text, term)
+
+	if newText == oldText {
+		// Term not found
+		return DelTermResult{}, fmt.Errorf("term '%s' not found in task", term)
+	}
+
+	// Update the todo
+	todo.Text = newText
+	_, err = repo.Update(index, todo)
+	if err != nil {
+		return DelTermResult{}, fmt.Errorf("failed to update todo: %w", err)
+	}
+
+	// Save
+	if err := repo.Save(); err != nil {
+		return DelTermResult{}, fmt.Errorf("failed to save: %w", err)
+	}
+
+	return DelTermResult{
+		ModifiedTodo: todo,
+		RemovedTerm:  term,
+	}, nil
+}
+
+// removeTerm removes a term from text, handling word boundaries and extra spaces
+func removeTerm(text, term string) string {
+	// Simple approach: replace all occurrences of the term
+	// Handle both " term " and " term" at end and "term " at start
+	result := text
+
+	// Try to remove with surrounding spaces first
+	result = strings.ReplaceAll(result, " "+term+" ", " ")
+
+	// Try to remove at the start
+	if strings.HasPrefix(result, term+" ") {
+		result = strings.TrimPrefix(result, term+" ")
+	}
+
+	// Try to remove at the end
+	if strings.HasSuffix(result, " "+term) {
+		result = strings.TrimSuffix(result, " "+term)
+	}
+
+	// If the whole text is just the term
+	if result == term {
+		result = ""
+	}
+
+	// Clean up multiple spaces
+	result = strings.Join(strings.Fields(result), " ")
+
+	return result
 }
