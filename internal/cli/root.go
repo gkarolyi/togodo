@@ -61,6 +61,8 @@ func NewRootCmd(repo todotxtlib.TodoRepository) *cobra.Command {
 	rootCmd.AddCommand(NewListCmd(repo))
 	rootCmd.AddCommand(NewListpriCmd(repo))
 	rootCmd.AddCommand(NewListconCmd(repo))
+	rootCmd.AddCommand(NewListprojCmd(repo))
+	rootCmd.AddCommand(NewListallCmd(repo))
 	rootCmd.AddCommand(NewDoCmd(repo))
 	rootCmd.AddCommand(NewPriCmd(repo))
 	rootCmd.AddCommand(NewTidyCmd(repo))
