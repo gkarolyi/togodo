@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"regexp"
 	"testing"
 )
 
@@ -19,12 +20,13 @@ func TestDoCmd_SingleTask(t *testing.T) {
 
 	output := getRepositoryString(t, repo, buf)
 
-	expectedOutput := "(B) test todo 2 +project1 @context2\n" +
-		"x (A) test todo 1 +project2 @context1\n" +
-		"x (C) test todo 3 +project1 @context1\n"
+	// Expect completion date in marked tasks
+	expectedPattern := `\(B\) test todo 2 \+project1 @context2\n` +
+		`x \(A\) \d{4}-\d{2}-\d{2} test todo 1 \+project2 @context1\n` +
+		`x \(C\) test todo 3 \+project1 @context1\n`
 
-	if output != expectedOutput {
-		t.Errorf("Expected output:\n%s\nGot:\n%s", expectedOutput, output)
+	if !regexp.MustCompile(expectedPattern).MatchString(output) {
+		t.Errorf("Expected output:\n%s\nGot:\n%s", expectedPattern, output)
 	}
 }
 
@@ -43,12 +45,13 @@ func TestDoCmd_MultipleTask(t *testing.T) {
 
 	output := getRepositoryString(t, repo, buf)
 
-	expectedOutput := "x (A) test todo 1 +project2 @context1\n" +
-		"x (B) test todo 2 +project1 @context2\n" +
-		"x (C) test todo 3 +project1 @context1\n"
+	// Expect completion dates in all marked tasks
+	expectedPattern := `x \(A\) \d{4}-\d{2}-\d{2} test todo 1 \+project2 @context1\n` +
+		`x \(B\) \d{4}-\d{2}-\d{2} test todo 2 \+project1 @context2\n` +
+		`x \(C\) test todo 3 \+project1 @context1\n`
 
-	if output != expectedOutput {
-		t.Errorf("Expected output:\n%s\nGot:\n%s", expectedOutput, output)
+	if !regexp.MustCompile(expectedPattern).MatchString(output) {
+		t.Errorf("Expected output:\n%s\nGot:\n%s", expectedPattern, output)
 	}
 }
 

@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"time"
 )
 
 var projectRe = regexp.MustCompile(`\+\S+`)
@@ -45,11 +46,69 @@ func (t Todo) Prioritised() bool {
 
 func (t *Todo) ToggleDone() {
 	if t.Done {
+		// Unmarking as done: remove completion date and "x " prefix
 		t.Done = false
-		t.Text = strings.TrimPrefix(t.Text, "x ")
+		t.CompletionDate = ""
+
+		// Remove "x " prefix
+		remaining := strings.TrimPrefix(t.Text, "x ")
+
+		// Remove priority if present (will be after "x ")
+		if priorityRe.MatchString(remaining) {
+			priorityMatch := priorityRe.FindString(remaining)
+			remaining = strings.TrimPrefix(remaining, priorityMatch)
+			remaining = strings.TrimSpace(remaining)
+		}
+
+		// Remove completion date if present (first date after "x " and optional priority)
+		if dateRe.MatchString(remaining) {
+			// Remove first date (completion date)
+			dates := dateRe.FindAllString(remaining, -1)
+			if len(dates) > 0 {
+				remaining = strings.Replace(remaining, dates[0], "", 1)
+				remaining = strings.TrimSpace(remaining)
+			}
+		}
+
+		// Rebuild text with priority if it existed
+		if t.Priority != "" {
+			t.Text = "(" + t.Priority + ") " + remaining
+		} else {
+			t.Text = remaining
+		}
 	} else {
+		// Marking as done: add "x " prefix and completion date
 		t.Done = true
-		t.Text = strings.Join([]string{"x ", t.Text}, "")
+		completionDate := time.Now().Format("2006-01-02")
+		t.CompletionDate = completionDate
+
+		// Format: x (priority) completion_date creation_date text
+		// Or: x completion_date creation_date text (if no priority)
+		// Or: x completion_date text (if no creation date)
+
+		// Start with "x "
+		newText := "x "
+
+		// Add priority if present
+		if t.Priority != "" {
+			newText += "(" + t.Priority + ") "
+		}
+
+		// Add completion date
+		newText += completionDate + " "
+
+		// Remove priority from original text if present
+		remaining := t.Text
+		if priorityRe.MatchString(remaining) {
+			priorityMatch := priorityRe.FindString(remaining)
+			remaining = strings.TrimPrefix(remaining, priorityMatch)
+			remaining = strings.TrimSpace(remaining)
+		}
+
+		// Add remaining text (which includes creation date if present)
+		newText += remaining
+
+		t.Text = newText
 	}
 }
 

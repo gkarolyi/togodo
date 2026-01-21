@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"regexp"
 	"testing"
 )
 
@@ -65,14 +66,15 @@ TODO: 7 of 7 tasks shown`
 
 	t.Run("mark single task done", func(t *testing.T) {
 		output, code := env.RunCommand("do", "7")
-		// TODO: Verify output format includes completion date
-		// Expected format: "7 x YYYY-MM-DD remove4\nTODO: 7 marked as done."
 		if code != 0 {
 			t.Errorf("Expected exit code 0, got %d", code)
 		}
-		// Basic check that it mentions task 7
-		if output == "" {
-			t.Errorf("Expected output, got empty string")
+
+		// Verify output format includes completion date
+		// Expected format: "7 x YYYY-MM-DD remove4\nTODO: 7 marked as done."
+		datePattern := `^7 x \d{4}-\d{2}-\d{2} remove4\nTODO: 7 marked as done\.$`
+		if !regexp.MustCompile(datePattern).MatchString(output) {
+			t.Errorf("Expected output matching pattern with completion date, got: %s", output)
 		}
 	})
 
