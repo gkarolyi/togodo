@@ -101,10 +101,60 @@ func trimSpace(s string) string {
 // TestMultilineHandling tests how multiline text is handled in tasks
 // Ported from: t2000-multiline.sh
 func TestMultilineHandling(t *testing.T) {
-	t.Skip("TODO: Test multiline task text handling")
+	env := SetupTestEnv(t)
 
-	// Test edge cases:
-	// - Tasks with embedded newlines
-	// - How list displays multiline tasks
-	// - How edit operations handle multiline tasks
+	// Test 1: Tasks with embedded newlines should be split into separate tasks
+	// This is the behavior implemented in TestMultilineAdd
+	// Here we verify the file format remains valid after multiline add
+	env.WriteTodoFile("")
+	_, code := env.RunCommand("add", "first line\nsecond line")
+	if code != 0 {
+		t.Errorf("Expected exit code 0, got %d", code)
+	}
+
+	// Verify file has two separate tasks
+	content := env.ReadTodoFile()
+	if !containsSubstring(content, "first line") {
+		t.Errorf("Expected 'first line' in file")
+	}
+	if !containsSubstring(content, "second line") {
+		t.Errorf("Expected 'second line' in file")
+	}
+
+	// Test 2: List displays each task on its own line
+	listOutput, code := env.RunCommand("list")
+	if code != 0 {
+		t.Errorf("Expected exit code 0 for list, got %d", code)
+	}
+
+	// Each task should be on its own line in the output
+	lines := splitLines(listOutput)
+	taskLines := 0
+	for _, line := range lines {
+		if containsSubstring(line, "first line") || containsSubstring(line, "second line") {
+			taskLines++
+		}
+	}
+	if taskLines != 2 {
+		t.Errorf("Expected 2 task lines in list output, got %d\nOutput:\n%s", taskLines, listOutput)
+	}
+
+	// Test 3: Edit operations work correctly on tasks added from multiline input
+	// Append to the first task
+	appendOutput, code := env.RunCommand("append", "1", "appended text")
+	if code != 0 {
+		t.Errorf("Expected exit code 0 for append, got %d", code)
+	}
+
+	// Verify the append worked
+	if !containsSubstring(appendOutput, "appended text") {
+		t.Errorf("Expected append confirmation in output")
+	}
+
+	// Verify file content is still valid
+	finalContent := env.ReadTodoFile()
+	finalLines := countNonEmptyLines(finalContent)
+	if finalLines != 2 {
+		t.Errorf("Expected 2 tasks after append, got %d", finalLines)
+	}
 }

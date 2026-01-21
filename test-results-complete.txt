@@ -1,0 +1,7 @@
+?   	github.com/gkarolyi/togodo	[no test files]
+ok  	github.com/gkarolyi/togodo/cmd	(cached)
+?   	github.com/gkarolyi/togodo/internal/cli	[no test files]
+?   	github.com/gkarolyi/togodo/internal/config	[no test files]
+?   	github.com/gkarolyi/togodo/internal/tui	[no test files]
+ok  	github.com/gkarolyi/togodo/tests	0.511s
+ok  	github.com/gkarolyi/togodo/todotxtlib	(cached)
