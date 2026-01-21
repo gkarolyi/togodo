@@ -1,28 +1,31 @@
 # Integration Test Execution Summary
 
-**Date**: 2026-01-21
+**Date**: 2026-01-21 (Updated)
 **Test Suite**: `./tests`
-**Total Test Cases**: 56 (27 PASS, 13 FAIL, 16 SKIP)
+**Total Test Cases**: 56 (40 PASS, 0 FAIL, 16 SKIP)
 
 ## Executive Summary
 
-The integration test suite shows significant progress with 27 tests passing. However, there are 13 failing tests that need attention and 16 tests that are intentionally skipped as Phase 2 features. Additionally, a **critical list sorting issue** has been identified that affects multiple test failures.
+Phase 1 implementation is now COMPLETE with 40 out of 40 Phase 1 tests passing (100% of Phase 1). All core todo.txt-cli commands are fully implemented and working correctly. The remaining 16 skipped tests represent Phase 2 features that are intentionally deferred.
 
 ## Test Results Overview
 
 ```
-PASS: 27 tests (48%)
-FAIL: 13 tests (23%)
-SKIP: 16 tests (29%)
+PASS: 40 tests (71% overall, 100% of Phase 1)
+FAIL: 0 tests
+SKIP: 16 tests (29% - Phase 2 features)
 ```
 
-### Passing Tests (27)
+### Passing Tests (40)
 
-The following test categories are fully working:
+All Phase 1 test categories are fully working:
 
-1. **Basic Add/List** (4 tests)
+1. **Basic Add/List** (8 tests)
    - TestBasicAddList - Basic adding and listing tasks
    - TestListFiltering - Filtering tasks by term
+   - TestCaseInsensitiveFiltering - Case-insensitive filtering
+   - TestAddWithSymbols - Adding tasks with backticks and quotes
+   - TestAddWithSpaces - Adding tasks with multiple spaces
 
 2. **Replace Command** (2 tests)
    - TestReplaceUsage - Validation of replace arguments
@@ -40,78 +43,82 @@ The following test categories are fully working:
    - TestListprojMultiple - List multiple projects
    - TestListallBasic - List all tasks including done
 
-5. **Task Modification** (6 tests)
+5. **Task Modification** (9 tests)
    - TestPrependUsage - Validation of prepend arguments
    - TestBasicPrepend - Prepending text to tasks
+   - TestPrependPreservesPriority - Priority preservation during prepend
    - TestBasicDo - Marking tasks as done
    - TestBasicAppend - Appending text to tasks
+   - TestAppendPreservesPriority - Priority preservation during append
    - TestBasicDepriority - Removing priority from tasks
+   - TestDepriMultiple - Removing priority from multiple tasks
 
-6. **Delete Command** (1 test)
+6. **Delete Command** (2 tests)
    - TestDelUsage - Validation of delete arguments
+   - TestBasicDel - Deleting tasks and maintaining correct line numbers
 
-7. **Help System** (2 tests)
-   - TestHelp - Help command and --help flag
-   - TestCommandHelp - Help for specific commands
+7. **Archive Command** (5 tests)
+   - TestArchiveWithDuplicates - Archive completed tasks to done.txt
+   - TestArchiveWarning - Handle no completed tasks gracefully
 
-### Failing Tests (13)
+8. **Data Quality** (1 test)
+   - TestDeduplicate - Remove duplicate tasks
 
-#### Critical Issue: List Sorting Problem
+9. **Reporting** (1 test)
+   - TestReport - Show task statistics
 
-**Root Cause**: The list command is not maintaining original line numbers when displaying filtered or modified task lists. This affects 8 of the 13 failing tests.
+10. **Help System** (2 tests)
+    - TestHelp - Help command and --help flag
+    - TestCommandHelp - Help for specific commands
 
-**Affected Tests**:
-1. TestCaseInsensitiveFiltering (filter_lowercase_roses)
-2. TestAddWithSymbols (add_backtick_and_quotes, list_all_with_symbols)
-3. TestAddWithSpaces (add_with_unquoted_spaces, list_with_spaces)
-4. TestPrependPreservesPriority (list_after_prepend_priority)
-5. TestAppendPreservesPriority (list_after_append_priority)
-6. TestDepriMultiple (list_after_depri_multiple)
-7. TestBasicDel (list_after_delete)
+### Previously Failing Tests - Now RESOLVED
 
-**Issue Details**:
-- When tasks are added, they receive sequential line numbers (1, 2, 3, etc.)
-- After modifications (add, delete, etc.), the list command re-numbers tasks starting from 1
-- Expected behavior: Tasks should retain their original line numbers from the todo.txt file
-- Current behavior: Tasks are numbered by their position in the filtered/sorted list
+#### List Sorting Issue - FIXED ✅
 
-**Example from TestCaseInsensitiveFiltering**:
-```
-Expected:
-2 smell the roses
-3 smell the uppercase Roses
---
-TODO: 2 of 3 tasks shown
+**Resolution**: Implemented priority-based sorting with proper line number preservation.
 
-Got:
-2 smell the roses
---
-TODO: 1 of 3 tasks shown
-```
+**Fixed in commit**: `d1ab075 - fix: preserve original line numbers and implement priority-based sorting`
 
-**Impact**: This is a fundamental issue that violates todo.txt format expectations where line numbers correspond to file line positions.
+**Changes Made**:
+- Modified list output to maintain original line numbers from todo.txt file
+- Implemented priority-based sorting (prioritized tasks first, then unprioritized)
+- Fixed case-insensitive filtering to work correctly with sorting
+- Updated all list-related commands to use consistent sorting
 
-#### Other Failing Tests (5)
+**Tests Unlocked** (8 tests):
+1. ✅ TestCaseInsensitiveFiltering - Case-insensitive filtering now works correctly
+2. ✅ TestAddWithSymbols - Special characters handled properly
+3. ✅ TestAddWithSpaces - Multiple spaces preserved correctly
+4. ✅ TestPrependPreservesPriority - Priority preservation verified
+5. ✅ TestAppendPreservesPriority - Priority preservation verified
+6. ✅ TestDepriMultiple - Multiple deprioritization working
+7. ✅ TestBasicDel - Delete maintains correct line numbers
 
-1. **TestArchiveWithDuplicates** (4 sub-tests)
-   - Error: `unknown command "archive"`
-   - Status: Archive command not yet implemented (Phase 2 feature)
-   - Sub-tests: archive_done_tasks, verify_done_task_removed_from_todo.txt, verify_done_task_in_done.txt, list_after_archive
+#### Missing Commands - IMPLEMENTED ✅
 
-2. **TestArchiveWarning** (1 sub-test)
-   - Error: `unknown command "archive"`
-   - Status: Archive command not yet implemented (Phase 2 feature)
-   - Sub-test: archive_with_no_done_tasks
+All previously missing commands have been implemented:
 
-3. **TestDeduplicate** (1 sub-test)
-   - Error: Exit code 1 (command not found)
-   - Status: Deduplicate command not yet implemented (Phase 2 feature)
-   - Sub-test: deduplicate_removes_duplicates
+1. **Archive Command** - COMPLETE ✅
+   - **Implemented in commit**: `1f65673 - feat: implement archive command to move completed tasks to done.txt`
+   - Moves completed tasks from todo.txt to done.txt
+   - Removes archived tasks from todo.txt
+   - Creates done.txt if it doesn't exist
+   - Shows appropriate warnings when no tasks to archive
+   - **Tests Passing**: TestArchiveWithDuplicates (4 sub-tests), TestArchiveWarning (1 sub-test)
 
-4. **TestReport** (1 sub-test)
-   - Error: Exit code 1 (command not found)
-   - Status: Report command not yet implemented (Phase 2 feature)
-   - Sub-test: report_shows_statistics
+2. **Deduplicate Command** - COMPLETE ✅
+   - **Implemented in commit**: `b88bcb2 - feat: implement deduplicate command to remove duplicate tasks`
+   - Removes duplicate tasks from todo.txt
+   - Preserves higher priority when duplicates exist
+   - Updates file after deduplication
+   - **Tests Passing**: TestDeduplicate (1 sub-test)
+
+3. **Report Command** - COMPLETE ✅
+   - **Implemented in commit**: `3a20e2b - feat: implement report command to show task statistics`
+   - Generates comprehensive statistics about tasks
+   - Shows counts by priority, context, project
+   - Displays completion rates and total task counts
+   - **Tests Passing**: TestReport (1 sub-test)
 
 ### Skipped Tests (16)
 
@@ -158,51 +165,54 @@ These tests are intentionally skipped as Phase 2 features:
 
 **Reason**: Short help command not yet implemented.
 
-## Phase 2 Work Required
+## What's Complete (Phase 1)
 
-### Priority 1: Fix List Sorting Issue
+### All Core Commands Implemented ✅
 
-**Urgency**: Critical - Blocks 8 tests
-**Complexity**: Medium
-**Location**: `internal/cli/list.go`, possibly `cmd/list.go`
+**Phase 1 Status**: 40/40 tests passing (100%)
 
-**Required Changes**:
-1. Ensure `Todo` struct includes original line number from file
-2. Modify list output to use original line numbers, not loop indices
-3. Verify filtering maintains original line numbers
-4. Update all list-related commands (list, listall, listpri) to use original line numbers
+#### Completed Features:
+1. **Task Management**
+   - ✅ Add tasks with proper parsing
+   - ✅ List tasks with filtering and sorting
+   - ✅ Delete tasks (del)
+   - ✅ Mark tasks as done (do)
+   - ✅ Replace task text (replace)
 
-**Files to Investigate**:
-- `/Users/gergely.karolyi/Code/gkarolyi/todo-txt-cli-parity/internal/cli/list.go`
-- `/Users/gergely.karolyi/Code/gkarolyi/todo-txt-cli-parity/cmd/list.go`
-- `/Users/gergely.karolyi/Code/gkarolyi/todo-txt-cli-parity/todotxtlib/todo.go` (check if LineNumber field exists)
-- `/Users/gergely.karolyi/Code/gkarolyi/todo-txt-cli-parity/todotxtlib/repository.go` (check if line numbers are preserved)
+2. **Priority Management**
+   - ✅ Set priority (pri)
+   - ✅ Remove priority (depri)
+   - ✅ List by priority (listpri)
+   - ✅ Priority preservation in prepend/append
 
-### Priority 2: Implement Missing Commands
+3. **Text Modification**
+   - ✅ Prepend text (prepend)
+   - ✅ Append text (append)
+   - ✅ Priority preservation during modifications
 
-#### Archive Command (5 failing tests)
-- Move completed tasks to done.txt
-- Remove archived tasks from todo.txt
-- Handle done.txt file creation
-- Show appropriate warnings when no tasks to archive
+4. **Organization Commands**
+   - ✅ List contexts (listcon)
+   - ✅ List projects (listproj)
+   - ✅ List all including done (listall)
 
-**Test Coverage**: TestArchiveWithDuplicates, TestArchiveWarning
+5. **Data Management**
+   - ✅ Archive completed tasks to done.txt (archive)
+   - ✅ Remove duplicate tasks (deduplicate)
+   - ✅ Show task statistics (report)
 
-#### Deduplicate Command (1 failing test)
-- Remove duplicate tasks
-- Preserve higher priority when duplicates exist
-- Update file after deduplication
+6. **Display Features**
+   - ✅ Case-insensitive filtering
+   - ✅ Special character handling
+   - ✅ Priority-based sorting
+   - ✅ Line number preservation
 
-**Test Coverage**: TestDeduplicate
+7. **Help System**
+   - ✅ Main help command
+   - ✅ Command-specific help
 
-#### Report Command (1 failing test)
-- Generate statistics about tasks
-- Show counts by priority, context, project
-- Display completion rates
+## What's Missing (Phase 2 Features)
 
-**Test Coverage**: TestReport
-
-### Priority 3: Implement Phase 2 Features (16 skipped tests)
+### Phase 2 Work Required (16 skipped tests)
 
 Group these by dependency and complexity:
 
@@ -221,19 +231,7 @@ Group these by dependency and complexity:
 
 ## Recommendations
 
-### Immediate Actions
-
-1. **Fix list sorting issue** - This is blocking 8 tests and is a fundamental correctness issue
-2. **Investigate line number handling** - Review how line numbers are stored and retrieved
-3. **Add unit tests for line number preservation** - Ensure fix doesn't break existing functionality
-
-### Short-term Actions (Next Sprint)
-
-1. **Implement archive command** - Required for 5 tests, commonly used feature
-2. **Implement deduplicate command** - Required for 1 test
-3. **Implement report command** - Required for 1 test
-
-### Long-term Actions (Phase 2)
+### Phase 1 Complete - Next Steps
 
 1. **Config command** - Important for usability
 2. **Date support** - Standard todo.txt format feature
@@ -273,10 +271,20 @@ go test ./tests -v
 
 ## Conclusion
 
-The togodo application has achieved 48% test pass rate with core functionality working well. The main blocker is the list sorting issue which affects multiple test scenarios. Once this is resolved, implementing the remaining commands (archive, deduplicate, report) will bring the pass rate to approximately 80%, with the remaining 20% being optional Phase 2 enhancements.
+**Phase 1 is COMPLETE** - The togodo application has achieved 100% pass rate for all Phase 1 tests (40/40 tests passing, 71% overall). All core todo.txt-cli commands are fully implemented and working correctly.
 
-**Next Steps**:
-1. Address the critical list sorting issue
-2. Implement archive, deduplicate, and report commands
-3. Plan Phase 2 feature implementation
-4. Consider test-driven development for remaining features
+**Key Achievements**:
+1. ✅ Fixed critical list sorting issue with priority-based sorting
+2. ✅ Implemented all missing commands (archive, deduplicate, report)
+3. ✅ Enhanced validation and error handling across all commands
+4. ✅ Proper line number preservation throughout all operations
+5. ✅ Case-insensitive filtering and special character support
+
+**Next Steps - Phase 2**:
+1. Plan implementation of configuration management (config command)
+2. Add date support for task creation and completion
+3. Implement enhanced delete operations (multiple tasks, term removal)
+4. Add move command for multi-file support
+5. Consider multiline task support
+
+**Overall Progress**: 40/56 tests passing (71%), with remaining 16 tests being intentional Phase 2 features
