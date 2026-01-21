@@ -70,6 +70,7 @@ func NewRootCmd(repo todotxtlib.TodoRepository) *cobra.Command {
 	rootCmd.AddCommand(NewPrependCmd(repo))
 	rootCmd.AddCommand(NewAppendCmd(repo))
 	rootCmd.AddCommand(NewDepriCmd(repo))
+	rootCmd.AddCommand(NewDelCmd(repo))
 	// TODO: Config command needs to be migrated
 	// rootCmd.AddCommand(NewConfigCmd(presenter))
 
