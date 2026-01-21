@@ -1,4 +1,6 @@
 togodo
+.DS_Store
+docs/
 
 # BranchBox
 .branchbox/registry.json

@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -97,6 +99,19 @@ func AddMultiple(repo todotxtlib.TodoRepository, text string, autoDate bool) (Ad
 var priorityRe = regexp.MustCompile(`^\(([A-Z])\) `)
 var dateRe = regexp.MustCompile(`^\d{4}-\d{2}-\d{2}`)
 
+// getTodayDate returns today's date, or mocked date from TODO_TEST_TIME env var
+func getTodayDate() string {
+	// Check for test date mock (for test compatibility with todo.txt-cli)
+	if testTime := os.Getenv("TODO_TEST_TIME"); testTime != "" {
+		// TODO_TEST_TIME is a Unix timestamp
+		if timestamp, err := strconv.ParseInt(testTime, 10, 64); err == nil {
+			return time.Unix(timestamp, 0).Format("2006-01-02")
+		}
+	}
+	// Use actual current time
+	return time.Now().Format("2006-01-02")
+}
+
 // addCreationDate adds a creation date to the task text if not already present
 func addCreationDate(text string) string {
 	// Check if text starts with priority
@@ -115,8 +130,8 @@ func addCreationDate(text string) string {
 		return text
 	}
 
-	// Add today's date
-	today := time.Now().Format("2006-01-02")
+	// Add today's date (or mocked date for testing)
+	today := getTodayDate()
 
 	if priorityPrefix != "" {
 		// Insert date after priority: (A) YYYY-MM-DD text

@@ -1,69 +1,85 @@
 package tests
 
 import (
-	"regexp"
 	"testing"
 )
 
-// TestAddWithPriority tests adding tasks with priority in the text
-// Ported from: t1040-add-priority.sh
-func TestAddWithPriority(t *testing.T) {
+// TestConfigFilePriority tests TODOTXT_PRIORITY_ON_ADD config variable
+// Ported from: t1040-add-priority.sh "config file priority"
+func TestConfigFilePriority(t *testing.T) {
 	env := SetupTestEnv(t)
 
-	// Add a task with priority
-	output, code := env.RunCommand("add", "(A) high priority task")
-	if code != 0 {
-		t.Fatalf("Expected exit code 0, got %d: %s", code, output)
-	}
+	// Note: Upstream sets: export TODOTXT_PRIORITY_ON_ADD=A in todo.cfg
+	// This feature auto-adds priority (A) to every new task
+	// If togodo doesn't support TODOTXT_PRIORITY_ON_ADD, this test will fail
+	// TODO: Implement TODOTXT_PRIORITY_ON_ADD config variable support
 
-	// Read the file to verify priority was preserved
-	fileContent := env.ReadTodoFile()
+	t.Run("set TODOTXT_PRIORITY_ON_ADD=A", func(t *testing.T) {
+		// TODO: Implement setting TODOTXT_PRIORITY_ON_ADD
+		// This may need environment variable or config file support
+		t.Skip("TODO: Implement TODOTXT_PRIORITY_ON_ADD config variable")
+	})
 
-	// Verify the task has priority A and contains expected text
-	if !regexp.MustCompile(`\(A\) high priority task`).MatchString(fileContent) {
-		t.Errorf("Expected '(A) high priority task', got: %s", fileContent)
-	}
+	t.Run("add task with priority auto-added", func(t *testing.T) {
+		output, code := env.RunCommand("add", "take out the trash")
+		// Upstream expects: "1 (A) take out the trash\nTODO: 1 added."
+		expectedOutput := "1 (A) take out the trash\nTODO: 1 added."
+		if code != 0 {
+			t.Errorf("Expected exit code 0, got %d", code)
+		}
+		if output != expectedOutput {
+			t.Errorf("Expected output:\n%s\n\nGot:\n%s", expectedOutput, output)
+		}
+	})
 
-	// Verify priority marker is present
-	if !regexp.MustCompile(`^\(A\)`).MatchString(fileContent) {
-		t.Errorf("Expected priority (A) at start of task, got: %s", fileContent)
-	}
-
-	// Verify output format matches todo.txt-cli
-	// Format: "1 (A) high priority task"
-	expectedOutput := "1 (A) high priority task\nTODO: 1 added."
-	if output != expectedOutput {
-		t.Errorf("Expected output:\n%s\nGot:\n%s", expectedOutput, output)
-	}
+	t.Run("list with -p flag shows priority", func(t *testing.T) {
+		output, code := env.RunCommand("-p", "list")
+		// Upstream expects: "1 (A) take out the trash\n--\nTODO: 1 of 1 tasks shown"
+		expectedOutput := "1 (A) take out the trash\n--\nTODO: 1 of 1 tasks shown"
+		if code != 0 {
+			t.Errorf("Expected exit code 0, got %d", code)
+		}
+		if output != expectedOutput {
+			t.Errorf("Expected output:\n%s\n\nGot:\n%s", expectedOutput, output)
+		}
+	})
 }
 
-// TestAddWithPriorityAndDate tests adding priority tasks with auto-dating enabled
-func TestAddWithPriorityAndDate(t *testing.T) {
+// TestConfigFileWrongPriority tests error handling for invalid TODOTXT_PRIORITY_ON_ADD values
+// Ported from: t1040-add-priority.sh "config file wrong priority"
+func TestConfigFileWrongPriority(t *testing.T) {
 	env := SetupTestEnv(t)
 
-	// Enable auto-dating
-	_, code := env.RunCommand("config", "auto_add_creation_date", "true")
-	if code != 0 {
-		t.Fatalf("Failed to set config: exit code %d", code)
-	}
+	t.Run("set TODOTXT_PRIORITY_ON_ADD to invalid value", func(t *testing.T) {
+		// TODO: Set TODOTXT_PRIORITY_ON_ADD=1 (invalid - must be A-Z)
+		t.Skip("TODO: Implement TODOTXT_PRIORITY_ON_ADD config variable")
+	})
 
-	// Add a task with priority
-	output, code := env.RunCommand("add", "(A) high priority task")
-	if code != 0 {
-		t.Fatalf("Expected exit code 0, got %d: %s", code, output)
-	}
+	t.Run("add task should fail with error", func(t *testing.T) {
+		output, code := env.RunCommand("add", "fail to take out the trash")
+		// Upstream expects exit code 1 and error message
+		expectedCode := 1
+		expectedError := `TODOTXT_PRIORITY_ON_ADD should be a capital letter from A to Z (it is now "1").`
 
-	// Read the file to verify date was added after priority
-	fileContent := env.ReadTodoFile()
+		if code != expectedCode {
+			t.Errorf("Expected exit code %d, got %d", expectedCode, code)
+		}
+		if output != expectedError {
+			t.Errorf("Expected error:\n%s\n\nGot:\n%s", expectedError, output)
+		}
+	})
 
-	// Verify the task has format: (A) YYYY-MM-DD text
-	datePattern := `^\(A\) \d{4}-\d{2}-\d{2} high priority task`
-	if !regexp.MustCompile(datePattern).MatchString(fileContent) {
-		t.Errorf("Expected priority followed by date, got: %s", fileContent)
-	}
+	t.Run("list should also fail with error", func(t *testing.T) {
+		output, code := env.RunCommand("-p", "list")
+		// Upstream expects same error on list command too
+		expectedCode := 1
+		expectedError := `TODOTXT_PRIORITY_ON_ADD should be a capital letter from A to Z (it is now "1").`
 
-	// Verify priority comes before date (not after)
-	if regexp.MustCompile(`^\d{4}-\d{2}-\d{2} \(A\)`).MatchString(fileContent) {
-		t.Error("Date should not come before priority")
-	}
+		if code != expectedCode {
+			t.Errorf("Expected exit code %d, got %d", expectedCode, code)
+		}
+		if output != expectedError {
+			t.Errorf("Expected error:\n%s\n\nGot:\n%s", expectedError, output)
+		}
+	})
 }

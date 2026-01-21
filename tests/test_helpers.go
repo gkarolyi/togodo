@@ -2,10 +2,12 @@ package tests
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/gkarolyi/togodo/internal/cli"
 	"github.com/gkarolyi/togodo/internal/config"
@@ -25,6 +27,7 @@ type TestEnvironment struct {
 	todoFile   string // Path to todo.txt file (for file-based tests)
 	doneFile   string // Path to done.txt file (for file-based tests)
 	tempDir    string // Temporary directory for file-based tests
+	testTime   int64  // Mocked timestamp for TODO_TEST_TIME (Unix timestamp)
 }
 
 // SetupTestEnv creates a new test environment with buffer-based repository
@@ -93,6 +96,50 @@ func (env *TestEnvironment) RunCommand(args ...string) (string, int) {
 	output = strings.TrimRight(output, "\n")
 
 	return output, exitCode
+}
+
+// SetTestDate sets a mocked date for testing (format: "2009-02-13")
+// Compatible with todo.txt-cli's TODO_TEST_TIME environment variable
+func (env *TestEnvironment) SetTestDate(dateStr string) error {
+	env.t.Helper()
+
+	// Parse the date string
+	t, err := time.Parse("2006-01-02", dateStr)
+	if err != nil {
+		return fmt.Errorf("invalid date format: %v", err)
+	}
+
+	// Store as Unix timestamp
+	env.testTime = t.Unix()
+
+	// Set environment variable for commands to use
+	os.Setenv("TODO_TEST_TIME", fmt.Sprintf("%d", env.testTime))
+
+	return nil
+}
+
+// TestTick advances the mocked time by the specified number of seconds
+// Default is 86400 (one day), matching todo.txt-cli's test_tick
+func (env *TestEnvironment) TestTick(seconds ...int64) {
+	env.t.Helper()
+
+	// Default to one day (86400 seconds)
+	increment := int64(86400)
+	if len(seconds) > 0 {
+		increment = seconds[0]
+	}
+
+	env.testTime += increment
+
+	// Update environment variable
+	os.Setenv("TODO_TEST_TIME", fmt.Sprintf("%d", env.testTime))
+}
+
+// ClearTestDate removes the mocked date
+func (env *TestEnvironment) ClearTestDate() {
+	env.t.Helper()
+	env.testTime = 0
+	os.Unsetenv("TODO_TEST_TIME")
 }
 
 // WriteTodoFile writes content to the todo.txt buffer
