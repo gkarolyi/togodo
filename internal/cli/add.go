@@ -6,6 +6,7 @@ import (
 	"github.com/gkarolyi/togodo/cmd"
 	"github.com/gkarolyi/togodo/todotxtlib"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // NewAddCmd creates a Cobra command for adding todos
@@ -24,8 +25,11 @@ togodo add Buy milk and eggs
 		Args:    cobra.MinimumNArgs(1),
 		Aliases: []string{"a"},
 		RunE: func(command *cobra.Command, args []string) error {
+			// Check if auto-dating is enabled
+			autoDate := viper.GetBool("auto_add_creation_date")
+
 			// Call business logic
-			result, err := cmd.Add(repo, args)
+			result, err := cmd.Add(repo, args, autoDate)
 			if err != nil {
 				return err
 			}

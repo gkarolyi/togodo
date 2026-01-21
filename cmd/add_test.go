@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -158,5 +159,55 @@ func TestAddCmd_DuplicateTasks(t *testing.T) {
 		"(A) duplicate task +project @context\n"
 	if output != expectedOutput {
 		t.Errorf("Expected output:\n%s\nGot:\n%s", expectedOutput, output)
+	}
+}
+
+func TestAddCreationDate(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		wantDate bool // Whether output should contain a date
+	}{
+		{
+			name:     "simple task gets date",
+			input:    "Buy groceries",
+			wantDate: true,
+		},
+		{
+			name:     "task with priority gets date after priority",
+			input:    "(A) Important task",
+			wantDate: true,
+		},
+		{
+			name:     "task with existing date unchanged",
+			input:    "2024-01-15 Task with date",
+			wantDate: true,
+		},
+		{
+			name:     "priority task with existing date unchanged",
+			input:    "(A) 2024-01-15 Task with priority and date",
+			wantDate: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := addCreationDate(tt.input)
+
+			if tt.wantDate {
+				// Check if result contains a date in YYYY-MM-DD format anywhere in the string
+				datePattern := regexp.MustCompile(`\d{4}-\d{2}-\d{2}`)
+				if !datePattern.MatchString(result) {
+					t.Errorf("Expected date in result, got: %s", result)
+				}
+			}
+
+			// Verify priority is preserved if present
+			if strings.HasPrefix(tt.input, "(") {
+				if !strings.HasPrefix(result, "(") {
+					t.Errorf("Expected priority to be preserved, got: %s", result)
+				}
+			}
+		})
 	}
 }

@@ -11,23 +11,29 @@ var contextRe = regexp.MustCompile(`@\S+`)
 var priorityRe = regexp.MustCompile(`^\(([A-Z])\)`)
 var doneRe = regexp.MustCompile(`^x `)
 var tagRe = regexp.MustCompile(`\w+:\S+`)
+var dateRe = regexp.MustCompile(`\d{4}-\d{2}-\d{2}`)
 
 type Todo struct {
-	Text       string
-	Done       bool
-	Priority   string
-	Projects   []string
-	Contexts   []string
-	LineNumber int // Line number in the file (1-indexed)
+	Text           string
+	Done           bool
+	Priority       string
+	Projects       []string
+	Contexts       []string
+	LineNumber     int    // Line number in the file (1-indexed)
+	CreationDate   string // YYYY-MM-DD format
+	CompletionDate string // YYYY-MM-DD format (only when Done is true)
 }
 
 func NewTodo(text string) Todo {
+	creationDate, completionDate := parseDates(text)
 	todo := Todo{
-		Text:     text,
-		Done:     parseDone(text),
-		Priority: parsePriority(text),
-		Projects: parseProjects(text),
-		Contexts: parseContexts(text),
+		Text:           text,
+		Done:           parseDone(text),
+		Priority:       parsePriority(text),
+		Projects:       parseProjects(text),
+		Contexts:       parseContexts(text),
+		CreationDate:   creationDate,
+		CompletionDate: completionDate,
 	}
 
 	return todo
@@ -117,6 +123,44 @@ func parsePriority(text string) string {
 
 func parseDone(text string) bool {
 	return doneRe.MatchString(text)
+}
+
+// parseDates extracts creation and completion dates from todo text
+// Format: x completion_date creation_date text (for done tasks)
+// Format: (priority) creation_date text (for incomplete tasks)
+// Returns: creationDate, completionDate
+func parseDates(text string) (string, string) {
+	var creationDate, completionDate string
+
+	// Remove "x " prefix if done
+	remaining := text
+	isDone := strings.HasPrefix(text, "x ")
+	if isDone {
+		remaining = remaining[2:] // Remove "x "
+	}
+
+	// Remove priority if present
+	if priorityRe.MatchString(remaining) {
+		remaining = priorityRe.ReplaceAllString(remaining, "")
+		remaining = strings.TrimSpace(remaining)
+	}
+
+	// Find dates at the beginning of the remaining text
+	dates := dateRe.FindAllString(remaining, 2)
+
+	if isDone && len(dates) >= 2 {
+		// Done task with both dates: x (priority) completion_date creation_date text
+		completionDate = dates[0]
+		creationDate = dates[1]
+	} else if isDone && len(dates) == 1 {
+		// Done task with only completion date: x (priority) completion_date text
+		completionDate = dates[0]
+	} else if !isDone && len(dates) >= 1 {
+		// Incomplete task with creation date: (priority) creation_date text
+		creationDate = dates[0]
+	}
+
+	return creationDate, completionDate
 }
 
 // SetContexts sets the contexts of a todo

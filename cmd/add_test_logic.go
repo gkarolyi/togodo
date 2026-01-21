@@ -16,7 +16,7 @@ func TestAdd(t *testing.T) {
 		repo, _ := todotxtlib.NewFileRepository(reader, writer)
 
 		// Execute
-		result, err := Add(repo, []string{"test", "task"})
+		result, err := Add(repo, []string{"test", "task"}, false)
 
 		// Assert
 		if err != nil {

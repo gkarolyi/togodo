@@ -552,3 +552,61 @@ func TestTodo_RemoveProject(t *testing.T) {
 		})
 	}
 }
+
+func TestParseDates(t *testing.T) {
+	tests := []struct {
+		name               string
+		text               string
+		wantCreationDate   string
+		wantCompletionDate string
+	}{
+		{
+			name:               "incomplete task with creation date",
+			text:               "2024-01-21 Buy groceries",
+			wantCreationDate:   "2024-01-21",
+			wantCompletionDate: "",
+		},
+		{
+			name:               "incomplete task with priority and creation date",
+			text:               "(A) 2024-01-21 Buy groceries",
+			wantCreationDate:   "2024-01-21",
+			wantCompletionDate: "",
+		},
+		{
+			name:               "completed task with completion date only",
+			text:               "x 2024-01-22 Buy groceries",
+			wantCreationDate:   "",
+			wantCompletionDate: "2024-01-22",
+		},
+		{
+			name:               "completed task with both dates",
+			text:               "x 2024-01-22 2024-01-21 Buy groceries",
+			wantCreationDate:   "2024-01-21",
+			wantCompletionDate: "2024-01-22",
+		},
+		{
+			name:               "completed task with priority and both dates",
+			text:               "x (A) 2024-01-22 2024-01-21 Buy groceries",
+			wantCreationDate:   "2024-01-21",
+			wantCompletionDate: "2024-01-22",
+		},
+		{
+			name:               "task without dates",
+			text:               "Buy groceries",
+			wantCreationDate:   "",
+			wantCompletionDate: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			todo := NewTodo(tt.text)
+			if todo.CreationDate != tt.wantCreationDate {
+				t.Errorf("CreationDate = %v, want %v", todo.CreationDate, tt.wantCreationDate)
+			}
+			if todo.CompletionDate != tt.wantCompletionDate {
+				t.Errorf("CompletionDate = %v, want %v", todo.CompletionDate, tt.wantCompletionDate)
+			}
+		})
+	}
+}

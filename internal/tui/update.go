@@ -61,7 +61,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			case tea.KeyEnter:
 				if m.input.Value() != "" {
-					_, err := cmd.Add(m.repository, []string{m.input.Value()})
+					_, err := cmd.Add(m.repository, []string{m.input.Value()}, false)
 					if err != nil {
 						// TODO: Show error in UI
 					}
