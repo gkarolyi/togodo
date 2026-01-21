@@ -26,7 +26,16 @@ togodo config
 		RunE: func(command *cobra.Command, args []string) error {
 			if len(args) == 0 {
 				// No args: list all config (Task 3)
-				return fmt.Errorf("config list not yet implemented")
+				result, err := cmd.ConfigList()
+				if err != nil {
+					return err
+				}
+
+				// Print all settings as key=value pairs
+				for key, value := range result.Settings {
+					fmt.Fprintf(command.OutOrStdout(), "%s=%v\n", key, value)
+				}
+				return nil
 			} else if len(args) == 1 {
 				// One arg: read config value (Task 1)
 				key := args[0]

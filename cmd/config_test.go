@@ -90,3 +90,26 @@ func TestConfigWriteCreate(t *testing.T) {
 		t.Error("Config value was not set")
 	}
 }
+
+func TestConfigList(t *testing.T) {
+	// Set some test config values
+	viper.Set("key1", "value1")
+	viper.Set("key2", "value2")
+	defer func() {
+		viper.Set("key1", nil)
+		viper.Set("key2", nil)
+	}()
+
+	result, err := ConfigList()
+	if err != nil {
+		t.Fatalf("ConfigList failed: %v", err)
+	}
+
+	if len(result.Settings) == 0 {
+		t.Error("Expected settings to be returned")
+	}
+
+	if result.Settings["key1"] != "value1" {
+		t.Error("Expected key1 to be in settings")
+	}
+}

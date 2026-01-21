@@ -49,10 +49,18 @@ func TestConfigWrite(t *testing.T) {
 // TestConfigList tests listing all configuration
 // Ported from: t0000-config.sh
 func TestConfigList(t *testing.T) {
-	t.Skip("TODO: Implement config command to list all settings")
+	env := SetupTestEnv(t)
 
-	// env := SetupTestEnv(t)
-	//
-	// output, code := env.RunCommand("config")
-	// // Should show all configuration key-value pairs
+	output, code := env.RunCommand("config")
+	if code != 0 {
+		t.Fatalf("Expected exit code 0, got %d: %s", code, output)
+	}
+
+	// Should show all configuration key-value pairs
+	if output == "" {
+		t.Error("Expected configuration output, got empty string")
+	}
+
+	// Should contain at least the todo_txt_path setting
+	// (format: key=value)
 }

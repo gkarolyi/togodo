@@ -78,3 +78,17 @@ func ConfigWrite(key string, value string) (ConfigWriteResult, error) {
 		Created:  created,
 	}, nil
 }
+
+// ConfigListResult contains all configuration settings
+type ConfigListResult struct {
+	Settings map[string]interface{}
+}
+
+// ConfigList lists all configuration settings
+func ConfigList() (ConfigListResult, error) {
+	settings := viper.AllSettings()
+
+	return ConfigListResult{
+		Settings: settings,
+	}, nil
+}
