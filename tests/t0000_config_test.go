@@ -7,12 +7,17 @@ import (
 // TestConfigRead tests reading configuration values
 // Ported from: t0000-config.sh
 func TestConfigRead(t *testing.T) {
-	t.Skip("TODO: Implement config command to read/write configuration")
+	env := SetupTestEnv(t)
 
-	// env := SetupTestEnv(t)
-	//
-	// output, code := env.RunCommand("config", "todo_txt_path")
-	// // Should show the configured todo.txt path
+	output, code := env.RunCommand("config", "todo_txt_path")
+	if code != 0 {
+		t.Fatalf("Expected exit code 0, got %d", code)
+	}
+
+	// Should show the configured todo.txt path (default: "todo.txt")
+	if output == "" {
+		t.Error("Expected output, got empty string")
+	}
 }
 
 // TestConfigWrite tests setting configuration values
