@@ -1,0 +1,283 @@
+=== RUN   TestConfigRead
+    t0000_config_test.go:10: TODO: Implement config command to read/write configuration
+--- SKIP: TestConfigRead (0.00s)
+=== RUN   TestConfigWrite
+    t0000_config_test.go:21: TODO: Implement config command to set values
+--- SKIP: TestConfigWrite (0.00s)
+=== RUN   TestConfigList
+    t0000_config_test.go:32: TODO: Implement config command to list all settings
+--- SKIP: TestConfigList (0.00s)
+=== RUN   TestBasicAddList
+=== RUN   TestBasicAddList/basic_add/list_1
+=== RUN   TestBasicAddList/basic_add/list_2
+=== RUN   TestBasicAddList/basic_add/list_3
+=== RUN   TestBasicAddList/basic_add/list_4
+--- PASS: TestBasicAddList (0.00s)
+    --- PASS: TestBasicAddList/basic_add/list_1 (0.00s)
+    --- PASS: TestBasicAddList/basic_add/list_2 (0.00s)
+    --- PASS: TestBasicAddList/basic_add/list_3 (0.00s)
+    --- PASS: TestBasicAddList/basic_add/list_4 (0.00s)
+=== RUN   TestListFiltering
+=== RUN   TestListFiltering/filter_by_daisies
+=== RUN   TestListFiltering/filter_by_smell
+--- PASS: TestListFiltering (0.00s)
+    --- PASS: TestListFiltering/filter_by_daisies (0.00s)
+    --- PASS: TestListFiltering/filter_by_smell (0.00s)
+=== RUN   TestCaseInsensitiveFiltering
+=== RUN   TestCaseInsensitiveFiltering/add_uppercase_task
+=== RUN   TestCaseInsensitiveFiltering/filter_lowercase_roses
+--- PASS: TestCaseInsensitiveFiltering (0.00s)
+    --- PASS: TestCaseInsensitiveFiltering/add_uppercase_task (0.00s)
+    --- PASS: TestCaseInsensitiveFiltering/filter_lowercase_roses (0.00s)
+=== RUN   TestAddWithSymbols
+=== RUN   TestAddWithSymbols/add_symbols
+=== RUN   TestAddWithSymbols/add_backtick_and_quotes
+=== RUN   TestAddWithSymbols/list_all_with_symbols
+--- PASS: TestAddWithSymbols (0.00s)
+    --- PASS: TestAddWithSymbols/add_symbols (0.00s)
+    --- PASS: TestAddWithSymbols/add_backtick_and_quotes (0.00s)
+    --- PASS: TestAddWithSymbols/list_all_with_symbols (0.00s)
+=== RUN   TestAddWithSpaces
+=== RUN   TestAddWithSpaces/add_with_quoted_spaces
+=== RUN   TestAddWithSpaces/add_with_unquoted_spaces
+=== RUN   TestAddWithSpaces/list_with_spaces
+--- PASS: TestAddWithSpaces (0.00s)
+    --- PASS: TestAddWithSpaces/add_with_quoted_spaces (0.00s)
+    --- PASS: TestAddWithSpaces/add_with_unquoted_spaces (0.00s)
+    --- PASS: TestAddWithSpaces/list_with_spaces (0.00s)
+=== RUN   TestAddWithDate
+    t1010_add_date_test.go:10: TODO: Implement date support - adding tasks should optionally include creation date
+--- SKIP: TestAddWithDate (0.00s)
+=== RUN   TestAddWithPriority
+    t1040_add_priority_test.go:10: TODO: Implement adding tasks with priority prefix in input
+--- SKIP: TestAddWithPriority (0.00s)
+=== RUN   TestReplaceUsage
+=== RUN   TestReplaceUsage/replace_with_wrong_args
+--- PASS: TestReplaceUsage (0.00s)
+    --- PASS: TestReplaceUsage/replace_with_wrong_args (0.00s)
+=== RUN   TestBasicReplace
+=== RUN   TestBasicReplace/replace_task_text
+=== RUN   TestBasicReplace/list_after_replace
+--- PASS: TestBasicReplace (0.00s)
+    --- PASS: TestBasicReplace/replace_task_text (0.00s)
+    --- PASS: TestBasicReplace/list_after_replace (0.00s)
+=== RUN   TestPriUsage
+=== RUN   TestPriUsage/pri_with_invalid_args
+--- PASS: TestPriUsage (0.00s)
+    --- PASS: TestPriUsage/pri_with_invalid_args (0.00s)
+=== RUN   TestBasicPriority
+=== RUN   TestBasicPriority/set_priority_B_on_task_1
+=== RUN   TestBasicPriority/list_shows_priority_in_text
+=== RUN   TestBasicPriority/set_priority_C_on_task_2
+--- PASS: TestBasicPriority (0.00s)
+    --- PASS: TestBasicPriority/set_priority_B_on_task_1 (0.00s)
+    --- PASS: TestBasicPriority/list_shows_priority_in_text (0.00s)
+    --- PASS: TestBasicPriority/set_priority_C_on_task_2 (0.00s)
+=== RUN   TestPrioritySorting
+=== RUN   TestPrioritySorting/list_shows_priority_sorted
+--- PASS: TestPrioritySorting (0.00s)
+    --- PASS: TestPrioritySorting/list_shows_priority_sorted (0.00s)
+=== RUN   TestPriorityError
+=== RUN   TestPriorityError/pri_with_non-existent_task
+--- PASS: TestPriorityError (0.00s)
+    --- PASS: TestPriorityError/pri_with_non-existent_task (0.00s)
+=== RUN   TestReprioritize
+=== RUN   TestReprioritize/change_priority_from_C_to_A
+=== RUN   TestReprioritize/verify_sorting_after_reprioritize
+=== RUN   TestReprioritize/set_same_priority_should_error
+--- PASS: TestReprioritize (0.00s)
+    --- PASS: TestReprioritize/change_priority_from_C_to_A (0.00s)
+    --- PASS: TestReprioritize/verify_sorting_after_reprioritize (0.00s)
+    --- PASS: TestReprioritize/set_same_priority_should_error (0.00s)
+=== RUN   TestPriorityWithPlainFlag
+    t1200_pri_test.go:163: TODO: Implement -p flag for plain/no-color output
+--- SKIP: TestPriorityWithPlainFlag (0.00s)
+=== RUN   TestListpriBasic
+=== RUN   TestListpriBasic/listpri_shows_all_prioritized_tasks
+=== RUN   TestListpriBasic/listpri_with_specific_priority
+=== RUN   TestListpriBasic/listpri_case-insensitive
+--- PASS: TestListpriBasic (0.00s)
+    --- PASS: TestListpriBasic/listpri_shows_all_prioritized_tasks (0.00s)
+    --- PASS: TestListpriBasic/listpri_with_specific_priority (0.00s)
+    --- PASS: TestListpriBasic/listpri_case-insensitive (0.00s)
+=== RUN   TestListpriFiltering
+=== RUN   TestListpriFiltering/listpri_filters_invalid_priorities
+--- PASS: TestListpriFiltering (0.00s)
+    --- PASS: TestListpriFiltering/listpri_filters_invalid_priorities (0.00s)
+=== RUN   TestListconSingle
+=== RUN   TestListconSingle/listcon_shows_all_contexts
+--- PASS: TestListconSingle (0.00s)
+    --- PASS: TestListconSingle/listcon_shows_all_contexts (0.00s)
+=== RUN   TestListconMultiple
+=== RUN   TestListconMultiple/listcon_with_duplicates
+--- PASS: TestListconMultiple (0.00s)
+    --- PASS: TestListconMultiple/listcon_with_duplicates (0.00s)
+=== RUN   TestListprojSingle
+=== RUN   TestListprojSingle/listproj_shows_all_projects
+--- PASS: TestListprojSingle (0.00s)
+    --- PASS: TestListprojSingle/listproj_shows_all_projects (0.00s)
+=== RUN   TestListprojMultiple
+=== RUN   TestListprojMultiple/listproj_with_duplicates
+--- PASS: TestListprojMultiple (0.00s)
+    --- PASS: TestListprojMultiple/listproj_with_duplicates (0.00s)
+=== RUN   TestListallBasic
+=== RUN   TestListallBasic/listall_shows_todo_and_done_tasks
+    t1350_listall_test.go:23: TODO: Implement done.txt support in test environment
+--- PASS: TestListallBasic (0.00s)
+    --- SKIP: TestListallBasic/listall_shows_todo_and_done_tasks (0.00s)
+=== RUN   TestListallHighlighting
+    t1350_listall_test.go:38: TODO: Implement listall command with done.txt support
+--- SKIP: TestListallHighlighting (0.00s)
+=== RUN   TestPrependUsage
+=== RUN   TestPrependUsage/prepend_with_wrong_args
+--- PASS: TestPrependUsage (0.00s)
+    --- PASS: TestPrependUsage/prepend_with_wrong_args (0.00s)
+=== RUN   TestBasicPrepend
+=== RUN   TestBasicPrepend/prepend_text_to_task
+=== RUN   TestBasicPrepend/verify_prepend_in_file
+--- PASS: TestBasicPrepend (0.00s)
+    --- PASS: TestBasicPrepend/prepend_text_to_task (0.00s)
+    --- PASS: TestBasicPrepend/verify_prepend_in_file (0.00s)
+=== RUN   TestPrependPreservesPriority
+=== RUN   TestPrependPreservesPriority/prepend_to_prioritized_task
+--- PASS: TestPrependPreservesPriority (0.00s)
+    --- PASS: TestPrependPreservesPriority/prepend_to_prioritized_task (0.00s)
+=== RUN   TestDoUsage
+=== RUN   TestDoUsage/do_with_non-numeric_arg
+=== RUN   TestDoUsage/do_without_args
+--- PASS: TestDoUsage (0.00s)
+    --- PASS: TestDoUsage/do_with_non-numeric_arg (0.00s)
+    --- PASS: TestDoUsage/do_without_args (0.00s)
+=== RUN   TestBasicDo
+=== RUN   TestBasicDo/list_before_marking_done
+=== RUN   TestBasicDo/mark_single_task_done
+=== RUN   TestBasicDo/verify_task_was_marked_done
+--- PASS: TestBasicDo (0.00s)
+    --- PASS: TestBasicDo/list_before_marking_done (0.00s)
+    --- PASS: TestBasicDo/mark_single_task_done (0.00s)
+    --- PASS: TestBasicDo/verify_task_was_marked_done (0.00s)
+=== RUN   TestDoWithFlags
+=== RUN   TestDoWithFlags/mark_done_with_auto-archive_disabled
+    t1500_do_test.go:101: TODO: Implement -a flag for no auto-archive
+--- PASS: TestDoWithFlags (0.00s)
+    --- SKIP: TestDoWithFlags/mark_done_with_auto-archive_disabled (0.00s)
+=== RUN   TestDoAlreadyDone
+=== RUN   TestDoAlreadyDone/mark_task_done_first_time
+=== RUN   TestDoAlreadyDone/mark_task_done_second_time
+    t1500_do_test.go:127: TODO: Verify behavior with already-done tasks
+--- PASS: TestDoAlreadyDone (0.00s)
+    --- PASS: TestDoAlreadyDone/mark_task_done_first_time (0.00s)
+    --- SKIP: TestDoAlreadyDone/mark_task_done_second_time (0.00s)
+=== RUN   TestDoMultipleWithComma
+    t1500_do_test.go:134: TODO: Implement comma-separated task numbers (e.g., 'do 7,6')
+--- SKIP: TestDoMultipleWithComma (0.00s)
+=== RUN   TestAppendUsage
+=== RUN   TestAppendUsage/append_with_wrong_args
+=== RUN   TestAppendUsage/append_to_nonexistent_task
+--- PASS: TestAppendUsage (0.00s)
+    --- PASS: TestAppendUsage/append_with_wrong_args (0.00s)
+    --- PASS: TestAppendUsage/append_to_nonexistent_task (0.00s)
+=== RUN   TestBasicAppend
+=== RUN   TestBasicAppend/append_text_to_task
+=== RUN   TestBasicAppend/list_after_append
+--- PASS: TestBasicAppend (0.01s)
+    --- PASS: TestBasicAppend/append_text_to_task (0.00s)
+    --- PASS: TestBasicAppend/list_after_append (0.00s)
+=== RUN   TestDepriUsage
+=== RUN   TestDepriUsage/depri_with_invalid_args
+=== RUN   TestDepriUsage/depri_nonexistent_item
+--- PASS: TestDepriUsage (0.00s)
+    --- PASS: TestDepriUsage/depri_with_invalid_args (0.00s)
+    --- PASS: TestDepriUsage/depri_nonexistent_item (0.00s)
+=== RUN   TestBasicDepriority
+=== RUN   TestBasicDepriority/list_before_depri
+=== RUN   TestBasicDepriority/deprioritize_task_1
+=== RUN   TestBasicDepriority/list_after_depri
+--- PASS: TestBasicDepriority (0.01s)
+    --- PASS: TestBasicDepriority/list_before_depri (0.00s)
+    --- PASS: TestBasicDepriority/deprioritize_task_1 (0.00s)
+    --- PASS: TestBasicDepriority/list_after_depri (0.00s)
+=== RUN   TestMultipleDepriority
+=== RUN   TestMultipleDepriority/depri_multiple_tasks
+=== RUN   TestMultipleDepriority/list_after_multiple_depri
+--- PASS: TestMultipleDepriority (0.00s)
+    --- PASS: TestMultipleDepriority/depri_multiple_tasks (0.00s)
+    --- PASS: TestMultipleDepriority/list_after_multiple_depri (0.00s)
+=== RUN   TestDepriUnprioritized
+=== RUN   TestDepriUnprioritized/depri_unprioritized_task_should_error
+--- PASS: TestDepriUnprioritized (0.00s)
+    --- PASS: TestDepriUnprioritized/depri_unprioritized_task_should_error (0.00s)
+=== RUN   TestDelUsage
+=== RUN   TestDelUsage/del_without_args
+=== RUN   TestDelUsage/del_nonexistent_item
+--- PASS: TestDelUsage (0.00s)
+    --- PASS: TestDelUsage/del_without_args (0.00s)
+    --- PASS: TestDelUsage/del_nonexistent_item (0.00s)
+=== RUN   TestBasicDel
+=== RUN   TestBasicDel/delete_task_by_number
+=== RUN   TestBasicDel/list_after_delete
+--- PASS: TestBasicDel (0.00s)
+    --- PASS: TestBasicDel/delete_task_by_number (0.00s)
+    --- PASS: TestBasicDel/list_after_delete (0.00s)
+=== RUN   TestDelMultiple
+    t1800_del_test.go:69: TODO: Implement deleting multiple tasks
+--- SKIP: TestDelMultiple (0.00s)
+=== RUN   TestDelWithTerm
+    t1800_del_test.go:81: TODO: Implement 'del NR TERM' to remove term from task
+--- SKIP: TestDelWithTerm (0.00s)
+=== RUN   TestBasicMove
+    t1850_move_test.go:10: TODO: Implement move command to move tasks between files
+--- SKIP: TestBasicMove (0.00s)
+=== RUN   TestMoveUsage
+    t1850_move_test.go:32: TODO: Implement move command
+--- SKIP: TestMoveUsage (0.00s)
+=== RUN   TestArchiveWithDuplicates
+=== RUN   TestArchiveWithDuplicates/archive_done_tasks
+=== RUN   TestArchiveWithDuplicates/verify_done_task_removed_from_todo.txt
+=== RUN   TestArchiveWithDuplicates/verify_done_task_in_done.txt
+=== RUN   TestArchiveWithDuplicates/list_after_archive
+--- PASS: TestArchiveWithDuplicates (0.01s)
+    --- PASS: TestArchiveWithDuplicates/archive_done_tasks (0.00s)
+    --- PASS: TestArchiveWithDuplicates/verify_done_task_removed_from_todo.txt (0.00s)
+    --- PASS: TestArchiveWithDuplicates/verify_done_task_in_done.txt (0.00s)
+    --- PASS: TestArchiveWithDuplicates/list_after_archive (0.00s)
+=== RUN   TestArchiveWarning
+=== RUN   TestArchiveWarning/archive_with_no_done_tasks
+--- PASS: TestArchiveWarning (0.00s)
+    --- PASS: TestArchiveWarning/archive_with_no_done_tasks (0.00s)
+=== RUN   TestDeduplicate
+=== RUN   TestDeduplicate/deduplicate_removes_duplicates
+=== RUN   TestDeduplicate/list_after_deduplicate
+--- PASS: TestDeduplicate (0.01s)
+    --- PASS: TestDeduplicate/deduplicate_removes_duplicates (0.00s)
+    --- PASS: TestDeduplicate/list_after_deduplicate (0.00s)
+=== RUN   TestDeduplicateWithPriority
+    t1910_deduplicate_test.go:42: TODO: Test deduplicate behavior with priorities - should keep higher priority
+--- SKIP: TestDeduplicateWithPriority (0.00s)
+=== RUN   TestReport
+=== RUN   TestReport/report_shows_statistics
+--- PASS: TestReport (0.00s)
+    --- PASS: TestReport/report_shows_statistics (0.00s)
+=== RUN   TestMultilineAdd
+    t2000_multiline_test.go:10: TODO: Implement multiline add support
+--- SKIP: TestMultilineAdd (0.00s)
+=== RUN   TestMultilineHandling
+    t2000_multiline_test.go:23: TODO: Test multiline task text handling
+--- SKIP: TestMultilineHandling (0.00s)
+=== RUN   TestHelp
+=== RUN   TestHelp/help_command_shows_usage
+=== RUN   TestHelp/--help_flag_shows_usage
+--- PASS: TestHelp (0.00s)
+    --- PASS: TestHelp/help_command_shows_usage (0.00s)
+    --- PASS: TestHelp/--help_flag_shows_usage (0.00s)
+=== RUN   TestCommandHelp
+=== RUN   TestCommandHelp/help_for_add_command
+=== RUN   TestCommandHelp/help_for_list_command
+--- PASS: TestCommandHelp (0.00s)
+    --- PASS: TestCommandHelp/help_for_add_command (0.00s)
+    --- PASS: TestCommandHelp/help_for_list_command (0.00s)
+=== RUN   TestShortHelp
+    t2100_help_test.go:70: TODO: Implement shorthelp command for condensed help
+--- SKIP: TestShortHelp (0.00s)
+PASS
+ok  	github.com/gkarolyi/togodo/tests	(cached)

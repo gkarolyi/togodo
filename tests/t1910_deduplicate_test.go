@@ -39,11 +39,33 @@ task two`)
 // TestDeduplicateWithPriority tests deduplicate with prioritized tasks
 // Ported from: t1910-deduplicate.sh
 func TestDeduplicateWithPriority(t *testing.T) {
-	t.Skip("TODO: Test deduplicate behavior with priorities - should keep higher priority")
+	env := SetupTestEnv(t)
 
-	// env := SetupTestEnv(t)
-	// env.WriteTodoFile("(A) task\n(B) task\ntask")
-	//
-	// env.RunCommand("deduplicate")
-	// // Should keep (A) task and remove the others
+	// Setup: Add same task with different priorities
+	env.WriteTodoFile("(A) task\n(B) task\ntask")
+
+	// Run deduplicate
+	output, code := env.RunCommand("deduplicate")
+	if code != 0 {
+		t.Errorf("Expected exit code 0, got %d", code)
+	}
+
+	// Should report 2 duplicates removed
+	if !containsSubstring(output, "2") {
+		t.Errorf("Expected '2' duplicates removed in output, got: %s", output)
+	}
+
+	// Verify only the highest priority task remains
+	content := env.ReadTodoFile()
+
+	// Should have only 1 task
+	lines := countNonEmptyLines(content)
+	if lines != 1 {
+		t.Errorf("Expected 1 task in file, got %d\nContent:\n%s", lines, content)
+	}
+
+	// Should be the (A) priority task
+	if !containsSubstring(content, "(A) task") {
+		t.Errorf("Expected '(A) task' in file, got:\n%s", content)
+	}
 }

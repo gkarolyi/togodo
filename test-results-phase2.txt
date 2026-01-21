@@ -1,0 +1,816 @@
+?   	github.com/gkarolyi/togodo	[no test files]
+=== RUN   TestAddMultiple
+--- PASS: TestAddMultiple (0.00s)
+=== RUN   TestAddCmd_SingleTask
+--- PASS: TestAddCmd_SingleTask (0.00s)
+=== RUN   TestAddCmd_MultipleTasks
+--- PASS: TestAddCmd_MultipleTasks (0.00s)
+=== RUN   TestAddCmd_EmptyArgs
+--- PASS: TestAddCmd_EmptyArgs (0.00s)
+=== RUN   TestAddCmd_SortingBehavior
+--- PASS: TestAddCmd_SortingBehavior (0.00s)
+=== RUN   TestAddCmd_MultilineString
+--- PASS: TestAddCmd_MultilineString (0.00s)
+=== RUN   TestAddCmd_DuplicateTasks
+--- PASS: TestAddCmd_DuplicateTasks (0.00s)
+=== RUN   TestAddCreationDate
+=== RUN   TestAddCreationDate/simple_task_gets_date
+=== RUN   TestAddCreationDate/task_with_priority_gets_date_after_priority
+=== RUN   TestAddCreationDate/task_with_existing_date_unchanged
+=== RUN   TestAddCreationDate/priority_task_with_existing_date_unchanged
+--- PASS: TestAddCreationDate (0.00s)
+    --- PASS: TestAddCreationDate/simple_task_gets_date (0.00s)
+    --- PASS: TestAddCreationDate/task_with_priority_gets_date_after_priority (0.00s)
+    --- PASS: TestAddCreationDate/task_with_existing_date_unchanged (0.00s)
+    --- PASS: TestAddCreationDate/priority_task_with_existing_date_unchanged (0.00s)
+=== RUN   TestAppend
+--- PASS: TestAppend (0.00s)
+=== RUN   TestArchive
+=== RUN   TestArchive/archive_completed_todos
+=== RUN   TestArchive/archive_with_no_completed_todos
+=== RUN   TestArchive/archive_appends_to_existing_done.txt
+--- PASS: TestArchive (0.00s)
+    --- PASS: TestArchive/archive_completed_todos (0.00s)
+    --- PASS: TestArchive/archive_with_no_completed_todos (0.00s)
+    --- PASS: TestArchive/archive_appends_to_existing_done.txt (0.00s)
+=== RUN   TestConfigRead
+--- PASS: TestConfigRead (0.00s)
+=== RUN   TestConfigReadNotFound
+--- PASS: TestConfigReadNotFound (0.00s)
+=== RUN   TestConfigWrite
+--- PASS: TestConfigWrite (0.00s)
+=== RUN   TestConfigWriteCreate
+--- PASS: TestConfigWriteCreate (0.00s)
+=== RUN   TestConfigList
+--- PASS: TestConfigList (0.00s)
+=== RUN   TestDeduplicateCmd_WithDuplicates
+--- PASS: TestDeduplicateCmd_WithDuplicates (0.00s)
+=== RUN   TestDeduplicateCmd_NoDuplicates
+--- PASS: TestDeduplicateCmd_NoDuplicates (0.00s)
+=== RUN   TestDeduplicateCmd_EmptyRepository
+--- PASS: TestDeduplicateCmd_EmptyRepository (0.00s)
+=== RUN   TestDeduplicateCmd_KeepsFirstOccurrence
+--- PASS: TestDeduplicateCmd_KeepsFirstOccurrence (0.00s)
+=== RUN   TestDeduplicateCmd_CaseSensitive
+--- PASS: TestDeduplicateCmd_CaseSensitive (0.00s)
+=== RUN   TestDeduplicateCmd_WithPriorities
+--- PASS: TestDeduplicateCmd_WithPriorities (0.00s)
+=== RUN   TestDel
+--- PASS: TestDel (0.00s)
+=== RUN   TestDelMultiple
+--- PASS: TestDelMultiple (0.00s)
+=== RUN   TestDepri
+--- PASS: TestDepri (0.00s)
+=== RUN   TestDoCmd_SingleTask
+--- PASS: TestDoCmd_SingleTask (0.00s)
+=== RUN   TestDoCmd_MultipleTask
+--- PASS: TestDoCmd_MultipleTask (0.00s)
+=== RUN   TestDoCmd_ToggleAlreadyDone
+--- PASS: TestDoCmd_ToggleAlreadyDone (0.00s)
+=== RUN   TestDoCmd_InvalidLineNumber
+--- PASS: TestDoCmd_InvalidLineNumber (0.00s)
+=== RUN   TestDoCmd_InvalidLineNumberFormat
+--- PASS: TestDoCmd_InvalidLineNumberFormat (0.00s)
+=== RUN   TestDoCmd_ZeroLineNumber
+--- PASS: TestDoCmd_ZeroLineNumber (0.00s)
+=== RUN   TestDoCmd_NegativeLineNumber
+--- PASS: TestDoCmd_NegativeLineNumber (0.00s)
+=== RUN   TestDoCmd_EmptyRepository
+--- PASS: TestDoCmd_EmptyRepository (0.00s)
+=== RUN   TestDoCmd_MixedValidInvalidNumbers
+--- PASS: TestDoCmd_MixedValidInvalidNumbers (0.00s)
+=== RUN   TestExecuteList_AllTasks
+--- PASS: TestExecuteList_AllTasks (0.00s)
+=== RUN   TestExecuteList_FilterByContext
+--- PASS: TestExecuteList_FilterByContext (0.00s)
+=== RUN   TestExecuteList_FilterByProject
+--- PASS: TestExecuteList_FilterByProject (0.00s)
+=== RUN   TestExecuteList_FilterByPriority
+--- PASS: TestExecuteList_FilterByPriority (0.00s)
+=== RUN   TestExecuteList_FilterByKeyword
+--- PASS: TestExecuteList_FilterByKeyword (0.00s)
+=== RUN   TestExecuteList_NoMatches
+--- PASS: TestExecuteList_NoMatches (0.00s)
+=== RUN   TestExecuteList_EmptyRepository
+--- PASS: TestExecuteList_EmptyRepository (0.00s)
+=== RUN   TestExecuteList_MultipleFilters
+--- PASS: TestExecuteList_MultipleFilters (0.00s)
+=== RUN   TestExecuteList_CaseSensitiveSearch
+--- PASS: TestExecuteList_CaseSensitiveSearch (0.00s)
+=== RUN   TestExecuteList_FilterDoneTasks
+--- PASS: TestExecuteList_FilterDoneTasks (0.00s)
+=== RUN   TestExecuteList_FilterSpecialCharacters
+--- PASS: TestExecuteList_FilterSpecialCharacters (0.00s)
+=== RUN   TestExecuteList_FilterByDueDate
+--- PASS: TestExecuteList_FilterByDueDate (0.00s)
+=== RUN   TestExecuteList_WhitespaceInFilter
+--- PASS: TestExecuteList_WhitespaceInFilter (0.00s)
+=== RUN   TestExecuteList_QuotedFilter
+--- PASS: TestExecuteList_QuotedFilter (0.00s)
+=== RUN   TestExecuteList_PriorityOrdering
+--- PASS: TestExecuteList_PriorityOrdering (0.00s)
+=== RUN   TestExecuteList_Integration
+--- PASS: TestExecuteList_Integration (0.00s)
+=== RUN   TestExecuteList_ErrorHandling
+--- PASS: TestExecuteList_ErrorHandling (0.00s)
+=== RUN   TestListall
+--- PASS: TestListall (0.00s)
+=== RUN   TestListcon
+--- PASS: TestListcon (0.00s)
+=== RUN   TestListpri
+--- PASS: TestListpri (0.00s)
+=== RUN   TestListpriAllPriorities
+--- PASS: TestListpriAllPriorities (0.00s)
+=== RUN   TestListpriExcludesDone
+--- PASS: TestListpriExcludesDone (0.00s)
+=== RUN   TestListproj
+--- PASS: TestListproj (0.00s)
+=== RUN   TestMove
+--- PASS: TestMove (0.00s)
+=== RUN   TestMoveInvalidLineNumber
+--- PASS: TestMoveInvalidLineNumber (0.00s)
+=== RUN   TestPrepend
+--- PASS: TestPrepend (0.00s)
+=== RUN   TestPrependPreservesPriority
+--- PASS: TestPrependPreservesPriority (0.00s)
+=== RUN   TestPriCmd_SingleTask
+--- PASS: TestPriCmd_SingleTask (0.00s)
+=== RUN   TestPriCmd_MultipleTasks
+--- PASS: TestPriCmd_MultipleTasks (0.00s)
+=== RUN   TestPriCmd_RemovePriority
+--- PASS: TestPriCmd_RemovePriority (0.00s)
+=== RUN   TestPriCmd_InvalidLineNumber
+--- PASS: TestPriCmd_InvalidLineNumber (0.00s)
+=== RUN   TestPriCmd_InvalidLineNumberFormat
+--- PASS: TestPriCmd_InvalidLineNumberFormat (0.00s)
+=== RUN   TestPriCmd_ZeroLineNumber
+--- PASS: TestPriCmd_ZeroLineNumber (0.00s)
+=== RUN   TestPriCmd_NegativeLineNumber
+--- PASS: TestPriCmd_NegativeLineNumber (0.00s)
+=== RUN   TestPriCmd_EmptyRepository
+--- PASS: TestPriCmd_EmptyRepository (0.00s)
+=== RUN   TestPriCmd_MixedValidInvalidNumbers
+--- PASS: TestPriCmd_MixedValidInvalidNumbers (0.00s)
+=== RUN   TestPriCmd_DoneTaskPriority
+--- PASS: TestPriCmd_DoneTaskPriority (0.00s)
+=== RUN   TestReplace
+--- PASS: TestReplace (0.00s)
+=== RUN   TestReport
+=== RUN   TestReport/generates_statistics_for_mixed_tasks
+=== RUN   TestReport/handles_empty_done.txt
+=== RUN   TestReport/handles_all_completed_tasks
+=== RUN   TestReport/handles_empty_todo.txt
+--- PASS: TestReport (0.00s)
+    --- PASS: TestReport/generates_statistics_for_mixed_tasks (0.00s)
+    --- PASS: TestReport/handles_empty_done.txt (0.00s)
+    --- PASS: TestReport/handles_all_completed_tasks (0.00s)
+    --- PASS: TestReport/handles_empty_todo.txt (0.00s)
+=== RUN   TestTidyCmd_WithDoneTasks
+--- PASS: TestTidyCmd_WithDoneTasks (0.00s)
+=== RUN   TestTidyCmd_NoDoneTasks
+--- PASS: TestTidyCmd_NoDoneTasks (0.00s)
+=== RUN   TestTidyCmd_EmptyRepository
+--- PASS: TestTidyCmd_EmptyRepository (0.00s)
+=== RUN   TestTidyCmd_AllTasksDone
+--- PASS: TestTidyCmd_AllTasksDone (0.00s)
+=== RUN   TestTidyCmd_ReturnsRemovedTasks
+--- PASS: TestTidyCmd_ReturnsRemovedTasks (0.00s)
+PASS
+ok  	github.com/gkarolyi/togodo/cmd	0.347s
+?   	github.com/gkarolyi/togodo/internal/cli	[no test files]
+?   	github.com/gkarolyi/togodo/internal/config	[no test files]
+?   	github.com/gkarolyi/togodo/internal/tui	[no test files]
+=== RUN   TestConfigRead
+--- PASS: TestConfigRead (0.00s)
+=== RUN   TestConfigWrite
+--- PASS: TestConfigWrite (0.02s)
+=== RUN   TestConfigList
+--- PASS: TestConfigList (0.00s)
+=== RUN   TestBasicAddList
+=== RUN   TestBasicAddList/basic_add/list_1
+=== RUN   TestBasicAddList/basic_add/list_2
+=== RUN   TestBasicAddList/basic_add/list_3
+=== RUN   TestBasicAddList/basic_add/list_4
+--- PASS: TestBasicAddList (0.00s)
+    --- PASS: TestBasicAddList/basic_add/list_1 (0.00s)
+    --- PASS: TestBasicAddList/basic_add/list_2 (0.00s)
+    --- PASS: TestBasicAddList/basic_add/list_3 (0.00s)
+    --- PASS: TestBasicAddList/basic_add/list_4 (0.00s)
+=== RUN   TestListFiltering
+=== RUN   TestListFiltering/filter_by_daisies
+=== RUN   TestListFiltering/filter_by_smell
+--- PASS: TestListFiltering (0.00s)
+    --- PASS: TestListFiltering/filter_by_daisies (0.00s)
+    --- PASS: TestListFiltering/filter_by_smell (0.00s)
+=== RUN   TestCaseInsensitiveFiltering
+=== RUN   TestCaseInsensitiveFiltering/add_uppercase_task
+=== RUN   TestCaseInsensitiveFiltering/filter_lowercase_roses
+--- PASS: TestCaseInsensitiveFiltering (0.00s)
+    --- PASS: TestCaseInsensitiveFiltering/add_uppercase_task (0.00s)
+    --- PASS: TestCaseInsensitiveFiltering/filter_lowercase_roses (0.00s)
+=== RUN   TestAddWithSymbols
+=== RUN   TestAddWithSymbols/add_symbols
+=== RUN   TestAddWithSymbols/add_backtick_and_quotes
+=== RUN   TestAddWithSymbols/list_all_with_symbols
+--- PASS: TestAddWithSymbols (0.00s)
+    --- PASS: TestAddWithSymbols/add_symbols (0.00s)
+    --- PASS: TestAddWithSymbols/add_backtick_and_quotes (0.00s)
+    --- PASS: TestAddWithSymbols/list_all_with_symbols (0.00s)
+=== RUN   TestAddWithSpaces
+=== RUN   TestAddWithSpaces/add_with_quoted_spaces
+=== RUN   TestAddWithSpaces/add_with_unquoted_spaces
+=== RUN   TestAddWithSpaces/list_with_spaces
+--- PASS: TestAddWithSpaces (0.00s)
+    --- PASS: TestAddWithSpaces/add_with_quoted_spaces (0.00s)
+    --- PASS: TestAddWithSpaces/add_with_unquoted_spaces (0.00s)
+    --- PASS: TestAddWithSpaces/list_with_spaces (0.00s)
+=== RUN   TestAddWithDate
+--- PASS: TestAddWithDate (0.02s)
+=== RUN   TestAddWithoutDate
+--- PASS: TestAddWithoutDate (0.01s)
+=== RUN   TestAddWithPriority
+--- PASS: TestAddWithPriority (0.00s)
+=== RUN   TestAddWithPriorityAndDate
+--- PASS: TestAddWithPriorityAndDate (0.01s)
+=== RUN   TestReplaceUsage
+=== RUN   TestReplaceUsage/replace_with_wrong_args
+--- PASS: TestReplaceUsage (0.00s)
+    --- PASS: TestReplaceUsage/replace_with_wrong_args (0.00s)
+=== RUN   TestBasicReplace
+=== RUN   TestBasicReplace/replace_task_text
+=== RUN   TestBasicReplace/list_after_replace
+--- PASS: TestBasicReplace (0.00s)
+    --- PASS: TestBasicReplace/replace_task_text (0.00s)
+    --- PASS: TestBasicReplace/list_after_replace (0.00s)
+=== RUN   TestPriUsage
+=== RUN   TestPriUsage/pri_with_invalid_args
+--- PASS: TestPriUsage (0.00s)
+    --- PASS: TestPriUsage/pri_with_invalid_args (0.00s)
+=== RUN   TestBasicPriority
+=== RUN   TestBasicPriority/set_priority_B_on_task_1
+=== RUN   TestBasicPriority/list_shows_priority_in_text
+=== RUN   TestBasicPriority/set_priority_C_on_task_2
+--- PASS: TestBasicPriority (0.00s)
+    --- PASS: TestBasicPriority/set_priority_B_on_task_1 (0.00s)
+    --- PASS: TestBasicPriority/list_shows_priority_in_text (0.00s)
+    --- PASS: TestBasicPriority/set_priority_C_on_task_2 (0.00s)
+=== RUN   TestPrioritySorting
+=== RUN   TestPrioritySorting/list_shows_priority_sorted
+--- PASS: TestPrioritySorting (0.01s)
+    --- PASS: TestPrioritySorting/list_shows_priority_sorted (0.00s)
+=== RUN   TestPriorityError
+=== RUN   TestPriorityError/pri_with_non-existent_task
+--- PASS: TestPriorityError (0.00s)
+    --- PASS: TestPriorityError/pri_with_non-existent_task (0.00s)
+=== RUN   TestReprioritize
+=== RUN   TestReprioritize/change_priority_from_C_to_A
+=== RUN   TestReprioritize/verify_sorting_after_reprioritize
+=== RUN   TestReprioritize/set_same_priority_should_error
+--- PASS: TestReprioritize (0.02s)
+    --- PASS: TestReprioritize/change_priority_from_C_to_A (0.02s)
+    --- PASS: TestReprioritize/verify_sorting_after_reprioritize (0.00s)
+    --- PASS: TestReprioritize/set_same_priority_should_error (0.00s)
+=== RUN   TestPriorityWithPlainFlag
+=== RUN   TestPriorityWithPlainFlag/list_with_global_-p_flag
+=== RUN   TestPriorityWithPlainFlag/list_with_--plain_flag
+--- PASS: TestPriorityWithPlainFlag (0.00s)
+    --- PASS: TestPriorityWithPlainFlag/list_with_global_-p_flag (0.00s)
+    --- PASS: TestPriorityWithPlainFlag/list_with_--plain_flag (0.00s)
+=== RUN   TestListpriBasic
+=== RUN   TestListpriBasic/listpri_shows_all_prioritized_tasks
+=== RUN   TestListpriBasic/listpri_with_specific_priority
+=== RUN   TestListpriBasic/listpri_case-insensitive
+--- PASS: TestListpriBasic (0.01s)
+    --- PASS: TestListpriBasic/listpri_shows_all_prioritized_tasks (0.00s)
+    --- PASS: TestListpriBasic/listpri_with_specific_priority (0.00s)
+    --- PASS: TestListpriBasic/listpri_case-insensitive (0.00s)
+=== RUN   TestListpriFiltering
+=== RUN   TestListpriFiltering/listpri_filters_invalid_priorities
+--- PASS: TestListpriFiltering (0.00s)
+    --- PASS: TestListpriFiltering/listpri_filters_invalid_priorities (0.00s)
+=== RUN   TestListconSingle
+=== RUN   TestListconSingle/listcon_shows_all_contexts
+--- PASS: TestListconSingle (0.00s)
+    --- PASS: TestListconSingle/listcon_shows_all_contexts (0.00s)
+=== RUN   TestListconMultiple
+=== RUN   TestListconMultiple/listcon_with_duplicates
+--- PASS: TestListconMultiple (0.00s)
+    --- PASS: TestListconMultiple/listcon_with_duplicates (0.00s)
+=== RUN   TestListprojSingle
+=== RUN   TestListprojSingle/listproj_shows_all_projects
+--- PASS: TestListprojSingle (0.01s)
+    --- PASS: TestListprojSingle/listproj_shows_all_projects (0.01s)
+=== RUN   TestListprojMultiple
+=== RUN   TestListprojMultiple/listproj_with_duplicates
+--- PASS: TestListprojMultiple (0.01s)
+    --- PASS: TestListprojMultiple/listproj_with_duplicates (0.01s)
+=== RUN   TestListallBasic
+=== RUN   TestListallBasic/listall_shows_todo_and_done_tasks
+    t1350_listall_test.go:24: TODO: Implement done.txt support in test environment
+--- PASS: TestListallBasic (0.00s)
+    --- SKIP: TestListallBasic/listall_shows_todo_and_done_tasks (0.00s)
+=== RUN   TestListallHighlighting
+=== RUN   TestListallHighlighting/listall_with_highlighting
+=== RUN   TestListallHighlighting/listall_with_plain_flag
+--- PASS: TestListallHighlighting (0.01s)
+    --- PASS: TestListallHighlighting/listall_with_highlighting (0.00s)
+    --- PASS: TestListallHighlighting/listall_with_plain_flag (0.00s)
+=== RUN   TestPrependUsage
+=== RUN   TestPrependUsage/prepend_with_wrong_args
+--- PASS: TestPrependUsage (0.00s)
+    --- PASS: TestPrependUsage/prepend_with_wrong_args (0.00s)
+=== RUN   TestBasicPrepend
+=== RUN   TestBasicPrepend/prepend_text_to_task
+=== RUN   TestBasicPrepend/verify_prepend_in_file
+--- PASS: TestBasicPrepend (0.00s)
+    --- PASS: TestBasicPrepend/prepend_text_to_task (0.00s)
+    --- PASS: TestBasicPrepend/verify_prepend_in_file (0.00s)
+=== RUN   TestPrependPreservesPriority
+=== RUN   TestPrependPreservesPriority/prepend_to_prioritized_task
+--- PASS: TestPrependPreservesPriority (0.00s)
+    --- PASS: TestPrependPreservesPriority/prepend_to_prioritized_task (0.00s)
+=== RUN   TestDoUsage
+=== RUN   TestDoUsage/do_with_non-numeric_arg
+=== RUN   TestDoUsage/do_without_args
+--- PASS: TestDoUsage (0.01s)
+    --- PASS: TestDoUsage/do_with_non-numeric_arg (0.00s)
+    --- PASS: TestDoUsage/do_without_args (0.00s)
+=== RUN   TestBasicDo
+=== RUN   TestBasicDo/list_before_marking_done
+=== RUN   TestBasicDo/mark_single_task_done
+=== RUN   TestBasicDo/verify_task_was_marked_done
+--- PASS: TestBasicDo (0.01s)
+    --- PASS: TestBasicDo/list_before_marking_done (0.00s)
+    --- PASS: TestBasicDo/mark_single_task_done (0.00s)
+    --- PASS: TestBasicDo/verify_task_was_marked_done (0.00s)
+=== RUN   TestDoWithFlags
+=== RUN   TestDoWithFlags/mark_done_with_auto-archive_disabled
+=== RUN   TestDoWithFlags/mark_done_with_plain_mode
+--- PASS: TestDoWithFlags (0.01s)
+    --- PASS: TestDoWithFlags/mark_done_with_auto-archive_disabled (0.00s)
+    --- PASS: TestDoWithFlags/mark_done_with_plain_mode (0.00s)
+=== RUN   TestDoAlreadyDone
+=== RUN   TestDoAlreadyDone/mark_task_done_first_time
+=== RUN   TestDoAlreadyDone/mark_task_done_second_time
+    t1500_do_test.go:151: TODO: Verify behavior with already-done tasks
+--- PASS: TestDoAlreadyDone (0.00s)
+    --- PASS: TestDoAlreadyDone/mark_task_done_first_time (0.00s)
+    --- SKIP: TestDoAlreadyDone/mark_task_done_second_time (0.00s)
+=== RUN   TestDoMultipleWithComma
+=== RUN   TestDoMultipleWithComma/mark_multiple_tasks_with_comma_separator
+=== RUN   TestDoMultipleWithComma/list_after_marking_done
+--- PASS: TestDoMultipleWithComma (0.01s)
+    --- PASS: TestDoMultipleWithComma/mark_multiple_tasks_with_comma_separator (0.00s)
+    --- PASS: TestDoMultipleWithComma/list_after_marking_done (0.00s)
+=== RUN   TestAppendUsage
+=== RUN   TestAppendUsage/append_with_wrong_args
+=== RUN   TestAppendUsage/append_to_nonexistent_task
+--- PASS: TestAppendUsage (0.01s)
+    --- PASS: TestAppendUsage/append_with_wrong_args (0.00s)
+    --- PASS: TestAppendUsage/append_to_nonexistent_task (0.00s)
+=== RUN   TestBasicAppend
+=== RUN   TestBasicAppend/append_text_to_task
+=== RUN   TestBasicAppend/list_after_append
+--- PASS: TestBasicAppend (0.01s)
+    --- PASS: TestBasicAppend/append_text_to_task (0.00s)
+    --- PASS: TestBasicAppend/list_after_append (0.00s)
+=== RUN   TestDepriUsage
+=== RUN   TestDepriUsage/depri_with_invalid_args
+=== RUN   TestDepriUsage/depri_nonexistent_item
+--- PASS: TestDepriUsage (0.01s)
+    --- PASS: TestDepriUsage/depri_with_invalid_args (0.00s)
+    --- PASS: TestDepriUsage/depri_nonexistent_item (0.00s)
+=== RUN   TestBasicDepriority
+=== RUN   TestBasicDepriority/list_before_depri
+=== RUN   TestBasicDepriority/deprioritize_task_1
+=== RUN   TestBasicDepriority/list_after_depri
+--- PASS: TestBasicDepriority (0.01s)
+    --- PASS: TestBasicDepriority/list_before_depri (0.00s)
+    --- PASS: TestBasicDepriority/deprioritize_task_1 (0.00s)
+    --- PASS: TestBasicDepriority/list_after_depri (0.00s)
+=== RUN   TestMultipleDepriority
+=== RUN   TestMultipleDepriority/depri_multiple_tasks
+=== RUN   TestMultipleDepriority/list_after_multiple_depri
+--- PASS: TestMultipleDepriority (0.01s)
+    --- PASS: TestMultipleDepriority/depri_multiple_tasks (0.00s)
+    --- PASS: TestMultipleDepriority/list_after_multiple_depri (0.00s)
+=== RUN   TestDepriUnprioritized
+=== RUN   TestDepriUnprioritized/depri_unprioritized_task_should_error
+--- PASS: TestDepriUnprioritized (0.00s)
+    --- PASS: TestDepriUnprioritized/depri_unprioritized_task_should_error (0.00s)
+=== RUN   TestDelUsage
+=== RUN   TestDelUsage/del_without_args
+=== RUN   TestDelUsage/del_nonexistent_item
+--- PASS: TestDelUsage (0.01s)
+    --- PASS: TestDelUsage/del_without_args (0.00s)
+    --- PASS: TestDelUsage/del_nonexistent_item (0.00s)
+=== RUN   TestBasicDel
+=== RUN   TestBasicDel/delete_task_by_number
+=== RUN   TestBasicDel/list_after_delete
+--- PASS: TestBasicDel (0.01s)
+    --- PASS: TestBasicDel/delete_task_by_number (0.00s)
+    --- PASS: TestBasicDel/list_after_delete (0.00s)
+=== RUN   TestDelMultiple
+=== RUN   TestDelMultiple/delete_multiple_tasks
+=== RUN   TestDelMultiple/list_after_delete
+--- PASS: TestDelMultiple (0.01s)
+    --- PASS: TestDelMultiple/delete_multiple_tasks (0.00s)
+    --- PASS: TestDelMultiple/list_after_delete (0.00s)
+=== RUN   TestDelWithTerm
+=== RUN   TestDelWithTerm/remove_term_from_task
+=== RUN   TestDelWithTerm/list_after_term_removal
+--- PASS: TestDelWithTerm (0.01s)
+    --- PASS: TestDelWithTerm/remove_term_from_task (0.00s)
+    --- PASS: TestDelWithTerm/list_after_term_removal (0.00s)
+=== RUN   TestBasicMove
+=== RUN   TestBasicMove/move_task_to_done.txt
+=== RUN   TestBasicMove/verify_task_removed_from_todo.txt
+=== RUN   TestBasicMove/verify_task_added_to_done.txt
+--- PASS: TestBasicMove (0.00s)
+    --- PASS: TestBasicMove/move_task_to_done.txt (0.00s)
+    --- PASS: TestBasicMove/verify_task_removed_from_todo.txt (0.00s)
+    --- PASS: TestBasicMove/verify_task_added_to_done.txt (0.00s)
+=== RUN   TestMoveUsage
+=== RUN   TestMoveUsage/move_without_args
+=== RUN   TestMoveUsage/move_with_only_one_arg
+=== RUN   TestMoveUsage/move_with_non-existent_task
+--- PASS: TestMoveUsage (0.01s)
+    --- PASS: TestMoveUsage/move_without_args (0.00s)
+    --- PASS: TestMoveUsage/move_with_only_one_arg (0.00s)
+    --- PASS: TestMoveUsage/move_with_non-existent_task (0.00s)
+=== RUN   TestArchiveWithDuplicates
+=== RUN   TestArchiveWithDuplicates/archive_done_tasks
+=== RUN   TestArchiveWithDuplicates/verify_done_task_removed_from_todo.txt
+=== RUN   TestArchiveWithDuplicates/verify_done_task_in_done.txt
+=== RUN   TestArchiveWithDuplicates/list_after_archive
+--- PASS: TestArchiveWithDuplicates (0.01s)
+    --- PASS: TestArchiveWithDuplicates/archive_done_tasks (0.00s)
+    --- PASS: TestArchiveWithDuplicates/verify_done_task_removed_from_todo.txt (0.00s)
+    --- PASS: TestArchiveWithDuplicates/verify_done_task_in_done.txt (0.00s)
+    --- PASS: TestArchiveWithDuplicates/list_after_archive (0.00s)
+=== RUN   TestArchiveWarning
+=== RUN   TestArchiveWarning/archive_with_no_done_tasks
+--- PASS: TestArchiveWarning (0.00s)
+    --- PASS: TestArchiveWarning/archive_with_no_done_tasks (0.00s)
+=== RUN   TestDeduplicate
+=== RUN   TestDeduplicate/deduplicate_removes_duplicates
+=== RUN   TestDeduplicate/list_after_deduplicate
+--- PASS: TestDeduplicate (0.01s)
+    --- PASS: TestDeduplicate/deduplicate_removes_duplicates (0.00s)
+    --- PASS: TestDeduplicate/list_after_deduplicate (0.00s)
+=== RUN   TestDeduplicateWithPriority
+--- PASS: TestDeduplicateWithPriority (0.00s)
+=== RUN   TestReport
+=== RUN   TestReport/report_shows_statistics
+--- PASS: TestReport (0.00s)
+    --- PASS: TestReport/report_shows_statistics (0.00s)
+=== RUN   TestMultilineAdd
+    t2000_multiline_test.go:14: Initial file content: ''
+    t2000_multiline_test.go:18: Add command output: '1 task one
+        2 task two
+        3 task three
+        TODO: 3 tasks added.'
+--- PASS: TestMultilineAdd (0.00s)
+=== RUN   TestMultilineHandling
+    t2000_multiline_test.go:104: TODO: Test multiline task text handling
+--- SKIP: TestMultilineHandling (0.00s)
+=== RUN   TestHelp
+=== RUN   TestHelp/help_command_shows_usage
+=== RUN   TestHelp/--help_flag_shows_usage
+--- PASS: TestHelp (0.00s)
+    --- PASS: TestHelp/help_command_shows_usage (0.00s)
+    --- PASS: TestHelp/--help_flag_shows_usage (0.00s)
+=== RUN   TestCommandHelp
+=== RUN   TestCommandHelp/help_for_add_command
+=== RUN   TestCommandHelp/help_for_list_command
+--- PASS: TestCommandHelp (0.00s)
+    --- PASS: TestCommandHelp/help_for_add_command (0.00s)
+    --- PASS: TestCommandHelp/help_for_list_command (0.00s)
+=== RUN   TestShortHelp
+=== RUN   TestShortHelp/shorthelp_command_shows_condensed_help
+--- PASS: TestShortHelp (0.01s)
+    --- PASS: TestShortHelp/shorthelp_command_shows_condensed_help (0.00s)
+PASS
+ok  	github.com/gkarolyi/togodo/tests	0.902s
+=== RUN   TestFilter_Apply
+=== RUN   TestFilter_Apply/filter_by_done_status
+=== RUN   TestFilter_Apply/filter_by_priority
+=== RUN   TestFilter_Apply/filter_by_project
+=== RUN   TestFilter_Apply/filter_by_context
+=== RUN   TestFilter_Apply/filter_by_text_content
+=== RUN   TestFilter_Apply/filter_by_multiple_criteria
+=== RUN   TestFilter_Apply/empty_filter_returns_all_todos
+--- PASS: TestFilter_Apply (0.00s)
+    --- PASS: TestFilter_Apply/filter_by_done_status (0.00s)
+    --- PASS: TestFilter_Apply/filter_by_priority (0.00s)
+    --- PASS: TestFilter_Apply/filter_by_project (0.00s)
+    --- PASS: TestFilter_Apply/filter_by_context (0.00s)
+    --- PASS: TestFilter_Apply/filter_by_text_content (0.00s)
+    --- PASS: TestFilter_Apply/filter_by_multiple_criteria (0.00s)
+    --- PASS: TestFilter_Apply/empty_filter_returns_all_todos (0.00s)
+=== RUN   TestFilter_matches
+=== RUN   TestFilter_matches/matches_done_status
+=== RUN   TestFilter_matches/matches_priority
+=== RUN   TestFilter_matches/matches_project
+=== RUN   TestFilter_matches/matches_context
+=== RUN   TestFilter_matches/matches_text_content
+=== RUN   TestFilter_matches/does_not_match_non-matching_done_status
+=== RUN   TestFilter_matches/does_not_match_non-matching_priority
+=== RUN   TestFilter_matches/does_not_match_non-matching_project
+=== RUN   TestFilter_matches/does_not_match_non-matching_context
+=== RUN   TestFilter_matches/does_not_match_non-matching_text_content
+--- PASS: TestFilter_matches (0.00s)
+    --- PASS: TestFilter_matches/matches_done_status (0.00s)
+    --- PASS: TestFilter_matches/matches_priority (0.00s)
+    --- PASS: TestFilter_matches/matches_project (0.00s)
+    --- PASS: TestFilter_matches/matches_context (0.00s)
+    --- PASS: TestFilter_matches/matches_text_content (0.00s)
+    --- PASS: TestFilter_matches/does_not_match_non-matching_done_status (0.00s)
+    --- PASS: TestFilter_matches/does_not_match_non-matching_priority (0.00s)
+    --- PASS: TestFilter_matches/does_not_match_non-matching_project (0.00s)
+    --- PASS: TestFilter_matches/does_not_match_non-matching_context (0.00s)
+    --- PASS: TestFilter_matches/does_not_match_non-matching_text_content (0.00s)
+=== RUN   TestFileReader_Read
+=== RUN   TestFileReader_Read/empty_file
+=== RUN   TestFileReader_Read/single_todo
+=== RUN   TestFileReader_Read/multiple_todos
+=== RUN   TestFileReader_Read/with_empty_lines
+=== RUN   TestFileReader_Read/non-existent_file
+--- PASS: TestFileReader_Read (0.00s)
+    --- PASS: TestFileReader_Read/empty_file (0.00s)
+    --- PASS: TestFileReader_Read/single_todo (0.00s)
+    --- PASS: TestFileReader_Read/multiple_todos (0.00s)
+    --- PASS: TestFileReader_Read/with_empty_lines (0.00s)
+    --- PASS: TestFileReader_Read/non-existent_file (0.00s)
+=== RUN   TestBufferReader_Read
+=== RUN   TestBufferReader_Read/empty_content
+=== RUN   TestBufferReader_Read/single_todo
+=== RUN   TestBufferReader_Read/multiple_todos
+=== RUN   TestBufferReader_Read/with_empty_lines
+--- PASS: TestBufferReader_Read (0.00s)
+    --- PASS: TestBufferReader_Read/empty_content (0.00s)
+    --- PASS: TestBufferReader_Read/single_todo (0.00s)
+    --- PASS: TestBufferReader_Read/multiple_todos (0.00s)
+    --- PASS: TestBufferReader_Read/with_empty_lines (0.00s)
+=== RUN   TestNewFileRepository
+=== RUN   TestNewFileRepository/with_a_buffer_reader_and_writer
+=== RUN   TestNewFileRepository/with_a_buffer_reader_and_writer/creates_new_repository_with_empty_buffer
+=== RUN   TestNewFileRepository/with_a_buffer_reader_and_writer/creates_new_repository_with_existing_content
+=== RUN   TestNewFileRepository/with_a_file_reader_and_writer
+=== RUN   TestNewFileRepository/with_a_file_reader_and_writer/creates_new_repository_with_empty_file
+=== RUN   TestNewFileRepository/with_a_file_reader_and_writer/creates_new_repository_with_existing_content
+--- PASS: TestNewFileRepository (0.00s)
+    --- PASS: TestNewFileRepository/with_a_buffer_reader_and_writer (0.00s)
+        --- PASS: TestNewFileRepository/with_a_buffer_reader_and_writer/creates_new_repository_with_empty_buffer (0.00s)
+        --- PASS: TestNewFileRepository/with_a_buffer_reader_and_writer/creates_new_repository_with_existing_content (0.00s)
+    --- PASS: TestNewFileRepository/with_a_file_reader_and_writer (0.00s)
+        --- PASS: TestNewFileRepository/with_a_file_reader_and_writer/creates_new_repository_with_empty_file (0.00s)
+        --- PASS: TestNewFileRepository/with_a_file_reader_and_writer/creates_new_repository_with_existing_content (0.00s)
+=== RUN   TestRepository_Add
+=== RUN   TestRepository_Add/adds_new_todo
+--- PASS: TestRepository_Add (0.00s)
+    --- PASS: TestRepository_Add/adds_new_todo (0.00s)
+=== RUN   TestRepository_Remove
+=== RUN   TestRepository_Remove/removes_todo_by_index
+=== RUN   TestRepository_Remove/returns_error_for_invalid_index
+--- PASS: TestRepository_Remove (0.00s)
+    --- PASS: TestRepository_Remove/removes_todo_by_index (0.00s)
+    --- PASS: TestRepository_Remove/returns_error_for_invalid_index (0.00s)
+=== RUN   TestRepository_Update
+=== RUN   TestRepository_Update/updates_todo_by_index
+=== RUN   TestRepository_Update/returns_error_for_invalid_index
+--- PASS: TestRepository_Update (0.00s)
+    --- PASS: TestRepository_Update/updates_todo_by_index (0.00s)
+    --- PASS: TestRepository_Update/returns_error_for_invalid_index (0.00s)
+=== RUN   TestRepository_ToggleDone
+=== RUN   TestRepository_ToggleDone/sets_a_not_done_todo_to_done
+=== RUN   TestRepository_ToggleDone/sets_a_done_todo_to_not_done
+--- PASS: TestRepository_ToggleDone (0.00s)
+    --- PASS: TestRepository_ToggleDone/sets_a_not_done_todo_to_done (0.00s)
+    --- PASS: TestRepository_ToggleDone/sets_a_done_todo_to_not_done (0.00s)
+=== RUN   TestRepository_SetPriority
+=== RUN   TestRepository_SetPriority/sets_priority_for_a_todo
+=== RUN   TestRepository_SetPriority/returns_error_for_invalid_index
+--- PASS: TestRepository_SetPriority (0.00s)
+    --- PASS: TestRepository_SetPriority/sets_priority_for_a_todo (0.00s)
+    --- PASS: TestRepository_SetPriority/returns_error_for_invalid_index (0.00s)
+=== RUN   TestRepository_Filter
+=== RUN   TestRepository_Filter/filters_todos_with_a_combined_filter
+--- PASS: TestRepository_Filter (0.00s)
+    --- PASS: TestRepository_Filter/filters_todos_with_a_combined_filter (0.00s)
+=== RUN   TestRepository_Search
+=== RUN   TestRepository_Search/searches_todos_by_text
+=== RUN   TestRepository_Search/returns_empty_list_for_non-matching_query
+--- PASS: TestRepository_Search (0.00s)
+    --- PASS: TestRepository_Search/searches_todos_by_text (0.00s)
+    --- PASS: TestRepository_Search/returns_empty_list_for_non-matching_query (0.00s)
+=== RUN   TestRepository_Sort
+=== RUN   TestRepository_Sort/sorts_todos_by_text_ascending_with_done_items_last
+=== RUN   TestRepository_Sort/sorts_todos_by_text_descending_with_done_items_first
+=== RUN   TestRepository_Sort/nil_sort_uses_default_sort_(ascending_with_done_items_last)
+--- PASS: TestRepository_Sort (0.00s)
+    --- PASS: TestRepository_Sort/sorts_todos_by_text_ascending_with_done_items_last (0.00s)
+    --- PASS: TestRepository_Sort/sorts_todos_by_text_descending_with_done_items_first (0.00s)
+    --- PASS: TestRepository_Sort/nil_sort_uses_default_sort_(ascending_with_done_items_last) (0.00s)
+=== RUN   TestRepository_ListProjects
+=== RUN   TestRepository_ListProjects/returns_unique_sorted_projects
+--- PASS: TestRepository_ListProjects (0.00s)
+    --- PASS: TestRepository_ListProjects/returns_unique_sorted_projects (0.00s)
+=== RUN   TestRepository_ListContexts
+=== RUN   TestRepository_ListContexts/returns_unique_sorted_contexts
+--- PASS: TestRepository_ListContexts (0.00s)
+    --- PASS: TestRepository_ListContexts/returns_unique_sorted_contexts (0.00s)
+=== RUN   TestRepository_Get
+=== RUN   TestRepository_Get/gets_todo_by_index
+=== RUN   TestRepository_Get/returns_error_for_invalid_index
+=== RUN   TestRepository_Get/returns_error_for_negative_index
+--- PASS: TestRepository_Get (0.00s)
+    --- PASS: TestRepository_Get/gets_todo_by_index (0.00s)
+    --- PASS: TestRepository_Get/returns_error_for_invalid_index (0.00s)
+    --- PASS: TestRepository_Get/returns_error_for_negative_index (0.00s)
+=== RUN   TestRepository_Save
+=== RUN   TestRepository_Save/saves_todos_to_buffer
+--- PASS: TestRepository_Save (0.00s)
+    --- PASS: TestRepository_Save/saves_todos_to_buffer (0.00s)
+=== RUN   TestSort_Apply
+=== RUN   TestSort_Apply/basic_text_sorting_with_done_items_last_(ascending)
+=== RUN   TestSort_Apply/basic_text_sorting_with_done_items_first_(descending)
+=== RUN   TestSort_Apply/text_sorting_with_same_text_but_different_done_status_(ascending)
+=== RUN   TestSort_Apply/text_sorting_with_same_text_but_different_done_status_(descending)
+=== RUN   TestSort_Apply/text_sorting_with_special_characters_(ascending)
+=== RUN   TestSort_Apply/text_sorting_with_special_characters_(descending)
+=== RUN   TestSort_Apply/text_sorting_with_mixed_case_(ascending)
+=== RUN   TestSort_Apply/text_sorting_with_mixed_case_(descending)
+=== RUN   TestSort_Apply/empty_input
+=== RUN   TestSort_Apply/single_todo
+=== RUN   TestSort_Apply/all_done_todos_(ascending)
+=== RUN   TestSort_Apply/all_done_todos_(descending)
+=== RUN   TestSort_Apply/all_not_done_todos_(ascending)
+=== RUN   TestSort_Apply/all_not_done_todos_(descending)
+--- PASS: TestSort_Apply (0.00s)
+    --- PASS: TestSort_Apply/basic_text_sorting_with_done_items_last_(ascending) (0.00s)
+    --- PASS: TestSort_Apply/basic_text_sorting_with_done_items_first_(descending) (0.00s)
+    --- PASS: TestSort_Apply/text_sorting_with_same_text_but_different_done_status_(ascending) (0.00s)
+    --- PASS: TestSort_Apply/text_sorting_with_same_text_but_different_done_status_(descending) (0.00s)
+    --- PASS: TestSort_Apply/text_sorting_with_special_characters_(ascending) (0.00s)
+    --- PASS: TestSort_Apply/text_sorting_with_special_characters_(descending) (0.00s)
+    --- PASS: TestSort_Apply/text_sorting_with_mixed_case_(ascending) (0.00s)
+    --- PASS: TestSort_Apply/text_sorting_with_mixed_case_(descending) (0.00s)
+    --- PASS: TestSort_Apply/empty_input (0.00s)
+    --- PASS: TestSort_Apply/single_todo (0.00s)
+    --- PASS: TestSort_Apply/all_done_todos_(ascending) (0.00s)
+    --- PASS: TestSort_Apply/all_done_todos_(descending) (0.00s)
+    --- PASS: TestSort_Apply/all_not_done_todos_(ascending) (0.00s)
+    --- PASS: TestSort_Apply/all_not_done_todos_(descending) (0.00s)
+=== RUN   TestNewTodo
+=== RUN   TestNewTodo/simple_todo
+=== RUN   TestNewTodo/done_todo
+=== RUN   TestNewTodo/with_priority
+=== RUN   TestNewTodo/with_projects
+=== RUN   TestNewTodo/with_contexts
+=== RUN   TestNewTodo/complete_todo
+--- PASS: TestNewTodo (0.00s)
+    --- PASS: TestNewTodo/simple_todo (0.00s)
+    --- PASS: TestNewTodo/done_todo (0.00s)
+    --- PASS: TestNewTodo/with_priority (0.00s)
+    --- PASS: TestNewTodo/with_projects (0.00s)
+    --- PASS: TestNewTodo/with_contexts (0.00s)
+    --- PASS: TestNewTodo/complete_todo (0.00s)
+=== RUN   TestTodo_Prioritised
+=== RUN   TestTodo_Prioritised/no_priority
+=== RUN   TestTodo_Prioritised/with_priority
+=== RUN   TestTodo_Prioritised/completed_task
+--- PASS: TestTodo_Prioritised (0.00s)
+    --- PASS: TestTodo_Prioritised/no_priority (0.00s)
+    --- PASS: TestTodo_Prioritised/with_priority (0.00s)
+    --- PASS: TestTodo_Prioritised/completed_task (0.00s)
+=== RUN   TestTodo_ToggleDone
+=== RUN   TestTodo_ToggleDone/not_done_to_done
+=== RUN   TestTodo_ToggleDone/done_to_not_done
+=== RUN   TestTodo_ToggleDone/with_priority
+=== RUN   TestTodo_ToggleDone/completed_task
+--- PASS: TestTodo_ToggleDone (0.00s)
+    --- PASS: TestTodo_ToggleDone/not_done_to_done (0.00s)
+    --- PASS: TestTodo_ToggleDone/done_to_not_done (0.00s)
+    --- PASS: TestTodo_ToggleDone/with_priority (0.00s)
+    --- PASS: TestTodo_ToggleDone/completed_task (0.00s)
+=== RUN   TestTodo_SetPriority
+=== RUN   TestTodo_SetPriority/set_priority
+=== RUN   TestTodo_SetPriority/change_priority
+=== RUN   TestTodo_SetPriority/remove_priority
+=== RUN   TestTodo_SetPriority/set_priority_on_done_task
+=== RUN   TestTodo_SetPriority/change_priority_on_done_task
+=== RUN   TestTodo_SetPriority/remove_priority_from_done_task
+--- PASS: TestTodo_SetPriority (0.00s)
+    --- PASS: TestTodo_SetPriority/set_priority (0.00s)
+    --- PASS: TestTodo_SetPriority/change_priority (0.00s)
+    --- PASS: TestTodo_SetPriority/remove_priority (0.00s)
+    --- PASS: TestTodo_SetPriority/set_priority_on_done_task (0.00s)
+    --- PASS: TestTodo_SetPriority/change_priority_on_done_task (0.00s)
+    --- PASS: TestTodo_SetPriority/remove_priority_from_done_task (0.00s)
+=== RUN   TestTodo_Equals
+=== RUN   TestTodo_Equals/equal_todos
+=== RUN   TestTodo_Equals/different_text
+=== RUN   TestTodo_Equals/different_done_status
+=== RUN   TestTodo_Equals/different_priority
+=== RUN   TestTodo_Equals/different_projects
+=== RUN   TestTodo_Equals/different_contexts
+--- PASS: TestTodo_Equals (0.00s)
+    --- PASS: TestTodo_Equals/equal_todos (0.00s)
+    --- PASS: TestTodo_Equals/different_text (0.00s)
+    --- PASS: TestTodo_Equals/different_done_status (0.00s)
+    --- PASS: TestTodo_Equals/different_priority (0.00s)
+    --- PASS: TestTodo_Equals/different_projects (0.00s)
+    --- PASS: TestTodo_Equals/different_contexts (0.00s)
+=== RUN   TestTodo_SetContexts
+=== RUN   TestTodo_SetContexts/set_empty_contexts
+=== RUN   TestTodo_SetContexts/set_new_contexts
+=== RUN   TestTodo_SetContexts/replace_existing_contexts
+--- PASS: TestTodo_SetContexts (0.00s)
+    --- PASS: TestTodo_SetContexts/set_empty_contexts (0.00s)
+    --- PASS: TestTodo_SetContexts/set_new_contexts (0.00s)
+    --- PASS: TestTodo_SetContexts/replace_existing_contexts (0.00s)
+=== RUN   TestTodo_SetProjects
+=== RUN   TestTodo_SetProjects/set_empty_projects
+=== RUN   TestTodo_SetProjects/set_new_projects
+=== RUN   TestTodo_SetProjects/replace_existing_projects
+--- PASS: TestTodo_SetProjects (0.00s)
+    --- PASS: TestTodo_SetProjects/set_empty_projects (0.00s)
+    --- PASS: TestTodo_SetProjects/set_new_projects (0.00s)
+    --- PASS: TestTodo_SetProjects/replace_existing_projects (0.00s)
+=== RUN   TestTodo_AddContext
+=== RUN   TestTodo_AddContext/add_to_empty_contexts
+=== RUN   TestTodo_AddContext/add_to_existing_contexts
+=== RUN   TestTodo_AddContext/do_not_add_duplicate_context
+--- PASS: TestTodo_AddContext (0.00s)
+    --- PASS: TestTodo_AddContext/add_to_empty_contexts (0.00s)
+    --- PASS: TestTodo_AddContext/add_to_existing_contexts (0.00s)
+    --- PASS: TestTodo_AddContext/do_not_add_duplicate_context (0.00s)
+=== RUN   TestTodo_AddProject
+=== RUN   TestTodo_AddProject/add_to_empty_projects
+=== RUN   TestTodo_AddProject/add_to_existing_projects
+=== RUN   TestTodo_AddProject/do_not_add_duplicate_project
+--- PASS: TestTodo_AddProject (0.00s)
+    --- PASS: TestTodo_AddProject/add_to_empty_projects (0.00s)
+    --- PASS: TestTodo_AddProject/add_to_existing_projects (0.00s)
+    --- PASS: TestTodo_AddProject/do_not_add_duplicate_project (0.00s)
+=== RUN   TestTodo_RemoveContext
+=== RUN   TestTodo_RemoveContext/remove_existing_context
+=== RUN   TestTodo_RemoveContext/remove_non-existent_context
+=== RUN   TestTodo_RemoveContext/remove_from_empty_contexts
+--- PASS: TestTodo_RemoveContext (0.00s)
+    --- PASS: TestTodo_RemoveContext/remove_existing_context (0.00s)
+    --- PASS: TestTodo_RemoveContext/remove_non-existent_context (0.00s)
+    --- PASS: TestTodo_RemoveContext/remove_from_empty_contexts (0.00s)
+=== RUN   TestTodo_RemoveProject
+=== RUN   TestTodo_RemoveProject/remove_existing_project
+=== RUN   TestTodo_RemoveProject/remove_non-existent_project
+=== RUN   TestTodo_RemoveProject/remove_from_empty_projects
+--- PASS: TestTodo_RemoveProject (0.00s)
+    --- PASS: TestTodo_RemoveProject/remove_existing_project (0.00s)
+    --- PASS: TestTodo_RemoveProject/remove_non-existent_project (0.00s)
+    --- PASS: TestTodo_RemoveProject/remove_from_empty_projects (0.00s)
+=== RUN   TestParseDates
+=== RUN   TestParseDates/incomplete_task_with_creation_date
+=== RUN   TestParseDates/incomplete_task_with_priority_and_creation_date
+=== RUN   TestParseDates/completed_task_with_completion_date_only
+=== RUN   TestParseDates/completed_task_with_both_dates
+=== RUN   TestParseDates/completed_task_with_priority_and_both_dates
+=== RUN   TestParseDates/task_without_dates
+--- PASS: TestParseDates (0.00s)
+    --- PASS: TestParseDates/incomplete_task_with_creation_date (0.00s)
+    --- PASS: TestParseDates/incomplete_task_with_priority_and_creation_date (0.00s)
+    --- PASS: TestParseDates/completed_task_with_completion_date_only (0.00s)
+    --- PASS: TestParseDates/completed_task_with_both_dates (0.00s)
+    --- PASS: TestParseDates/completed_task_with_priority_and_both_dates (0.00s)
+    --- PASS: TestParseDates/task_without_dates (0.00s)
+=== RUN   TestToggleDoneWithCompletionDate
+=== RUN   TestToggleDoneWithCompletionDate/simple_task
+=== RUN   TestToggleDoneWithCompletionDate/task_with_creation_date
+=== RUN   TestToggleDoneWithCompletionDate/task_with_priority
+=== RUN   TestToggleDoneWithCompletionDate/task_with_priority_and_creation_date
+--- PASS: TestToggleDoneWithCompletionDate (0.00s)
+    --- PASS: TestToggleDoneWithCompletionDate/simple_task (0.00s)
+    --- PASS: TestToggleDoneWithCompletionDate/task_with_creation_date (0.00s)
+    --- PASS: TestToggleDoneWithCompletionDate/task_with_priority (0.00s)
+    --- PASS: TestToggleDoneWithCompletionDate/task_with_priority_and_creation_date (0.00s)
+=== RUN   TestFileWriter_Write
+=== RUN   TestFileWriter_Write/empty_todos
+=== RUN   TestFileWriter_Write/single_todo
+=== RUN   TestFileWriter_Write/multiple_todos
+=== RUN   TestFileWriter_Write/read-only_directory
+--- PASS: TestFileWriter_Write (0.00s)
+    --- PASS: TestFileWriter_Write/empty_todos (0.00s)
+    --- PASS: TestFileWriter_Write/single_todo (0.00s)
+    --- PASS: TestFileWriter_Write/multiple_todos (0.00s)
+    --- PASS: TestFileWriter_Write/read-only_directory (0.00s)
+=== RUN   TestBufferWriter_Write
+=== RUN   TestBufferWriter_Write/empty_todos
+=== RUN   TestBufferWriter_Write/single_todo
+=== RUN   TestBufferWriter_Write/multiple_todos
+--- PASS: TestBufferWriter_Write (0.00s)
+    --- PASS: TestBufferWriter_Write/empty_todos (0.00s)
+    --- PASS: TestBufferWriter_Write/single_todo (0.00s)
+    --- PASS: TestBufferWriter_Write/multiple_todos (0.00s)
+PASS
+ok  	github.com/gkarolyi/togodo/todotxtlib	0.791s

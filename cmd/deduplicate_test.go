@@ -146,17 +146,15 @@ func TestDeduplicateCmd_WithPriorities(t *testing.T) {
 	result, err := Deduplicate(repo)
 	assertNoError(t, err)
 
-	// Verify no tasks were removed (text is different due to priority)
-	if result.RemovedCount != 0 {
-		t.Errorf("Expected 0 removed duplicates, got %d", result.RemovedCount)
+	// Verify 2 tasks were removed (keeping the highest priority A)
+	if result.RemovedCount != 2 {
+		t.Errorf("Expected 2 removed duplicates, got %d", result.RemovedCount)
 	}
 
 	output := getRepositoryString(t, repo, buf)
 
-	// All three should remain as the text representation differs
-	expectedOutput := "(A) important task\n" +
-		"(B) important task\n" +
-		"important task\n"
+	// Should only keep the highest priority task (A)
+	expectedOutput := "(A) important task\n"
 
 	if output != expectedOutput {
 		t.Errorf("Expected output:\n%s\nGot:\n%s", expectedOutput, output)
