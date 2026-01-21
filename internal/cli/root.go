@@ -77,6 +77,7 @@ func NewRootCmd(repo todotxtlib.TodoRepository) *cobra.Command {
 	rootCmd.AddCommand(NewReportCmd(repo))
 	rootCmd.AddCommand(NewMoveCmd(repo))
 	rootCmd.AddCommand(NewConfigCmd())
+	rootCmd.AddCommand(NewShorthelpCmd(rootCmd))
 
 	return rootCmd
 }

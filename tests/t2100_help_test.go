@@ -67,10 +67,33 @@ func TestCommandHelp(t *testing.T) {
 // TestShortHelp tests short/condensed help output
 // Ported from: t2120-shorthelp.sh
 func TestShortHelp(t *testing.T) {
-	t.Skip("TODO: Implement shorthelp command for condensed help")
+	env := SetupTestEnv(t)
 
-	// env := SetupTestEnv(t)
-	//
-	// output, code := env.RunCommand("shorthelp")
-	// // Should show abbreviated command list
+	t.Run("shorthelp command shows condensed help", func(t *testing.T) {
+		output, code := env.RunCommand("shorthelp")
+		if code != 0 {
+			t.Errorf("Expected exit code 0, got %d", code)
+		}
+
+		// Should show abbreviated command list
+		if !strings.Contains(output, "Available commands:") {
+			t.Errorf("Shorthelp should show command list, got:\n%s", output)
+		}
+
+		// Should mention key commands
+		if !strings.Contains(output, "add") {
+			t.Errorf("Shorthelp should mention 'add' command, got:\n%s", output)
+		}
+		if !strings.Contains(output, "list") {
+			t.Errorf("Shorthelp should mention 'list' command, got:\n%s", output)
+		}
+		if !strings.Contains(output, "do") {
+			t.Errorf("Shorthelp should mention 'do' command, got:\n%s", output)
+		}
+
+		// Should be more concise than full help (no detailed descriptions)
+		if strings.Contains(output, "Long:") {
+			t.Errorf("Shorthelp should not include long descriptions, got:\n%s", output)
+		}
+	})
 }
