@@ -11,6 +11,7 @@ import (
 	"github.com/gkarolyi/togodo/internal/config"
 	"github.com/gkarolyi/togodo/todotxtlib"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // TestEnvironment holds the test setup for integration tests
@@ -29,6 +30,10 @@ type TestEnvironment struct {
 // SetupTestEnv creates a new test environment with buffer-based repository
 func SetupTestEnv(t *testing.T) *TestEnvironment {
 	t.Helper()
+
+	// Reset config to defaults for test isolation
+	// This prevents config changes from one test affecting others
+	viper.Set("auto_add_creation_date", false)
 
 	// Create buffer for todo.txt content
 	buffer := &bytes.Buffer{}
