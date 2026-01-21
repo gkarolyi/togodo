@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-var projectRe = regexp.MustCompile(`\+(\w+)`)
+var projectRe = regexp.MustCompile(`\+\S+`)
 var contextRe = regexp.MustCompile(`@\S+`)
 var priorityRe = regexp.MustCompile(`^\(([A-Z])\)`)
 var doneRe = regexp.MustCompile(`^x `)
