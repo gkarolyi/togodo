@@ -65,12 +65,15 @@ func readFromReader(r io.Reader) ([]Todo, error) {
 	lines := strings.Split(string(content), "\n")
 	todos := make([]Todo, 0, len(lines))
 
+	lineNumber := 1
 	for _, line := range lines {
 		if line == "" {
 			continue
 		}
 		todo := NewTodo(line)
+		todo.LineNumber = lineNumber
 		todos = append(todos, todo)
+		lineNumber++
 	}
 
 	return todos, nil

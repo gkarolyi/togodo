@@ -23,13 +23,13 @@ func Listpri(repo todotxtlib.TodoRepository, priority string) (ListpriResult, er
 	// Filter by priority
 	var filtered []todotxtlib.Todo
 	var lineNumbers []int
-	for i, todo := range allTodos {
+	for _, todo := range allTodos {
 		if !todo.Done && todo.Priority != "" {
 			// If no priority specified, include all prioritized todos
 			// Otherwise, only include matching priority
 			if priority == "" || todo.Priority == priority {
 				filtered = append(filtered, todo)
-				lineNumbers = append(lineNumbers, i+1)
+				lineNumbers = append(lineNumbers, todo.LineNumber)
 			}
 		}
 	}

@@ -50,8 +50,8 @@ func (f Filter) matches(todo Todo) bool {
 		return false
 	}
 
-	// Check text content
-	if f.Text != "" && !strings.Contains(todo.Text, f.Text) {
+	// Check text content (case-insensitive)
+	if f.Text != "" && !strings.Contains(strings.ToLower(todo.Text), strings.ToLower(f.Text)) {
 		return false
 	}
 

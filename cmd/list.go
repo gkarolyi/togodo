@@ -14,6 +14,9 @@ type ListResult struct {
 
 // List lists todos, optionally filtering by search query
 func List(repo todotxtlib.TodoRepository, searchQuery string) (ListResult, error) {
+	// Sort todos using default sort (priority + alphabetical)
+	repo.Sort(nil)
+
 	// Get total count
 	allTodos, err := repo.ListAll()
 	if err != nil {
@@ -23,7 +26,6 @@ func List(repo todotxtlib.TodoRepository, searchQuery string) (ListResult, error
 
 	// Filter if search query provided
 	var todos []todotxtlib.Todo
-	var lineNumbers []int
 	if searchQuery != "" {
 		filter := todotxtlib.Filter{Text: searchQuery}
 		filteredTodos, err := repo.Filter(filter)
@@ -31,22 +33,14 @@ func List(repo todotxtlib.TodoRepository, searchQuery string) (ListResult, error
 			return ListResult{}, err
 		}
 		todos = filteredTodos
-
-		// Find line numbers in original list
-		for _, filteredTodo := range filteredTodos {
-			for i, originalTodo := range allTodos {
-				if originalTodo.Text == filteredTodo.Text {
-					lineNumbers = append(lineNumbers, i+1)
-					break
-				}
-			}
-		}
 	} else {
 		todos = allTodos
-		// Generate sequential line numbers for unfiltered list
-		for i := range allTodos {
-			lineNumbers = append(lineNumbers, i+1)
-		}
+	}
+
+	// Extract line numbers from todos
+	lineNumbers := make([]int, len(todos))
+	for i, todo := range todos {
+		lineNumbers[i] = todo.LineNumber
 	}
 
 	return ListResult{

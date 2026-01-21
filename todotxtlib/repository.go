@@ -45,6 +45,8 @@ func NewFileRepository(reader Reader, writer Writer) (TodoRepository, error) {
 // Add adds a todo to the repository
 func (r *FileRepository) Add(todoText string) (Todo, error) {
 	newTodo := NewTodo(todoText)
+	// Assign the next available line number
+	newTodo.LineNumber = len(r.todos) + 1
 	r.todos = append(r.todos, newTodo)
 	return newTodo, nil
 }

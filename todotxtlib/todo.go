@@ -13,11 +13,12 @@ var doneRe = regexp.MustCompile(`^x `)
 var tagRe = regexp.MustCompile(`\w+:\S+`)
 
 type Todo struct {
-	Text     string
-	Done     bool
-	Priority string
-	Projects []string
-	Contexts []string
+	Text       string
+	Done       bool
+	Priority   string
+	Projects   []string
+	Contexts   []string
+	LineNumber int // Line number in the file (1-indexed)
 }
 
 func NewTodo(text string) Todo {

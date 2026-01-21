@@ -34,19 +34,6 @@ func Add(repo todotxtlib.TodoRepository, args []string) (AddResult, error) {
 		return AddResult{}, fmt.Errorf("failed to save: %w", err)
 	}
 
-	// Find line number after sort
-	allTodos, err := repo.ListAll()
-	if err != nil {
-		return AddResult{}, fmt.Errorf("failed to list todos: %w", err)
-	}
-
-	lineNumber := 1
-	for i, t := range allTodos {
-		if t.Text == todo.Text && t.Priority == todo.Priority {
-			lineNumber = i + 1
-			break
-		}
-	}
-
-	return AddResult{Todo: todo, LineNumber: lineNumber}, nil
+	// Return the todo with its assigned line number
+	return AddResult{Todo: todo, LineNumber: todo.LineNumber}, nil
 }
