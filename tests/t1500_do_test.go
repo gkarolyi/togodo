@@ -96,12 +96,34 @@ func TestDoWithFlags(t *testing.T) {
 	// Setup initial todos
 	env.WriteTodoFile("task one\ntask two\ntask three")
 
-	// TODO: Implement -p flag (plain output mode)
-	// TODO: Implement -a flag (don't auto-archive)
-
 	t.Run("mark done with auto-archive disabled", func(t *testing.T) {
-		t.Skip("TODO: Implement -a flag for no auto-archive")
-		// output, code := env.RunCommand("-a", "do", "3")
+		// Test -a flag (no auto-archive)
+		output, code := env.RunCommand("do", "-a", "3")
+		if code != 0 {
+			t.Errorf("Expected exit code 0, got %d", code)
+		}
+
+		// Verify output format includes completion date
+		// Expected format: "3 x YYYY-MM-DD task three\nTODO: 3 marked as done."
+		datePattern := regexp.MustCompile(`^3 x \d{4}-\d{2}-\d{2} task three\nTODO: 3 marked as done\.$`)
+		if !datePattern.MatchString(output) {
+			t.Errorf("Expected output matching pattern with completion date, got: %s", output)
+		}
+	})
+
+	t.Run("mark done with plain mode", func(t *testing.T) {
+		// Test -p flag (plain output mode)
+		output, code := env.RunCommand("do", "-p", "2")
+		if code != 0 {
+			t.Errorf("Expected exit code 0, got %d", code)
+		}
+
+		// Verify output format includes completion date
+		// Expected format: "2 x YYYY-MM-DD task two\nTODO: 2 marked as done."
+		datePattern := regexp.MustCompile(`^2 x \d{4}-\d{2}-\d{2} task two\nTODO: 2 marked as done\.$`)
+		if !datePattern.MatchString(output) {
+			t.Errorf("Expected output matching pattern with completion date, got: %s", output)
+		}
 	})
 }
 

@@ -12,7 +12,7 @@ import (
 
 // NewDoCmd creates a Cobra command for toggling todo completion
 func NewDoCmd(repo todotxtlib.TodoRepository) *cobra.Command {
-	return &cobra.Command{
+	doCmd := &cobra.Command{
 		Use:   "do ITEM#[,ITEM#,...]",
 		Short: "Mark todo item(s) as done (or undone)",
 		Long: `Toggles the completion status of one or more todo items.
@@ -29,6 +29,13 @@ togodo do 1,3,5
 		Args:    cobra.MinimumNArgs(1),
 		Aliases: []string{"x"},
 		RunE: func(command *cobra.Command, args []string) error {
+			// Get flag values
+			noAutoArchive, _ := command.Flags().GetBool("no-auto-archive")
+			plainMode, _ := command.Flags().GetBool("plain")
+
+			// TODO: Use flags when auto-archive feature is implemented
+			_ = noAutoArchive
+			_ = plainMode
 			// Parse line numbers - handle both space-separated and comma-separated
 			var lineNumbers []int
 			for _, arg := range args {
@@ -81,4 +88,10 @@ togodo do 1,3,5
 			return nil
 		},
 	}
+
+	// Add flags
+	doCmd.Flags().BoolP("no-auto-archive", "a", false, "Don't automatically archive completed tasks to done.txt")
+	doCmd.Flags().BoolP("plain", "p", false, "Plain output mode (no colors/formatting)")
+
+	return doCmd
 }
