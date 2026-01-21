@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/gkarolyi/togodo/cmd"
 	"github.com/gkarolyi/togodo/todotxtlib"
@@ -28,7 +29,29 @@ togodo add Buy milk and eggs
 			// Check if auto-dating is enabled
 			autoDate := viper.GetBool("auto_add_creation_date")
 
-			// Call business logic
+			// Join args to check for newlines
+			text := strings.Join(args, " ")
+
+			// If text contains newlines, use AddMultiple
+			if strings.Contains(text, "\n") {
+				result, err := cmd.AddMultiple(repo, text, autoDate)
+				if err != nil {
+					return err
+				}
+
+				// Format output - show each added task
+				for i, todo := range result.Todos {
+					fmt.Fprintf(command.OutOrStdout(), "%d %s\n", result.LineNumbers[i], todo.Text)
+				}
+				if len(result.Todos) == 1 {
+					fmt.Fprintf(command.OutOrStdout(), "TODO: %d added.\n", result.LineNumbers[0])
+				} else {
+					fmt.Fprintf(command.OutOrStdout(), "TODO: %d tasks added.\n", len(result.Todos))
+				}
+				return nil
+			}
+
+			// Single task - use regular Add
 			result, err := cmd.Add(repo, args, autoDate)
 			if err != nil {
 				return err

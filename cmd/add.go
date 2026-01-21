@@ -15,6 +15,12 @@ type AddResult struct {
 	LineNumber int
 }
 
+// AddMultilineResult contains the result of adding multiple tasks
+type AddMultilineResult struct {
+	Todos       []todotxtlib.Todo
+	LineNumbers []int
+}
+
 // Add adds a new todo task to the repository
 func Add(repo todotxtlib.TodoRepository, args []string, autoDate bool) (AddResult, error) {
 	if len(args) == 0 {
@@ -43,6 +49,49 @@ func Add(repo todotxtlib.TodoRepository, args []string, autoDate bool) (AddResul
 
 	// Return the todo with its assigned line number
 	return AddResult{Todo: todo, LineNumber: todo.LineNumber}, nil
+}
+
+// AddMultiple adds multiple tasks from text with embedded newlines
+func AddMultiple(repo todotxtlib.TodoRepository, text string, autoDate bool) (AddMultilineResult, error) {
+	// Split on newlines to create separate tasks
+	lines := strings.Split(text, "\n")
+
+	var todos []todotxtlib.Todo
+	var lineNumbers []int
+
+	for _, line := range lines {
+		// Skip empty lines
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+
+		// Add creation date if enabled and not already present
+		taskText := line
+		if autoDate {
+			taskText = addCreationDate(taskText)
+		}
+
+		// Add to repository
+		todo, err := repo.Add(taskText)
+		if err != nil {
+			return AddMultilineResult{}, fmt.Errorf("failed to add todo: %w", err)
+		}
+
+		todos = append(todos, todo)
+		lineNumbers = append(lineNumbers, todo.LineNumber)
+	}
+
+	// Sort and save after adding all tasks
+	repo.Sort(nil)
+	if err := repo.Save(); err != nil {
+		return AddMultilineResult{}, fmt.Errorf("failed to save: %w", err)
+	}
+
+	return AddMultilineResult{
+		Todos:       todos,
+		LineNumbers: lineNumbers,
+	}, nil
 }
 
 var priorityRe = regexp.MustCompile(`^\(([A-Z])\) `)
