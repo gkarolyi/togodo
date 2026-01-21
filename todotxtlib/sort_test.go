@@ -93,9 +93,9 @@ func TestSort_Apply(t *testing.T) {
 				{Text: "x done !important", Done: true},
 			},
 			expected: []Todo{
+				{Text: "regular todo", Done: false},
 				{Text: "!important todo", Done: false},
 				{Text: "#tagged todo", Done: false},
-				{Text: "regular todo", Done: false},
 				{Text: "x done !important", Done: true},
 			},
 		},
@@ -110,9 +110,9 @@ func TestSort_Apply(t *testing.T) {
 			},
 			expected: []Todo{
 				{Text: "x done !important", Done: true},
-				{Text: "regular todo", Done: false},
 				{Text: "#tagged todo", Done: false},
 				{Text: "!important todo", Done: false},
+				{Text: "regular todo", Done: false},
 			},
 		},
 		{
