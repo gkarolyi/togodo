@@ -70,9 +70,24 @@ func (s Sort) Apply(todos []Todo) {
 				}
 			}
 
-			// Third: Sort by text (case-insensitive alphabetically)
+			// Third: Sort by text (case-insensitive alphabetically, letters before symbols)
 			iText := strings.ToLower(todos[i].Text)
 			jText := strings.ToLower(todos[j].Text)
+
+			// Custom comparison: letters (a-z) should come before special characters
+			iIsLetter := len(iText) > 0 && ((iText[0] >= 'a' && iText[0] <= 'z') || (iText[0] >= 'A' && iText[0] <= 'Z'))
+			jIsLetter := len(jText) > 0 && ((jText[0] >= 'a' && jText[0] <= 'z') || (jText[0] >= 'A' && jText[0] <= 'Z'))
+
+			// If one starts with a letter and the other doesn't, letter comes first
+			if iIsLetter != jIsLetter {
+				if s.Order == Descending {
+					return !iIsLetter
+				} else {
+					return iIsLetter
+				}
+			}
+
+			// Otherwise, use standard string comparison
 			if s.Order == Descending {
 				return iText > jText
 			} else {
