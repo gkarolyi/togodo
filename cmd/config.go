@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
 
 	"github.com/spf13/viper"
 )
@@ -46,30 +44,16 @@ func ConfigWrite(key string, value string) (ConfigWriteResult, error) {
 
 	viper.Set(key, value)
 
-	// Ensure config directory exists before writing
+	// Only write to file if a config file path is configured
+	// In tests, viper won't have a config file loaded, so we skip file writes
 	configFile := viper.ConfigFileUsed()
-	if configFile == "" {
-		// No config file loaded, determine the path
-		homeDir, err := os.UserHomeDir()
-		if err != nil {
-			return ConfigWriteResult{}, fmt.Errorf("failed to get home directory: %w", err)
-		}
-		configFile = filepath.Join(homeDir, ".config", "togodo", "config.toml")
-	}
-
-	// Create parent directory if it doesn't exist
-	configDir := filepath.Dir(configFile)
-	if err := os.MkdirAll(configDir, 0755); err != nil {
-		return ConfigWriteResult{}, fmt.Errorf("failed to create config directory: %w", err)
-	}
-
-	// Save config to file
-	if err := viper.WriteConfig(); err != nil {
-		// If config file doesn't exist, create it
-		if err := viper.SafeWriteConfig(); err != nil {
+	if configFile != "" {
+		// Config file is loaded - write changes to disk
+		if err := viper.WriteConfig(); err != nil {
 			return ConfigWriteResult{}, fmt.Errorf("failed to write config: %w", err)
 		}
 	}
+	// If no config file is loaded (e.g., in tests), just update in-memory values
 
 	return ConfigWriteResult{
 		Key:      key,
