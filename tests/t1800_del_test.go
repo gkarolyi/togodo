@@ -66,13 +66,39 @@ TODO: 2 of 2 tasks shown`
 // TestDelMultiple tests deleting multiple tasks
 // Ported from: t1800-del.sh
 func TestDelMultiple(t *testing.T) {
-	t.Skip("TODO: Implement deleting multiple tasks")
+	env := SetupTestEnv(t)
+	env.WriteTodoFile("task1\ntask2\ntask3\ntask4")
 
-	// env := SetupTestEnv(t)
-	// env.WriteTodoFile("task1\ntask2\ntask3\ntask4")
-	//
-	// output, code := env.RunCommand("del", "4", "2")
-	// // Should delete tasks 4 and 2
+	t.Run("delete multiple tasks", func(t *testing.T) {
+		output, code := env.RunCommand("del", "4", "2")
+		if code != 0 {
+			t.Errorf("Expected exit code 0, got %d", code)
+		}
+
+		// Should show both deleted tasks
+		// Order matches deletion order: 4 first, then 2
+		expectedOutput := `4 task4
+2 task2
+TODO: 2 tasks deleted.`
+		if output != expectedOutput {
+			t.Errorf("Output mismatch\nExpected:\n%s\n\nGot:\n%s", expectedOutput, output)
+		}
+	})
+
+	t.Run("list after delete", func(t *testing.T) {
+		output, code := env.RunCommand("list")
+		expectedOutput := `1 task1
+2 task3
+--
+TODO: 2 of 2 tasks shown`
+		if code != 0 {
+			t.Errorf("Expected exit code 0, got %d", code)
+		}
+
+		if output != expectedOutput {
+			t.Errorf("Output mismatch\nExpected:\n%s\n\nGot:\n%s", expectedOutput, output)
+		}
+	})
 }
 
 // TestDelWithTerm tests deleting terms from a task

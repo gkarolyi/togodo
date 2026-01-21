@@ -67,7 +67,18 @@ func (r *FileRepository) Remove(index int) (Todo, error) {
 	}
 	todo := r.todos[index]
 	r.todos = append(r.todos[:index], r.todos[index+1:]...)
+
+	// Renumber remaining todos
+	r.renumber()
+
 	return todo, nil
+}
+
+// renumber assigns sequential line numbers to all todos
+func (r *FileRepository) renumber() {
+	for i := range r.todos {
+		r.todos[i].LineNumber = i + 1
+	}
 }
 
 // Update updates a todo in the repository
