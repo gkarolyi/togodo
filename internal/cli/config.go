@@ -39,7 +39,16 @@ togodo config
 				return nil
 			} else if len(args) == 2 {
 				// Two args: write config value (Task 2)
-				return fmt.Errorf("config write not yet implemented")
+				key := args[0]
+				value := args[1]
+
+				_, err := cmd.ConfigWrite(key, value)
+				if err != nil {
+					return err
+				}
+
+				fmt.Fprintln(command.OutOrStdout(), "Configuration updated")
+				return nil
 			} else {
 				return fmt.Errorf("too many arguments")
 			}

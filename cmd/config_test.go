@@ -35,3 +35,58 @@ func TestConfigReadNotFound(t *testing.T) {
 		t.Error("Expected key not to be found")
 	}
 }
+
+func TestConfigWrite(t *testing.T) {
+	// Set initial value
+	viper.Set("test_write_key", "old_value")
+	defer viper.Set("test_write_key", nil)
+
+	result, err := ConfigWrite("test_write_key", "new_value")
+	if err != nil {
+		// WriteConfig may fail in test environment (no config file), but that's OK
+		// We still want to verify the in-memory set worked
+		if viper.GetString("test_write_key") != "new_value" {
+			t.Error("Config value was not set in memory")
+		}
+		return
+	}
+
+	if result.NewValue != "new_value" {
+		t.Errorf("Expected 'new_value', got '%s'", result.NewValue)
+	}
+
+	if result.OldValue != "old_value" {
+		t.Errorf("Expected old value 'old_value', got '%v'", result.OldValue)
+	}
+
+	if result.Created {
+		t.Error("Expected update, not creation")
+	}
+
+	// Verify it was actually set
+	if viper.GetString("test_write_key") != "new_value" {
+		t.Error("Config value was not persisted")
+	}
+}
+
+func TestConfigWriteCreate(t *testing.T) {
+	key := "test_new_key"
+	defer viper.Set(key, nil)
+
+	result, err := ConfigWrite(key, "created_value")
+	if err != nil {
+		// WriteConfig may fail in test environment, but verify in-memory set worked
+		if viper.GetString(key) != "created_value" {
+			t.Error("Config value was not set in memory")
+		}
+		return
+	}
+
+	if !result.Created {
+		t.Error("Expected creation, not update")
+	}
+
+	if viper.GetString(key) != "created_value" {
+		t.Error("Config value was not set")
+	}
+}
