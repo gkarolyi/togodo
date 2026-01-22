@@ -90,11 +90,11 @@ func TestPrependWithAmpersand(t *testing.T) {
 // Ported from: t1400-prepend.sh "prepend with spaces"
 func TestPrependWithSpaces(t *testing.T) {
 	env := SetupTestEnv(t)
-	env.WriteTodoFile(`notice the   three   spaces and jump on hay`)
+	env.WriteTodoFile(`jump on hay`)
 
 	t.Run("prepend preserves multiple spaces", func(t *testing.T) {
-		output, code := env.RunCommand("prepend", "1", "really")
-		expectedOutput := "1 really notice the   three   spaces and jump on hay"
+		output, code := env.RunCommand("prepend", "1", "notice the   three   spaces and")
+		expectedOutput := "1 notice the   three   spaces and jump on hay"
 		if code != 0 {
 			t.Errorf("Expected exit code 0, got %d", code)
 		}
@@ -110,8 +110,8 @@ func TestPrependWithSymbols(t *testing.T) {
 	env := SetupTestEnv(t)
 	env.WriteTodoFile(`smell the cows
 grow some corn
-eat some chicken
-stop`)
+thrash some hay
+chase the chickens`)
 
 	t.Run("prepend with various symbols", func(t *testing.T) {
 		output, code := env.RunCommand("prepend", "1", "~@#$%^&*()-_=+[{]}|;:',<.>/?")
@@ -125,8 +125,8 @@ stop`)
 	})
 
 	t.Run("prepend with backtick, exclamation, backslash", func(t *testing.T) {
-		output, code := env.RunCommand("prepend", "2", "`!\\")
-		expectedOutput := "2 `!\\ grow some corn"
+		output, code := env.RunCommand("prepend", "2", "`!\\\"")
+		expectedOutput := "2 `!\\\" grow some corn"
 		if code != 0 {
 			t.Errorf("Expected exit code 0, got %d", code)
 		}
@@ -136,11 +136,11 @@ stop`)
 	})
 
 	t.Run("list after prepends", func(t *testing.T) {
-		output, code := env.RunCommand("-p", "list")
-		expectedOutput := `1 ~@#$%^&*()-_=+[{]}|;:',<.>/? smell the cows
-2 ` + "`!\\" + ` grow some corn
-3 eat some chicken
-4 stop
+		output, code := env.RunCommand("list")
+		expectedOutput := `4 chase the chickens
+3 thrash some hay
+2 ` + "`!\\\" grow some corn" + `
+1 ~@#$%^&*()-_=+[{]}|;:',<.>/? smell the cows
 --
 TODO: 4 of 4 tasks shown`
 		if code != 0 {
@@ -195,9 +195,20 @@ func TestPrependHandlingPriorityAndPrependedDate(t *testing.T) {
 		t.Fatalf("Failed to set test date: %v", err)
 	}
 
-	t.Run("add task with -pt flags", func(t *testing.T) {
-		output, code := env.RunCommand("-pt", "add", "(A) new task")
-		expectedOutput := "2 (A) 2009-02-13 new task\nTODO: 2 added."
+	t.Run("add task with -t flag", func(t *testing.T) {
+		output, code := env.RunCommand("-t", "add", "new task")
+		expectedOutput := "1 2009-02-13 new task\nTODO: 1 added."
+		if code != 0 {
+			t.Errorf("Expected exit code 0, got %d", code)
+		}
+		if output != expectedOutput {
+			t.Errorf("Output mismatch\nExpected:\n%s\n\nGot:\n%s", expectedOutput, output)
+		}
+	})
+
+	t.Run("prioritize task 1", func(t *testing.T) {
+		output, code := env.RunCommand("pri", "1", "A")
+		expectedOutput := "1 (A) 2009-02-13 new task\nTODO: 1 prioritized (A)."
 		if code != 0 {
 			t.Errorf("Expected exit code 0, got %d", code)
 		}
@@ -228,9 +239,9 @@ func TestPrependWithPrependedDateKeepsBoth(t *testing.T) {
 		t.Fatalf("Failed to set test date: %v", err)
 	}
 
-	t.Run("add task with manual date", func(t *testing.T) {
-		output, code := env.RunCommand("add", "2010-07-04 new task")
-		expectedOutput := "3 2010-07-04 new task\nTODO: 3 added."
+	t.Run("add task with -t flag", func(t *testing.T) {
+		output, code := env.RunCommand("-t", "add", "new task")
+		expectedOutput := "1 2009-02-13 new task\nTODO: 1 added."
 		if code != 0 {
 			t.Errorf("Expected exit code 0, got %d", code)
 		}
@@ -239,9 +250,9 @@ func TestPrependWithPrependedDateKeepsBoth(t *testing.T) {
 		}
 	})
 
-	t.Run("prepend keeps both dates", func(t *testing.T) {
-		output, code := env.RunCommand("prepend", "1", "this is just a")
-		expectedOutput := "1 2010-07-04 this is just a new task"
+	t.Run("prepend with date keeps both dates", func(t *testing.T) {
+		output, code := env.RunCommand("prepend", "1", "2010-07-04 this is just a")
+		expectedOutput := "1 2009-02-13 2010-07-04 this is just a new task"
 		if code != 0 {
 			t.Errorf("Expected exit code 0, got %d", code)
 		}
