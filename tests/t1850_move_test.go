@@ -16,7 +16,7 @@ func TestBasicMoveImplicitSource(t *testing.T) {
 (A) notice the sunflowers`)
 
 	// Setup done.txt with 2 completed tasks
-	doneFile := filepath.Join(filepath.Dir(env.TodoFile), "done.txt")
+	doneFile := filepath.Join(filepath.Dir(env.todoFile), "done.txt")
 	err := os.WriteFile(doneFile, []byte("x 2009-02-13 notice the uppercase Roses +wakeup\nx 2010-01-02 notice the uppercase Roses +wakeup\n"), 0644)
 	if err != nil {
 		t.Fatalf("Failed to create done.txt: %v", err)
@@ -73,7 +73,7 @@ func TestBasicMoveWithConfirmation(t *testing.T) {
 	env.WriteTodoFileContent(`(B) smell the uppercase Roses +flowers @outside
 (A) notice the sunflowers`)
 
-	doneFile := filepath.Join(filepath.Dir(env.TodoFile), "done.txt")
+	doneFile := filepath.Join(filepath.Dir(env.todoFile), "done.txt")
 	err := os.WriteFile(doneFile, []byte("x 2009-02-13 notice the uppercase Roses +wakeup\nx 2010-01-02 notice the uppercase Roses +wakeup\n"), 0644)
 	if err != nil {
 		t.Fatalf("Failed to create done.txt: %v", err)
@@ -107,7 +107,7 @@ func TestBasicMoveWithPassedSource(t *testing.T) {
 (A) notice the sunflowers`)
 
 	// Setup done.txt with 3 completed tasks (including the one we'll move)
-	doneFile := filepath.Join(filepath.Dir(env.TodoFile), "done.txt")
+	doneFile := filepath.Join(filepath.Dir(env.todoFile), "done.txt")
 	err := os.WriteFile(doneFile, []byte("x 2009-02-13 notice the uppercase Roses +wakeup\nx 2009-02-13 smell the coffee +wakeup\nx 2010-01-02 notice the uppercase Roses +wakeup\n"), 0644)
 	if err != nil {
 		t.Fatalf("Failed to create done.txt: %v", err)
@@ -166,14 +166,14 @@ func TestMoveToDestinationWithoutEOL(t *testing.T) {
 	}
 
 	// Setup todo.txt WITHOUT trailing newline (edge case)
-	todoFile := env.TodoFile
+	todoFile := env.todoFile
 	err := os.WriteFile(todoFile, []byte("(A) notice the sunflowers"), 0644) // No trailing \n
 	if err != nil {
 		t.Fatalf("Failed to write todo.txt: %v", err)
 	}
 
 	// Setup done.txt with tasks
-	doneFile := filepath.Join(filepath.Dir(env.TodoFile), "done.txt")
+	doneFile := filepath.Join(filepath.Dir(env.todoFile), "done.txt")
 	err = os.WriteFile(doneFile, []byte("x 2009-02-13 notice the uppercase Roses +wakeup\nx 2009-02-13 smell the coffee +wakeup\n"), 0644)
 	if err != nil {
 		t.Fatalf("Failed to create done.txt: %v", err)
