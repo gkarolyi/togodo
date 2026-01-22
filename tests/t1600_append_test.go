@@ -141,9 +141,9 @@ chase the chickens`)
 		}
 	})
 
-	t.Run("append with backtick, exclamation, backslash", func(t *testing.T) {
-		output, code := env.RunCommand("append", "2", "`!\\")
-		expectedOutput := "2 grow some corn `!\\"
+	t.Run("append with backtick, exclamation, backslash, quote", func(t *testing.T) {
+		output, code := env.RunCommand("append", "2", "`!\\\"")
+		expectedOutput := "2 grow some corn `!\\\""
 		if code != 0 {
 			t.Errorf("Expected exit code 0, got %d", code)
 		}
@@ -153,9 +153,9 @@ chase the chickens`)
 	})
 
 	t.Run("list after appends", func(t *testing.T) {
-		output, code := env.RunCommand("-p", "list")
+		output, code := env.RunCommand("list")
 		expectedOutput := `4 chase the chickens
-2 grow some corn ` + "`!\\" + `
+2 grow some corn ` + "`!\\\"" + `
 1 smell the cows ~@#$%^&*()-_=+[{]}|;:',<.>/?
 3 thrash some hay
 --
@@ -198,7 +198,7 @@ func TestAppendOfCurrentSentence(t *testing.T) {
 	})
 
 	t.Run("third append", func(t *testing.T) {
-		output, code := env.RunCommand("append", "1", " & bees")
+		output, code := env.RunCommand("append", "1", "& bees")
 		expectedOutput := "1 notice the daisies, lilies and roses; see the wasps & bees"
 		if code != 0 {
 			t.Errorf("Expected exit code 0, got %d", code)
