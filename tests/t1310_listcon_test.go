@@ -8,8 +8,9 @@ import (
 // Ported from: t1310-listcon.sh "listcon no contexts"
 func TestListconNoContexts(t *testing.T) {
 	env := SetupTestEnv(t)
-	env.WriteTodoFile(`(A) email test@example.com today
-(B) no context here`)
+	env.WriteTodoFile(`item 1
+item 2
+item 3`)
 
 	t.Run("listcon with no contexts", func(t *testing.T) {
 		output, code := env.RunCommand("listcon")
@@ -79,11 +80,12 @@ func TestListconEmailAddress(t *testing.T) {
 	env := SetupTestEnv(t)
 	env.WriteTodoFile(`@con01 -- Some context 1 task
 @con02 -- Some context 2 task
-email test@example.com today`)
+@con02 ginatrapani@gmail.com -- Some context 2 task`)
 
 	t.Run("listcon ignores email addresses", func(t *testing.T) {
 		output, code := env.RunCommand("listcon")
-		// Email address "test@example.com" should NOT be detected as context
+		// Email address "ginatrapani@gmail.com" should NOT be detected as context
+		// @con02 appears twice but should only be listed once
 		expectedOutput := `@con01
 @con02`
 		if code != 0 {
@@ -99,9 +101,9 @@ email test@example.com today`)
 // Ported from: t1310-listcon.sh "listcon with project"
 func TestListconWithProject(t *testing.T) {
 	env := SetupTestEnv(t)
-	env.WriteTodoFile(`x (A) @outdoors shopping with @alice +project02
-work on business plan @garage +project01
-water the plants @garden +landscape`)
+	env.WriteTodoFile(`(B) smell the uppercase Roses +roses @outside +shared
+(C) notice the sunflowers +sunflowers @garden +shared +landscape
+stop`)
 
 	t.Run("listcon filtered by project", func(t *testing.T) {
 		output, code := env.RunCommand("listcon", "+landscape")
@@ -119,10 +121,9 @@ water the plants @garden +landscape`)
 // Ported from: t1310-listcon.sh "listcon with default configuration"
 func TestListconDefault(t *testing.T) {
 	env := SetupTestEnv(t)
-	env.WriteTodoFile(`Review todo.txt-cli's code with @GinaTrapani
-call Mom @home) and arrange schedule
-do something @x
-do something else @y`)
+	env.WriteTodoFile(`(B) +math (@school or @home) integrate @x and @y
+(C) say thanks @GinaTrapani w:@OtherContributors
+stop`)
 
 	t.Run("listcon with default config", func(t *testing.T) {
 		output, code := env.RunCommand("listcon")
@@ -145,10 +146,9 @@ func TestListconLimitingMultiChar(t *testing.T) {
 	t.Skip("TODO: Implement TODOTXT_SIGIL_VALID_PATTERN configuration")
 
 	env := SetupTestEnv(t)
-	env.WriteTodoFile(`Review todo.txt-cli's code with @GinaTrapani
-call Mom @home) and arrange schedule
-do something @x
-do something else @y`)
+	env.WriteTodoFile(`(B) +math (@school or @home) integrate @x and @y
+(C) say thanks @GinaTrapani w:@OtherContributors
+stop`)
 
 	t.Run("listcon with TODOTXT_SIGIL_VALID_PATTERN", func(t *testing.T) {
 		// TODO: Set TODOTXT_SIGIL_VALID_PATTERN='.\{2,\}' environment variable
@@ -170,10 +170,9 @@ func TestListconAllowingMarkerBefore(t *testing.T) {
 	t.Skip("TODO: Implement TODOTXT_SIGIL_BEFORE_PATTERN configuration")
 
 	env := SetupTestEnv(t)
-	env.WriteTodoFile(`Review todo.txt-cli's code w:@GinaTrapani and w:@OtherContributors
-call Mom @home) and arrange schedule
-do something @x
-do something else @y`)
+	env.WriteTodoFile(`(B) +math (@school or @home) integrate @x and @y
+(C) say thanks @GinaTrapani w:@OtherContributors
+stop`)
 
 	t.Run("listcon with TODOTXT_SIGIL_BEFORE_PATTERN", func(t *testing.T) {
 		// TODO: Set TODOTXT_SIGIL_BEFORE_PATTERN='\(w:\)\{0,1\}' environment variable
@@ -198,10 +197,9 @@ func TestListconAllowingParentheses(t *testing.T) {
 	t.Skip("TODO: Implement TODOTXT_SIGIL_BEFORE_PATTERN and TODOTXT_SIGIL_AFTER_PATTERN configuration")
 
 	env := SetupTestEnv(t)
-	env.WriteTodoFile(`Review todo.txt-cli's code with @GinaTrapani
-call Mom (@home) and then visit the (@school)
-do something @x
-do something else @y`)
+	env.WriteTodoFile(`(B) +math (@school or @home) integrate @x and @y
+(C) say thanks @GinaTrapani w:@OtherContributors
+stop`)
 
 	t.Run("listcon with parentheses patterns", func(t *testing.T) {
 		// TODO: Set TODOTXT_SIGIL_BEFORE_PATTERN='(\{0,1\}' TODOTXT_SIGIL_AFTER_PATTERN=')\{0,1\}'
@@ -226,10 +224,9 @@ func TestListconAllCustomizations(t *testing.T) {
 	t.Skip("TODO: Implement all TODOTXT_SIGIL_* configuration variables")
 
 	env := SetupTestEnv(t)
-	env.WriteTodoFile(`Review todo.txt-cli's code w:@GinaTrapani and w:@OtherContributors
-call Mom (@home) and then visit the (@school)
-do something @x
-do something else @y`)
+	env.WriteTodoFile(`(B) +math (@school or @home) integrate @x and @y
+(C) say thanks @GinaTrapani w:@OtherContributors
+stop`)
 
 	t.Run("listcon with all custom patterns", func(t *testing.T) {
 		// TODO: Set multiple TODOTXT_SIGIL_* environment variables
