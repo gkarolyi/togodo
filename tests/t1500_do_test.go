@@ -85,7 +85,7 @@ TODO: 7 marked as done.
 TODO: 6 marked as done.
 x 2009-02-13 remove3
 x 2009-02-13 remove4
-TODO: todo.txt archived.`
+TODO: $HOME/todo.txt archived.`
 		if code != 0 {
 			t.Errorf("Expected exit code 0, got %d", code)
 		}
@@ -119,7 +119,7 @@ TODO: 5 marked as done.
 TODO: 4 marked as done.
 x 2009-02-13 remove1
 x 2009-02-13 remove2
-TODO: todo.txt archived.`
+TODO: $HOME/todo.txt archived.`
 		if code != 0 {
 			t.Errorf("Expected exit code 0, got %d", code)
 		}
@@ -144,58 +144,6 @@ TODO: 3 of 3 tasks shown`
 	})
 }
 
-// TestDoMultipleWithComma tests marking multiple tasks done with comma separator
-// This is actually part of "basic do" but extracted for clarity
-// Ported from: t1500-do.sh "basic do"
-func TestDoMultipleWithComma(t *testing.T) {
-	env := SetupTestEnv(t)
-	defer env.ClearTestDate()
-
-	if err := env.SetTestDate("2009-02-13"); err != nil {
-		t.Fatalf("Failed to set test date: %v", err)
-	}
-
-	env.WriteTodoFile(`task1
-task2
-task3
-task4
-task5`)
-
-	t.Run("do 1,3,5 (comma-separated multiple)", func(t *testing.T) {
-		output, code := env.RunCommand("do", "1,3,5")
-		expectedOutput := `1 x 2009-02-13 task1
-TODO: 1 marked as done.
-3 x 2009-02-13 task3
-TODO: 3 marked as done.
-5 x 2009-02-13 task5
-TODO: 5 marked as done.
-x 2009-02-13 task1
-x 2009-02-13 task3
-x 2009-02-13 task5
-TODO: todo.txt archived.`
-		if code != 0 {
-			t.Errorf("Expected exit code 0, got %d", code)
-		}
-		if output != expectedOutput {
-			t.Errorf("Output mismatch\nExpected:\n%s\n\nGot:\n%s", expectedOutput, output)
-		}
-	})
-
-	t.Run("list after marking done", func(t *testing.T) {
-		output, code := env.RunCommand("list")
-		expectedOutput := `2 task2
-4 task4
---
-TODO: 2 of 5 tasks shown`
-		if code != 0 {
-			t.Errorf("Expected exit code 0, got %d", code)
-		}
-		if output != expectedOutput {
-			t.Errorf("Output mismatch\nExpected:\n%s\n\nGot:\n%s", expectedOutput, output)
-		}
-	})
-}
-
 // TestFailMultipleDoAttempts tests error when trying to mark already-done task
 // Ported from: t1500-do.sh "fail multiple do attempts"
 func TestFailMultipleDoAttempts(t *testing.T) {
@@ -210,8 +158,8 @@ func TestFailMultipleDoAttempts(t *testing.T) {
 notice the sunflowers
 stop`)
 
-	t.Run("mark task 3 done first time", func(t *testing.T) {
-		output, code := env.RunCommand("do", "3")
+	t.Run("mark task 3 done with -a flag first time", func(t *testing.T) {
+		output, code := env.RunCommand("-a", "do", "3")
 		expectedOutput := `3 x 2009-02-13 stop
 TODO: 3 marked as done.`
 		if code != 0 {
@@ -222,8 +170,8 @@ TODO: 3 marked as done.`
 		}
 	})
 
-	t.Run("mark task 3 done second time", func(t *testing.T) {
-		output, code := env.RunCommand("do", "3")
+	t.Run("mark task 3 done with -a flag second time", func(t *testing.T) {
+		output, code := env.RunCommand("-a", "do", "3")
 		expectedCode := 1
 		expectedOutput := "TODO: 3 is already marked done."
 		if code != expectedCode {
