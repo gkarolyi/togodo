@@ -14,7 +14,7 @@ two
 x done
 duplicated
 double task
-two
+double task
 three`)
 
 	t.Run("deduplicate removes 2 duplicates", func(t *testing.T) {
@@ -120,10 +120,10 @@ func TestDeduplicateMoreThanTwo(t *testing.T) {
 	env.WriteTodoFile(`one
 duplicated
 three
-one
-one
+duplicated
+duplicated
 six
-one`)
+duplicated`)
 
 	t.Run("deduplicate removes 3 occurrences", func(t *testing.T) {
 		output, code := env.RunCommand("deduplicate")
