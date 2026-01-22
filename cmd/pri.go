@@ -3,63 +3,59 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/gkarolyi/togodo/internal/cli"
 	"github.com/gkarolyi/togodo/todotxtlib"
-	"github.com/spf13/cobra"
 )
 
-// parsePriorityArgs parses CLI arguments for the pri command
-// Returns line indices (0-based) and the priority string
-func parsePriorityArgs(args []string) ([]int, string, error) {
-	if len(args) < 2 {
-		return nil, "", fmt.Errorf("pri requires at least a line number and priority")
-	}
-
-	priority := args[len(args)-1]
-	lineNumberArgs := args[:len(args)-1]
-
-	indices, err := parseLineNumbers(lineNumberArgs)
-	if err != nil {
-		return nil, "", err
-	}
-
-	return indices, priority, nil
+// PriResult contains the result of a SetPriority operation
+type PriResult struct {
+	UpdatedTodos  []todotxtlib.Todo
+	OldPriorities []string // Old priority for each updated todo (empty string if no priority)
 }
 
-// NewPriCmd creates a new cobra command for setting priority.
-func NewPriCmd(service todotxtlib.TodoService, presenter *cli.Presenter) *cobra.Command {
-	return &cobra.Command{
-		Use:   "pri [LINE NUMBER]...",
-		Short: "Set the priority of a todo item",
-		Long: `Set the priority of a todo item.
-
-# set the priority of the todo on line 1 to A
-togodo pri 1 A
-
-# set the priority of the todos on lines 1, 2, and 3 to B
-togodo pri 1 2 3 B
-`,
-
-		Args:    cobra.MinimumNArgs(2),
-		Aliases: []string{"p"},
-		RunE: func(cmd *cobra.Command, args []string) error {
-			// Parse priority arguments
-			indices, priority, err := parsePriorityArgs(args)
-			if err != nil {
-				return err
-			}
-
-			// Business logic - delegated to service
-			todos, err := service.SetPriorities(indices, priority)
-			if err != nil {
-				return err
-			}
-
-			// Presentation logic - handled by presenter
-			for _, todo := range todos {
-				presenter.Print(todo)
-			}
-			return nil
-		},
+// SetPriority sets the priority for todos at the given indices (0-based)
+func SetPriority(repo todotxtlib.TodoRepository, indices []int, priority string) (PriResult, error) {
+	// STEP 1: Validate all indices first (fail-fast)
+	allTodos, err := repo.ListAll()
+	if err != nil {
+		return PriResult{}, fmt.Errorf("failed to list todos: %w", err)
 	}
+
+	for _, index := range indices {
+		if index < 0 || index >= len(allTodos) {
+			return PriResult{}, fmt.Errorf("invalid index: %d", index)
+		}
+	}
+
+	// STEP 2: All indices are valid, proceed with setting priorities
+	updatedTodos := make([]todotxtlib.Todo, 0, len(indices))
+	oldPriorities := make([]string, 0, len(indices))
+
+	for _, index := range indices {
+		// Get the old priority before changing
+		oldTodo := allTodos[index]
+		oldPriority := oldTodo.Priority
+
+		// Check if trying to set same priority
+		if oldPriority != "" && oldPriority == priority {
+			return PriResult{}, fmt.Errorf("TODO: %d already prioritized (%s).", index+1, priority)
+		}
+
+		todo, err := repo.SetPriority(index, priority)
+		if err != nil {
+			// This should not happen since we validated indices
+			return PriResult{}, fmt.Errorf("failed to set priority at index %d: %w", index, err)
+		}
+		updatedTodos = append(updatedTodos, todo)
+		oldPriorities = append(oldPriorities, oldPriority)
+	}
+
+	// Note: Pri command doesn't sort - preserves user's order
+	if err := repo.Save(); err != nil {
+		return PriResult{}, fmt.Errorf("failed to save: %w", err)
+	}
+
+	return PriResult{
+		UpdatedTodos:  updatedTodos,
+		OldPriorities: oldPriorities,
+	}, nil
 }

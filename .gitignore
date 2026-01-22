@@ -1,1 +1,13 @@
 togodo
+.DS_Store
+docs/
+
+# BranchBox
+.branchbox/registry.json
+.branchbox/secure/
+.branchbox/secure/tunnels/
+.devcontainer/.branchbox.env
+.devcontainer/.cloudflared.env
+.branchbox.env
+.env
+.env.local

@@ -2,142 +2,77 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
-	"strings"
 
-	"github.com/gkarolyi/togodo/internal/cli"
-	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-// NewConfigCmd creates a new cobra command for viewing or setting configuration options.
-func NewConfigCmd(presenter *cli.Presenter) *cobra.Command {
-	return &cobra.Command{
-		Use:   "config [key] [value]",
-		Short: "View or set configuration options",
-		Long: `
-View or set configuration options for togodo.
-
-Examples:
-	togodo config                    			# Show all configuration
-	togodo config todo_txt_path      			# Show specific config value
-	togodo config todo_txt_path ~/my-todos.txt  # Set config value
-
-Configuration is stored in ~/.config/togodo/config.toml`,
-
-		Args: cobra.MaximumNArgs(2),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return executeConfig(presenter, args)
-		},
-	}
+// ConfigReadResult contains the result of reading a config value
+type ConfigReadResult struct {
+	Key   string
+	Value interface{}
+	Found bool
 }
 
-func executeConfig(presenter *cli.Presenter, args []string) error {
-	switch len(args) {
-	case 0:
-		return showAllConfig(presenter)
-	case 1:
-		return showConfig(presenter, args[0])
-	case 2:
-		return setConfig(presenter, args[0], args[1])
-	default:
-		return fmt.Errorf("too many arguments")
-	}
-}
-
-func showAllConfig(presenter *cli.Presenter) error {
-	settings := viper.AllSettings()
-	if len(settings) == 0 {
-		presenter.WriteLine("No configuration found")
-		return nil
-	}
-
-	for key, value := range settings {
-		presenter.WriteLine(fmt.Sprintf("%s = %v", key, value))
-	}
-	return nil
-}
-
-func showConfig(presenter *cli.Presenter, key string) error {
+// ConfigRead reads a configuration value by key
+func ConfigRead(key string) (ConfigReadResult, error) {
 	if !viper.IsSet(key) {
-		presenter.WriteLine(fmt.Sprintf("Configuration key '%s' is not set", key))
-		return nil
+		return ConfigReadResult{
+			Key:   key,
+			Found: false,
+		}, fmt.Errorf("configuration key '%s' not found", key)
 	}
 
-	value := viper.Get(key)
-	presenter.WriteLine(fmt.Sprintf("%s = %v", key, value))
-	return nil
+	return ConfigReadResult{
+		Key:   key,
+		Value: viper.Get(key),
+		Found: true,
+	}, nil
 }
 
-func setConfig(presenter *cli.Presenter, key, value string) error {
-	// Validate the key (only allow known configuration keys)
-	validKeys := map[string]bool{
-		"todo_txt_path": true,
-	}
+// ConfigWriteResult contains the result of writing a config value
+type ConfigWriteResult struct {
+	Key      string
+	OldValue interface{}
+	NewValue string
+	Created  bool
+}
 
-	if !validKeys[key] {
-		return fmt.Errorf("invalid configuration key '%s'. Valid keys: %s",
-			key,
-			strings.Join(getValidKeys(validKeys), ", "))
-	}
+// ConfigWrite writes a configuration value by key
+func ConfigWrite(key string, value string) (ConfigWriteResult, error) {
+	oldValue := viper.Get(key)
+	created := !viper.IsSet(key)
 
-	// Set the configuration value
 	viper.Set(key, value)
 
-	// Ensure config file exists
-	if err := ensureConfigFile(); err != nil {
-		return fmt.Errorf("error ensuring config file exists: %w", err)
-	}
-
-	// Write the configuration
-	if err := viper.WriteConfig(); err != nil {
-		return fmt.Errorf("error writing configuration: %w", err)
-	}
-
-	presenter.WriteLine(fmt.Sprintf("Set %s = %s", key, value))
-	return nil
-}
-
-func getValidKeys(validKeys map[string]bool) []string {
-	keys := make([]string, 0, len(validKeys))
-	for key := range validKeys {
-		keys = append(keys, key)
-	}
-	return keys
-}
-
-func ensureConfigFile() error {
+	// Only write to file if a config file path is configured
+	// In tests, viper won't have a config file loaded, so we skip file writes
 	configFile := viper.ConfigFileUsed()
-
-	// If no config file is currently being used, create one at ~/.config/togodo/config.toml
-	if configFile == "" {
-		homeDir, err := os.UserHomeDir()
-		if err != nil {
-			return fmt.Errorf("error getting home directory: %w", err)
+	if configFile != "" {
+		// Config file is loaded - write changes to disk
+		if err := viper.WriteConfig(); err != nil {
+			return ConfigWriteResult{}, fmt.Errorf("failed to write config: %w", err)
 		}
-
-		configDir := filepath.Join(homeDir, ".config", "togodo")
-		configFile = filepath.Join(configDir, "config.toml")
-
-		// Create the .config directory if it doesn't exist
-		if err := os.MkdirAll(configDir, 0755); err != nil {
-			return fmt.Errorf("error creating config directory: %w", err)
-		}
-
-		// Set the config file path for viper
-		viper.SetConfigFile(configFile)
 	}
+	// If no config file is loaded (e.g., in tests), just update in-memory values
 
-	// Check if config file exists, create it if it doesn't
-	if _, err := os.Stat(configFile); os.IsNotExist(err) {
-		// Create empty config file
-		file, err := os.Create(configFile)
-		if err != nil {
-			return fmt.Errorf("error creating config file: %w", err)
-		}
-		file.Close()
-	}
+	return ConfigWriteResult{
+		Key:      key,
+		OldValue: oldValue,
+		NewValue: value,
+		Created:  created,
+	}, nil
+}
 
-	return nil
+// ConfigListResult contains all configuration settings
+type ConfigListResult struct {
+	Settings map[string]interface{}
+}
+
+// ConfigList lists all configuration settings
+func ConfigList() (ConfigListResult, error) {
+	settings := viper.AllSettings()
+
+	return ConfigListResult{
+		Settings: settings,
+	}, nil
 }

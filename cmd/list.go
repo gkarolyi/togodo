@@ -1,41 +1,52 @@
 package cmd
 
 import (
-	"strings"
-
-	"github.com/gkarolyi/togodo/internal/cli"
 	"github.com/gkarolyi/togodo/todotxtlib"
-	"github.com/spf13/cobra"
 )
 
-// NewListCmd creates a new cobra command for listing todos.
-func NewListCmd(service todotxtlib.TodoService, presenter *cli.Presenter) *cobra.Command {
-	return &cobra.Command{
-		Use:   "list [FILTER]",
-		Short: "List and filter items in your todo.txt",
-		Long: `Lists tasks sorted in order of priority, with done items at the bottom of the list. Tasks can optionally be filtered
-by passing an optional [FILTER] argument. If no filter is passed, list shows all items in your todo.txt file. Tasks are shown
-with a line number to allow you to easily refer to them. For example:
+// ListResult contains the result of a List operation
+type ListResult struct {
+	Todos       []todotxtlib.Todo
+	LineNumbers []int
+	TotalCount  int
+	ShownCount  int
+}
 
-# list all items in your todo.txt file
-togodo list
+// List lists todos, optionally filtering by search query
+func List(repo todotxtlib.TodoRepository, searchQuery string) (ListResult, error) {
+	// Sort todos using default sort (priority + alphabetical)
+	repo.Sort(nil)
 
-# list all items in your todo.txt file that contain the string '@work'
-togodo list '@work'
-`,
-		Aliases: []string{"ls", "l"},
-		Args:    cobra.ArbitraryArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			searchQuery := strings.Join(args, " ")
-
-			// Business logic - delegated to service
-			todos, err := service.SearchTodos(searchQuery)
-			if err != nil {
-				return err
-			}
-
-			// Presentation logic - handled by presenter
-			return presenter.PrintList(todos)
-		},
+	// Get total count
+	allTodos, err := repo.ListAll()
+	if err != nil {
+		return ListResult{}, err
 	}
+	totalCount := len(allTodos)
+
+	// Filter if search query provided
+	var todos []todotxtlib.Todo
+	if searchQuery != "" {
+		filter := todotxtlib.Filter{Text: searchQuery}
+		filteredTodos, err := repo.Filter(filter)
+		if err != nil {
+			return ListResult{}, err
+		}
+		todos = filteredTodos
+	} else {
+		todos = allTodos
+	}
+
+	// Extract line numbers from todos
+	lineNumbers := make([]int, len(todos))
+	for i, todo := range todos {
+		lineNumbers[i] = todo.LineNumber
+	}
+
+	return ListResult{
+		Todos:       todos,
+		LineNumbers: lineNumbers,
+		TotalCount:  totalCount,
+		ShownCount:  len(todos),
+	}, nil
 }

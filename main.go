@@ -28,7 +28,6 @@ import (
 	"os"
 
 	"github.com/charmbracelet/fang"
-	"github.com/gkarolyi/togodo/cmd"
 	"github.com/gkarolyi/togodo/internal/cli"
 	"github.com/gkarolyi/togodo/internal/config"
 	"github.com/gkarolyi/togodo/todotxtlib"
@@ -50,12 +49,7 @@ func main() {
 		log.Fatalf("Failed to create repository: %v", err)
 	}
 
-	// Create service layer
-	service := todotxtlib.NewTodoService(repo)
-
-	presenter := cli.NewPresenter()
-
-	rootCmd := cmd.NewRootCmd(service, repo, presenter)
+	rootCmd := cli.NewRootCmd(repo)
 
 	if err := fang.Execute(context.Background(), rootCmd); err != nil {
 		os.Exit(1)

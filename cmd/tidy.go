@@ -1,31 +1,44 @@
 package cmd
 
 import (
-	"github.com/gkarolyi/togodo/internal/cli"
+	"fmt"
+
 	"github.com/gkarolyi/togodo/todotxtlib"
-	"github.com/spf13/cobra"
 )
 
-// NewTidyCmd creates a new cobra command for tidying up the todo list.
-func NewTidyCmd(service todotxtlib.TodoService, presenter *cli.Presenter) *cobra.Command {
-	return &cobra.Command{
-		Use:   "tidy",
-		Short: "Tidy up your todo.txt by removing done tasks",
-		Long: `Cleans up your todo.txt by removing done tasks, and prints the tasks that were removed.
+// TidyResult contains the result of a Tidy operation
+type TidyResult struct {
+	RemovedTodos []todotxtlib.Todo
+}
 
-# tidy up your todo.txt
-togodo tidy`,
-		Args:    cobra.NoArgs,
-		Aliases: []string{"clean"},
-		RunE: func(cmd *cobra.Command, args []string) error {
-			// Business logic - delegated to service
-			todos, err := service.RemoveDoneTodos()
-			if err != nil {
-				return err
-			}
-
-			// Presentation logic - handled by presenter
-			return presenter.PrintList(todos)
-		},
+// Tidy removes all completed todos
+func Tidy(repo todotxtlib.TodoRepository) (TidyResult, error) {
+	// Get done todos before removing
+	doneFilter := todotxtlib.Filter{Done: "true"}
+	doneTodos, err := repo.Filter(doneFilter)
+	if err != nil {
+		return TidyResult{}, fmt.Errorf("failed to filter done todos: %w", err)
 	}
+
+	// Get all todos to iterate
+	allTodos, err := repo.ListAll()
+	if err != nil {
+		return TidyResult{}, fmt.Errorf("failed to list all todos: %w", err)
+	}
+
+	// Remove backwards to avoid index shifting
+	for i := len(allTodos) - 1; i >= 0; i-- {
+		if allTodos[i].Done {
+			if _, err := repo.Remove(i); err != nil {
+				return TidyResult{}, fmt.Errorf("failed to remove todo at index %d: %w", i, err)
+			}
+		}
+	}
+
+	repo.Sort(nil)
+	if err := repo.Save(); err != nil {
+		return TidyResult{}, fmt.Errorf("failed to save: %w", err)
+	}
+
+	return TidyResult{RemovedTodos: doneTodos}, nil
 }

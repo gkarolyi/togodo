@@ -19,13 +19,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-package cmd
+package cli
 
 import (
 	"fmt"
 	"os"
 
-	"github.com/gkarolyi/togodo/internal/cli"
 	"github.com/gkarolyi/togodo/internal/config"
 	"github.com/gkarolyi/togodo/internal/tui"
 	"github.com/gkarolyi/togodo/todotxtlib"
@@ -33,7 +32,7 @@ import (
 )
 
 // NewRootCmd creates the root command and its subcommands, injecting dependencies.
-func NewRootCmd(service todotxtlib.TodoService, repo todotxtlib.TodoRepository, presenter *cli.Presenter) *cobra.Command {
+func NewRootCmd(repo todotxtlib.TodoRepository) *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:   "togodo",
 		Short: "A CLI tool for managing your todo.txt",
@@ -49,6 +48,7 @@ func NewRootCmd(service todotxtlib.TodoService, repo todotxtlib.TodoRepository, 
 
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().StringP("file", "f", "", "Specify the todo.txt file to use")
+	rootCmd.PersistentFlags().BoolP("plain", "p", false, "Plain output mode without colors/formatting")
 
 	// Set up persistent pre-run to handle --file flag globally
 	rootCmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {
@@ -57,13 +57,27 @@ func NewRootCmd(service todotxtlib.TodoService, repo todotxtlib.TodoRepository, 
 		}
 	}
 
-	// Add subcommands
-	rootCmd.AddCommand(NewAddCmd(service, presenter))
-	rootCmd.AddCommand(NewDoCmd(service, presenter))
-	rootCmd.AddCommand(NewListCmd(service, presenter))
-	rootCmd.AddCommand(NewPriCmd(service, presenter))
-	rootCmd.AddCommand(NewTidyCmd(service, presenter))
-	rootCmd.AddCommand(NewConfigCmd(presenter))
+	// Add subcommands from internal/cli
+	rootCmd.AddCommand(NewAddCmd(repo))
+	rootCmd.AddCommand(NewListCmd(repo))
+	rootCmd.AddCommand(NewListpriCmd(repo))
+	rootCmd.AddCommand(NewListconCmd(repo))
+	rootCmd.AddCommand(NewListprojCmd(repo))
+	rootCmd.AddCommand(NewListallCmd(repo))
+	rootCmd.AddCommand(NewDoCmd(repo))
+	rootCmd.AddCommand(NewPriCmd(repo))
+	rootCmd.AddCommand(NewTidyCmd(repo))
+	rootCmd.AddCommand(NewReplaceCmd(repo))
+	rootCmd.AddCommand(NewPrependCmd(repo))
+	rootCmd.AddCommand(NewAppendCmd(repo))
+	rootCmd.AddCommand(NewDepriCmd(repo))
+	rootCmd.AddCommand(NewDelCmd(repo))
+	rootCmd.AddCommand(NewArchiveCmd(repo))
+	rootCmd.AddCommand(NewDeduplicateCmd(repo))
+	rootCmd.AddCommand(NewReportCmd(repo))
+	rootCmd.AddCommand(NewMoveCmd(repo))
+	rootCmd.AddCommand(NewConfigCmd())
+	rootCmd.AddCommand(NewShorthelpCmd(rootCmd))
 
 	return rootCmd
 }

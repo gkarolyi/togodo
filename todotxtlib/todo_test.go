@@ -1,6 +1,7 @@
 package todotxtlib
 
 import (
+	"regexp"
 	"testing"
 )
 
@@ -147,37 +148,37 @@ func TestTodo_Prioritised(t *testing.T) {
 
 func TestTodo_ToggleDone(t *testing.T) {
 	tests := []struct {
-		name string
-		todo Todo
-		want string
+		name        string
+		todo        Todo
+		wantPattern string // Use regex pattern for dates
 	}{
 		{
-			name: "not done to done",
-			todo: Todo{Text: "Buy groceries"},
-			want: "x Buy groceries",
+			name:        "not done to done",
+			todo:        Todo{Text: "Buy groceries"},
+			wantPattern: `^x \d{4}-\d{2}-\d{2} Buy groceries$`,
 		},
 		{
-			name: "done to not done",
-			todo: Todo{Text: "x Buy groceries", Done: true},
-			want: "Buy groceries",
+			name:        "done to not done",
+			todo:        Todo{Text: "x 2024-01-21 Buy groceries", Done: true, CompletionDate: "2024-01-21"},
+			wantPattern: "^Buy groceries$",
 		},
 		{
-			name: "with priority",
-			todo: Todo{Text: "(A) Buy groceries", Priority: "A"},
-			want: "x (A) Buy groceries",
+			name:        "with priority",
+			todo:        Todo{Text: "(A) Buy groceries", Priority: "A"},
+			wantPattern: `^x \(A\) \d{4}-\d{2}-\d{2} Buy groceries$`,
 		},
 		{
-			name: "completed task",
-			todo: Todo{Text: "x (A) Buy groceries", Done: true},
-			want: "(A) Buy groceries",
+			name:        "completed task",
+			todo:        Todo{Text: "x (A) 2024-01-21 Buy groceries", Done: true, Priority: "A", CompletionDate: "2024-01-21"},
+			wantPattern: "^\\(A\\) Buy groceries$",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.todo.ToggleDone()
-			if tt.todo.Text != tt.want {
-				t.Errorf("ToggleDone() Text = %v, want %v", tt.todo.Text, tt.want)
+			if !regexp.MustCompile(tt.wantPattern).MatchString(tt.todo.Text) {
+				t.Errorf("ToggleDone() Text = %v, want pattern %v", tt.todo.Text, tt.wantPattern)
 			}
 		})
 	}
@@ -548,6 +549,140 @@ func TestTodo_RemoveProject(t *testing.T) {
 						t.Errorf("RemoveProject() Projects[%d] = %v, want %v", i, tt.todo.Projects[i], tt.want[i])
 					}
 				}
+			}
+		})
+	}
+}
+
+func TestParseDates(t *testing.T) {
+	tests := []struct {
+		name               string
+		text               string
+		wantCreationDate   string
+		wantCompletionDate string
+	}{
+		{
+			name:               "incomplete task with creation date",
+			text:               "2024-01-21 Buy groceries",
+			wantCreationDate:   "2024-01-21",
+			wantCompletionDate: "",
+		},
+		{
+			name:               "incomplete task with priority and creation date",
+			text:               "(A) 2024-01-21 Buy groceries",
+			wantCreationDate:   "2024-01-21",
+			wantCompletionDate: "",
+		},
+		{
+			name:               "completed task with completion date only",
+			text:               "x 2024-01-22 Buy groceries",
+			wantCreationDate:   "",
+			wantCompletionDate: "2024-01-22",
+		},
+		{
+			name:               "completed task with both dates",
+			text:               "x 2024-01-22 2024-01-21 Buy groceries",
+			wantCreationDate:   "2024-01-21",
+			wantCompletionDate: "2024-01-22",
+		},
+		{
+			name:               "completed task with priority and both dates",
+			text:               "x (A) 2024-01-22 2024-01-21 Buy groceries",
+			wantCreationDate:   "2024-01-21",
+			wantCompletionDate: "2024-01-22",
+		},
+		{
+			name:               "task without dates",
+			text:               "Buy groceries",
+			wantCreationDate:   "",
+			wantCompletionDate: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			todo := NewTodo(tt.text)
+			if todo.CreationDate != tt.wantCreationDate {
+				t.Errorf("CreationDate = %v, want %v", todo.CreationDate, tt.wantCreationDate)
+			}
+			if todo.CompletionDate != tt.wantCompletionDate {
+				t.Errorf("CompletionDate = %v, want %v", todo.CompletionDate, tt.wantCompletionDate)
+			}
+		})
+	}
+}
+
+func TestToggleDoneWithCompletionDate(t *testing.T) {
+	tests := []struct {
+		name         string
+		initialText  string
+		wantTextDone string // Expected text when marking done
+		wantTextOpen string // Expected text when unmarking done
+	}{
+		{
+			name:         "simple task",
+			initialText:  "Buy groceries",
+			wantTextDone: `^x \d{4}-\d{2}-\d{2} Buy groceries$`,
+			wantTextOpen: "Buy groceries",
+		},
+		{
+			name:         "task with creation date",
+			initialText:  "2024-01-15 Buy groceries",
+			wantTextDone: `^x \d{4}-\d{2}-\d{2} 2024-01-15 Buy groceries$`,
+			wantTextOpen: "2024-01-15 Buy groceries",
+		},
+		{
+			name:         "task with priority",
+			initialText:  "(A) Important task",
+			wantTextDone: `^x \(A\) \d{4}-\d{2}-\d{2} Important task$`,
+			wantTextOpen: "(A) Important task",
+		},
+		{
+			name:         "task with priority and creation date",
+			initialText:  "(A) 2024-01-15 Important task",
+			wantTextDone: `^x \(A\) \d{4}-\d{2}-\d{2} 2024-01-15 Important task$`,
+			wantTextOpen: "(A) 2024-01-15 Important task",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			todo := NewTodo(tt.initialText)
+
+			// Mark as done
+			todo.ToggleDone()
+
+			// Verify marked as done
+			if !todo.Done {
+				t.Error("Expected todo to be done")
+			}
+
+			// Verify text matches expected pattern (with today's date)
+			if !regexp.MustCompile(tt.wantTextDone).MatchString(todo.Text) {
+				t.Errorf("After marking done, expected text matching %s, got: %s", tt.wantTextDone, todo.Text)
+			}
+
+			// Verify completion date is set
+			if todo.CompletionDate == "" {
+				t.Error("Expected completion date to be set")
+			}
+
+			// Unmark as done
+			todo.ToggleDone()
+
+			// Verify unmarked
+			if todo.Done {
+				t.Error("Expected todo to not be done")
+			}
+
+			// Verify text restored (without completion date)
+			if todo.Text != tt.wantTextOpen {
+				t.Errorf("After unmarking, expected: %s, got: %s", tt.wantTextOpen, todo.Text)
+			}
+
+			// Verify completion date is cleared
+			if todo.CompletionDate != "" {
+				t.Error("Expected completion date to be cleared")
 			}
 		})
 	}

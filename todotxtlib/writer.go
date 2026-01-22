@@ -1,6 +1,7 @@
 package todotxtlib
 
 import (
+	"bytes"
 	"io"
 	"os"
 )
@@ -53,6 +54,11 @@ type bufferWriter struct {
 
 // Write writes the given todos to the io.Writer
 func (w *bufferWriter) Write(todos []Todo) error {
+	// If the writer is a *bytes.Buffer, reset it to avoid appending
+	if buf, ok := w.writer.(*bytes.Buffer); ok {
+		buf.Reset()
+	}
+
 	for _, todo := range todos {
 		if _, err := w.writer.Write([]byte(todo.Text + "\n")); err != nil {
 			return err

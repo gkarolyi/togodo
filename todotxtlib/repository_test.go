@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
-	"slices"
 	"testing"
 )
 
@@ -23,12 +22,12 @@ func TestNewFileRepository(t *testing.T) {
 				t.Fatal("NewFileRepository() returned nil repository")
 			}
 
-			todos, err := repo.ListTodos()
+			todos, err := repo.ListAll()
 			if err != nil {
-				t.Errorf("ListTodos() error = %v, want nil", err)
+				t.Errorf("ListAll() error = %v, want nil", err)
 			}
 			if len(todos) != 0 {
-				t.Errorf("ListTodos() returned %d todos, want 0", len(todos))
+				t.Errorf("ListAll() returned %d todos, want 0", len(todos))
 			}
 		})
 
@@ -223,170 +222,6 @@ func TestRepository_SetPriority(t *testing.T) {
 	})
 }
 
-func TestRepository_SetContexts(t *testing.T) {
-	repo, _ := setupTestRepository(t)
-
-	t.Run("sets contexts for a todo", func(t *testing.T) {
-		todo, err := repo.SetContexts(0, []string{"@work", "@home"})
-		if err != nil {
-			t.Errorf("SetContexts() error = %v, want nil", err)
-		}
-		if len(todo.Contexts) != 2 {
-			t.Errorf("SetContexts() returned todo with %d contexts, want 2", len(todo.Contexts))
-		}
-		if todo.Contexts[0] != "@home" || todo.Contexts[1] != "@work" {
-			t.Errorf("SetContexts() returned contexts %v, want [@home @work]", todo.Contexts)
-		}
-	})
-
-	t.Run("returns error for invalid index", func(t *testing.T) {
-		_, err := repo.SetContexts(999, []string{"@work"})
-		if err == nil {
-			t.Error("SetContexts() expected error for invalid index, got nil")
-		}
-	})
-}
-
-func TestRepository_SetProjects(t *testing.T) {
-	repo, _ := setupTestRepository(t)
-
-	t.Run("sets projects for a todo", func(t *testing.T) {
-		todo, err := repo.SetProjects(0, []string{"+work", "+home"})
-		if err != nil {
-			t.Errorf("SetProjects() error = %v, want nil", err)
-		}
-		if len(todo.Projects) != 2 {
-			t.Errorf("SetProjects() returned todo with %d projects, want 2", len(todo.Projects))
-		}
-		if todo.Projects[0] != "+home" || todo.Projects[1] != "+work" {
-			t.Errorf("SetProjects() returned projects %v, want [+home +work]", todo.Projects)
-		}
-	})
-
-	t.Run("returns error for invalid index", func(t *testing.T) {
-		_, err := repo.SetProjects(999, []string{"+work"})
-		if err == nil {
-			t.Error("SetProjects() expected error for invalid index, got nil")
-		}
-	})
-}
-
-func TestRepository_AddContext(t *testing.T) {
-	repo, _ := setupTestRepository(t)
-
-	t.Run("adds context to a todo", func(t *testing.T) {
-		todo, err := repo.AddContext(0, "@work")
-		if err != nil {
-			t.Errorf("AddContext() error = %v, want nil", err)
-		}
-		if !slices.Contains(todo.Contexts, "@work") {
-			t.Error("AddContext() did not add @work context")
-		}
-	})
-
-	t.Run("does not add duplicate context", func(t *testing.T) {
-		todo, err := repo.AddContext(0, "@context1")
-		if err != nil {
-			t.Errorf("AddContext() error = %v, want nil", err)
-		}
-		count := 0
-		for _, ctx := range todo.Contexts {
-			if ctx == "@context1" {
-				count++
-			}
-		}
-		if count != 1 {
-			t.Errorf("AddContext() added duplicate context, found %d occurrences", count)
-		}
-	})
-
-	t.Run("returns error for invalid index", func(t *testing.T) {
-		_, err := repo.AddContext(999, "@work")
-		if err == nil {
-			t.Error("AddContext() expected error for invalid index, got nil")
-		}
-	})
-}
-
-func TestRepository_AddProject(t *testing.T) {
-	repo, _ := setupTestRepository(t)
-
-	t.Run("adds project to a todo", func(t *testing.T) {
-		todo, err := repo.AddProject(0, "+work")
-		if err != nil {
-			t.Errorf("AddProject() error = %v, want nil", err)
-		}
-		if !slices.Contains(todo.Projects, "+work") {
-			t.Error("AddProject() did not add +work project")
-		}
-	})
-
-	t.Run("does not add duplicate project", func(t *testing.T) {
-		todo, err := repo.AddProject(0, "+project2")
-		if err != nil {
-			t.Errorf("AddProject() error = %v, want nil", err)
-		}
-		count := 0
-		for _, proj := range todo.Projects {
-			if proj == "+project2" {
-				count++
-			}
-		}
-		if count != 1 {
-			t.Errorf("AddProject() added duplicate project, found %d occurrences", count)
-		}
-	})
-
-	t.Run("returns error for invalid index", func(t *testing.T) {
-		_, err := repo.AddProject(999, "+work")
-		if err == nil {
-			t.Error("AddProject() expected error for invalid index, got nil")
-		}
-	})
-}
-
-func TestRepository_RemoveContext(t *testing.T) {
-	repo, _ := setupTestRepository(t)
-
-	t.Run("removes context from a todo", func(t *testing.T) {
-		todo, err := repo.RemoveContext(0, "@context1")
-		if err != nil {
-			t.Errorf("RemoveContext() error = %v, want nil", err)
-		}
-		if slices.Contains(todo.Contexts, "@context1") {
-			t.Error("RemoveContext() did not remove @context1 context")
-		}
-	})
-
-	t.Run("returns error for invalid index", func(t *testing.T) {
-		_, err := repo.RemoveContext(999, "@context1")
-		if err == nil {
-			t.Error("RemoveContext() expected error for invalid index, got nil")
-		}
-	})
-}
-
-func TestRepository_RemoveProject(t *testing.T) {
-	repo, _ := setupTestRepository(t)
-
-	t.Run("removes project from a todo", func(t *testing.T) {
-		todo, err := repo.RemoveProject(0, "+project2")
-		if err != nil {
-			t.Errorf("RemoveProject() error = %v, want nil", err)
-		}
-		if slices.Contains(todo.Projects, "+project2") {
-			t.Error("RemoveProject() did not remove +project2 project")
-		}
-	})
-
-	t.Run("returns error for invalid index", func(t *testing.T) {
-		_, err := repo.RemoveProject(999, "+project2")
-		if err == nil {
-			t.Error("RemoveProject() expected error for invalid index, got nil")
-		}
-	})
-}
-
 func TestRepository_Filter(t *testing.T) {
 	repo, _ := setupTestRepository(t)
 
@@ -414,38 +249,43 @@ func TestRepository_Search(t *testing.T) {
 	repo, _ := setupTestRepository(t)
 
 	t.Run("searches todos by text", func(t *testing.T) {
-		filtered, err := repo.Search("test todo 1")
+		filter := Filter{Text: "test todo 1"}
+		filtered, err := repo.Filter(filter)
 		if err != nil {
-			t.Errorf("Search() error = %v, want nil", err)
+			t.Errorf("Filter() error = %v, want nil", err)
 		}
 		if len(filtered) != 1 {
-			t.Errorf("Search() returned %d todos, want 1", len(filtered))
+			t.Errorf("Filter() returned %d todos, want 1", len(filtered))
 		}
 		if !filtered[0].Equals(NewTodo("(A) test todo 1 +project2 @context1")) {
-			t.Errorf("Search() returned todo %v, want (A) test todo 1 +project2 @context1", filtered[0].Text)
+			t.Errorf("Filter() returned todo %v, want (A) test todo 1 +project2 @context1", filtered[0].Text)
 		}
 	})
 
 	t.Run("returns empty list for non-matching query", func(t *testing.T) {
-		filtered, err := repo.Search("non-matching")
+		filter := Filter{Text: "non-matching"}
+		filtered, err := repo.Filter(filter)
 		if err != nil {
-			t.Errorf("Search() error = %v, want nil", err)
+			t.Errorf("Filter() error = %v, want nil", err)
 		}
 		if len(filtered) != 0 {
-			t.Errorf("Search() returned %d todos, want 0", len(filtered))
+			t.Errorf("Filter() returned %d todos, want 0", len(filtered))
 		}
 	})
 }
 
 func TestRepository_Sort(t *testing.T) {
+	defaultSort := NewDefaultSort()
+	descendingSort := Sort{Field: Text, Order: Descending}
+
 	tests := []struct {
 		name     string
-		sort     Sort
+		sort     *Sort
 		expected []Todo
 	}{
 		{
 			name: "sorts todos by text ascending with done items last",
-			sort: NewDefaultSort(),
+			sort: &defaultSort,
 			expected: []Todo{
 				NewTodo("(A) test todo 1 +project2 @context1"),
 				NewTodo("(B) test todo 2 +project1 @context2"),
@@ -454,11 +294,20 @@ func TestRepository_Sort(t *testing.T) {
 		},
 		{
 			name: "sorts todos by text descending with done items first",
-			sort: Sort{Field: Text, Order: Descending},
+			sort: &descendingSort,
 			expected: []Todo{
 				NewTodo("x (C) test todo 3 +project1 @context1"),
 				NewTodo("(B) test todo 2 +project1 @context2"),
 				NewTodo("(A) test todo 1 +project2 @context1"),
+			},
+		},
+		{
+			name: "nil sort uses default sort (ascending with done items last)",
+			sort: nil,
+			expected: []Todo{
+				NewTodo("(A) test todo 1 +project2 @context1"),
+				NewTodo("(B) test todo 2 +project1 @context2"),
+				NewTodo("x (C) test todo 3 +project1 @context1"),
 			},
 		},
 	}
@@ -491,37 +340,6 @@ func TestRepository_Sort(t *testing.T) {
 	}
 }
 
-func TestRepository_ListTodos(t *testing.T) {
-	repo, _ := setupTestRepository(t)
-
-	t.Run("returns all todos that are not done", func(t *testing.T) {
-		todos, err := repo.ListTodos()
-		if err != nil {
-			t.Errorf("ListTodos() error = %v, want nil", err)
-		}
-		if len(todos) != 2 {
-			t.Errorf("ListTodos() returned %d todos, want 2", len(todos))
-		}
-	})
-}
-
-func TestRepository_ListDone(t *testing.T) {
-	repo, _ := setupTestRepository(t)
-
-	t.Run("returns only done todos", func(t *testing.T) {
-		done, err := repo.ListDone()
-		if err != nil {
-			t.Errorf("ListDone() error = %v, want nil", err)
-		}
-		if len(done) != 1 {
-			t.Errorf("ListDone() returned %d todos, want 1", len(done))
-		}
-		if !done[0].Done {
-			t.Error("ListDone() returned non-done todo")
-		}
-	})
-}
-
 func TestRepository_ListProjects(t *testing.T) {
 	repo, _ := setupTestRepository(t)
 
@@ -552,6 +370,34 @@ func TestRepository_ListContexts(t *testing.T) {
 		}
 		if contexts[0] != "@context1" || contexts[1] != "@context2" {
 			t.Errorf("ListContexts() returned contexts in wrong order, got %v, want [@context1 @context2]", contexts)
+		}
+	})
+}
+
+func TestRepository_Get(t *testing.T) {
+	repo, _ := setupTestRepository(t)
+
+	t.Run("gets todo by index", func(t *testing.T) {
+		todo, err := repo.Get(0)
+		if err != nil {
+			t.Errorf("Get() error = %v, want nil", err)
+		}
+		if todo.Text != "(A) test todo 1 +project2 @context1" {
+			t.Errorf("Get() returned todo with text %s, want (A) test todo 1 +project2 @context1", todo.Text)
+		}
+	})
+
+	t.Run("returns error for invalid index", func(t *testing.T) {
+		_, err := repo.Get(999)
+		if err == nil {
+			t.Error("Get() expected error for invalid index, got nil")
+		}
+	})
+
+	t.Run("returns error for negative index", func(t *testing.T) {
+		_, err := repo.Get(-1)
+		if err == nil {
+			t.Error("Get() expected error for negative index, got nil")
 		}
 	})
 }

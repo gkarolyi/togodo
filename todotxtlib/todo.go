@@ -4,29 +4,37 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"time"
 )
 
-var projectRe = regexp.MustCompile(`\+(\w+)`)
-var contextRe = regexp.MustCompile(`@\w+`)
+var projectRe = regexp.MustCompile(`\+\S+`)
+var contextRe = regexp.MustCompile(`@\S+`)
 var priorityRe = regexp.MustCompile(`^\(([A-Z])\)`)
 var doneRe = regexp.MustCompile(`^x `)
 var tagRe = regexp.MustCompile(`\w+:\S+`)
+var dateRe = regexp.MustCompile(`\d{4}-\d{2}-\d{2}`)
 
 type Todo struct {
-	Text     string
-	Done     bool
-	Priority string
-	Projects []string
-	Contexts []string
+	Text           string
+	Done           bool
+	Priority       string
+	Projects       []string
+	Contexts       []string
+	LineNumber     int    // Line number in the file (1-indexed)
+	CreationDate   string // YYYY-MM-DD format
+	CompletionDate string // YYYY-MM-DD format (only when Done is true)
 }
 
 func NewTodo(text string) Todo {
+	creationDate, completionDate := parseDates(text)
 	todo := Todo{
-		Text:     text,
-		Done:     parseDone(text),
-		Priority: parsePriority(text),
-		Projects: parseProjects(text),
-		Contexts: parseContexts(text),
+		Text:           text,
+		Done:           parseDone(text),
+		Priority:       parsePriority(text),
+		Projects:       parseProjects(text),
+		Contexts:       parseContexts(text),
+		CreationDate:   creationDate,
+		CompletionDate: completionDate,
 	}
 
 	return todo
@@ -38,11 +46,69 @@ func (t Todo) Prioritised() bool {
 
 func (t *Todo) ToggleDone() {
 	if t.Done {
+		// Unmarking as done: remove completion date and "x " prefix
 		t.Done = false
-		t.Text = strings.TrimPrefix(t.Text, "x ")
+		t.CompletionDate = ""
+
+		// Remove "x " prefix
+		remaining := strings.TrimPrefix(t.Text, "x ")
+
+		// Remove priority if present (will be after "x ")
+		if priorityRe.MatchString(remaining) {
+			priorityMatch := priorityRe.FindString(remaining)
+			remaining = strings.TrimPrefix(remaining, priorityMatch)
+			remaining = strings.TrimSpace(remaining)
+		}
+
+		// Remove completion date if present (first date after "x " and optional priority)
+		if dateRe.MatchString(remaining) {
+			// Remove first date (completion date)
+			dates := dateRe.FindAllString(remaining, -1)
+			if len(dates) > 0 {
+				remaining = strings.Replace(remaining, dates[0], "", 1)
+				remaining = strings.TrimSpace(remaining)
+			}
+		}
+
+		// Rebuild text with priority if it existed
+		if t.Priority != "" {
+			t.Text = "(" + t.Priority + ") " + remaining
+		} else {
+			t.Text = remaining
+		}
 	} else {
+		// Marking as done: add "x " prefix and completion date
 		t.Done = true
-		t.Text = strings.Join([]string{"x ", t.Text}, "")
+		completionDate := time.Now().Format("2006-01-02")
+		t.CompletionDate = completionDate
+
+		// Format: x (priority) completion_date creation_date text
+		// Or: x completion_date creation_date text (if no priority)
+		// Or: x completion_date text (if no creation date)
+
+		// Start with "x "
+		newText := "x "
+
+		// Add priority if present
+		if t.Priority != "" {
+			newText += "(" + t.Priority + ") "
+		}
+
+		// Add completion date
+		newText += completionDate + " "
+
+		// Remove priority from original text if present
+		remaining := t.Text
+		if priorityRe.MatchString(remaining) {
+			priorityMatch := priorityRe.FindString(remaining)
+			remaining = strings.TrimPrefix(remaining, priorityMatch)
+			remaining = strings.TrimSpace(remaining)
+		}
+
+		// Add remaining text (which includes creation date if present)
+		newText += remaining
+
+		t.Text = newText
 	}
 }
 
@@ -116,6 +182,44 @@ func parsePriority(text string) string {
 
 func parseDone(text string) bool {
 	return doneRe.MatchString(text)
+}
+
+// parseDates extracts creation and completion dates from todo text
+// Format: x completion_date creation_date text (for done tasks)
+// Format: (priority) creation_date text (for incomplete tasks)
+// Returns: creationDate, completionDate
+func parseDates(text string) (string, string) {
+	var creationDate, completionDate string
+
+	// Remove "x " prefix if done
+	remaining := text
+	isDone := strings.HasPrefix(text, "x ")
+	if isDone {
+		remaining = remaining[2:] // Remove "x "
+	}
+
+	// Remove priority if present
+	if priorityRe.MatchString(remaining) {
+		remaining = priorityRe.ReplaceAllString(remaining, "")
+		remaining = strings.TrimSpace(remaining)
+	}
+
+	// Find dates at the beginning of the remaining text
+	dates := dateRe.FindAllString(remaining, 2)
+
+	if isDone && len(dates) >= 2 {
+		// Done task with both dates: x (priority) completion_date creation_date text
+		completionDate = dates[0]
+		creationDate = dates[1]
+	} else if isDone && len(dates) == 1 {
+		// Done task with only completion date: x (priority) completion_date text
+		completionDate = dates[0]
+	} else if !isDone && len(dates) >= 1 {
+		// Incomplete task with creation date: (priority) creation_date text
+		creationDate = dates[0]
+	}
+
+	return creationDate, completionDate
 }
 
 // SetContexts sets the contexts of a todo

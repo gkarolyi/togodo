@@ -5,6 +5,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/gkarolyi/togodo/cmd"
 	"github.com/gkarolyi/togodo/todotxtlib"
 )
 
@@ -27,11 +28,23 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			case "a", "b", "c", "d", "A", "B", "C", "D":
 				priority := strings.ToUpper(msg.String())
+				// Convert selected map to slice of indices
+				indices := make([]int, 0, len(m.selected))
 				for i := range m.selected {
-					m.repository.SetPriority(i, priority)
+					indices = append(indices, i)
 				}
-				allTodos, _ := m.repository.ListAll()
-				m.choices = allTodos
+
+				if len(indices) > 0 {
+					_, err := cmd.SetPriority(m.repository, indices, priority)
+					if err != nil {
+						// TODO: Show error in UI
+					}
+
+					// Refresh display
+					allTodos, _ := m.repository.ListAll()
+					m.choices = allTodos
+					m.selected = make(map[int]struct{}) // Clear selection
+				}
 				m.setting = false
 				return m, nil
 			}
@@ -48,7 +61,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			case tea.KeyEnter:
 				if m.input.Value() != "" {
-					m.repository.Add(m.input.Value())
+					_, err := cmd.Add(m.repository, []string{m.input.Value()}, false)
+					if err != nil {
+						// TODO: Show error in UI
+					}
+					// Refresh display
 					allTodos, _ := m.repository.ListAll()
 					m.choices = allTodos
 					m.adding = false
@@ -78,7 +95,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case tea.KeyBackspace:
 				if len(m.filter) > 0 {
 					m.filter = m.filter[:len(m.filter)-1]
-					filteredTodos, _ := m.repository.Search(m.filter)
+					filter := todotxtlib.Filter{Text: m.filter}
+					filteredTodos, _ := m.repository.Filter(filter)
 					m.choices = filteredTodos
 					if m.cursor >= len(m.choices) {
 						m.cursor = len(m.choices) - 1
@@ -90,7 +108,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			default:
 				m.filter += msg.String()
-				filteredTodos, _ := m.repository.Search(m.filter)
+				filter := todotxtlib.Filter{Text: m.filter}
+				filteredTodos, _ := m.repository.Filter(filter)
 				m.choices = filteredTodos
 				if m.cursor >= len(m.choices) {
 					m.cursor = len(m.choices) - 1
@@ -126,11 +145,23 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case "x":
+			// Convert selected map to slice of indices
+			indices := make([]int, 0, len(m.selected))
 			for i := range m.selected {
-				m.repository.ToggleDone(i)
+				indices = append(indices, i)
 			}
-			allTodos, _ := m.repository.ListAll()
-			m.choices = allTodos
+
+			if len(indices) > 0 {
+				_, err := cmd.Do(m.repository, indices)
+				if err != nil {
+					// TODO: Show error in UI
+				}
+
+				// Refresh display
+				allTodos, _ := m.repository.ListAll()
+				m.choices = allTodos
+				m.selected = make(map[int]struct{}) // Clear selection
+			}
 
 		case "/":
 			if !m.adding {

@@ -57,26 +57,58 @@ func NewLipglossFormatter() *LipglossFormatter {
 
 // Format implements TodoFormatter for LipglossFormatter
 func (f *LipglossFormatter) Format(todo todotxtlib.Todo) string {
+	// For done tasks, just apply strikethrough to the whole text
+	if todo.Done {
+		return f.doneStyle.Render(todo.Text)
+	}
+
+	// For active tasks, we need to preserve spacing while applying styles
 	var builder strings.Builder
-	words := strings.Fields(todo.Text)
 	stdStyle := f.priorityStyle[todo.Priority]
 
-	if todo.Done {
-		builder.WriteString(f.doneStyle.Render(todo.Text))
-	} else {
-		for i, word := range words {
-			if isProject(word) {
-				builder.WriteString(f.projectStyle.Render(word))
-			} else if isContext(word) {
-				builder.WriteString(f.contextStyle.Render(word))
-			} else if isTag(word) {
-				builder.WriteString(f.tagStyle.Render(word))
-			} else {
-				builder.WriteString(stdStyle.Render(word))
+	// Split on spaces but keep track of spacing
+	runes := []rune(todo.Text)
+	wordStart := 0
+	inWord := false
+
+	for i, r := range runes {
+		if r == ' ' || r == '\t' {
+			if inWord {
+				// End of word - apply styling
+				word := string(runes[wordStart:i])
+				if isProject(word) {
+					builder.WriteString(f.projectStyle.Render(word))
+				} else if isContext(word) {
+					builder.WriteString(f.contextStyle.Render(word))
+				} else if isTag(word) {
+					builder.WriteString(f.tagStyle.Render(word))
+				} else {
+					builder.WriteString(stdStyle.Render(word))
+				}
+				inWord = false
 			}
-			if i < len(words)-1 {
-				builder.WriteString(" ")
+			// Add the whitespace character (preserves multiple spaces)
+			builder.WriteRune(r)
+		} else {
+			if !inWord {
+				// Start of new word
+				wordStart = i
+				inWord = true
 			}
+		}
+	}
+
+	// Handle last word if text doesn't end with space
+	if inWord {
+		word := string(runes[wordStart:])
+		if isProject(word) {
+			builder.WriteString(f.projectStyle.Render(word))
+		} else if isContext(word) {
+			builder.WriteString(f.contextStyle.Render(word))
+		} else if isTag(word) {
+			builder.WriteString(f.tagStyle.Render(word))
+		} else {
+			builder.WriteString(stdStyle.Render(word))
 		}
 	}
 
