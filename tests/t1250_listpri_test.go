@@ -13,7 +13,7 @@ func TestBasicListpri(t *testing.T) {
 stop`)
 
 	t.Run("listpri A shows 0 tasks", func(t *testing.T) {
-		output, code := env.RunCommand("-p", "listpri", "A")
+		output, code := env.RunCommand("listpri", "A")
 		expectedOutput := `--
 TODO: 0 of 3 tasks shown`
 		if code != 0 {
@@ -50,8 +50,8 @@ stop`)
 		output, code := env.RunCommand("listpri")
 		// Upstream expects ANSI color codes for priorities
 		// Priority B is green: \033[0;32m
-		// Priority C is blue: \033[0;34m
-		expectedOutput := "\033[0;32m1 (B) smell the uppercase Roses +flowers @outside\033[0m\n\033[0;34m2 (C) notice the sunflowers\033[0m\n--\nTODO: 2 of 3 tasks shown"
+		// Priority C is bold blue: \033[1;34m
+		expectedOutput := "\033[0;32m1 (B) smell the uppercase Roses +flowers @outside\033[0m\n\033[1;34m2 (C) notice the sunflowers\033[0m\n--\nTODO: 2 of 3 tasks shown"
 		if code != 0 {
 			t.Errorf("Expected exit code 0, got %d", code)
 		}
@@ -140,16 +140,16 @@ TODO: 0 of 5 tasks shown`
 // Ported from: t1250-listpri.sh "filtering priority ranges"
 func TestFilteringPriorityRanges(t *testing.T) {
 	env := SetupTestEnv(t)
-	env.WriteTodoFile(`(B) one should be here
-(C) two should be here also
-(n) three should NOT be here
-(n)(C) four should NOT be here either
-(X) this should show up for priority x`)
+	env.WriteTodoFile(`(B) smell the uppercase Roses +flowers @outside
+(X) clean the house from A-Z
+(C) notice the sunflowers
+(X) listen to music
+buy more records from artists A-Z`)
 
 	t.Run("listpri a-c", func(t *testing.T) {
 		output, code := env.RunCommand("-p", "listpri", "a-c")
-		expectedOutput := `1 (B) one should be here
-2 (C) two should be here also
+		expectedOutput := `1 (B) smell the uppercase Roses +flowers @outside
+3 (C) notice the sunflowers
 --
 TODO: 2 of 5 tasks shown`
 		if code != 0 {
@@ -162,10 +162,11 @@ TODO: 2 of 5 tasks shown`
 
 	t.Run("listpri c-Z", func(t *testing.T) {
 		output, code := env.RunCommand("-p", "listpri", "c-Z")
-		expectedOutput := `2 (C) two should be here also
-5 (X) this should show up for priority x
+		expectedOutput := `3 (C) notice the sunflowers
+2 (X) clean the house from A-Z
+4 (X) listen to music
 --
-TODO: 2 of 5 tasks shown`
+TODO: 3 of 5 tasks shown`
 		if code != 0 {
 			t.Errorf("Expected exit code 0, got %d", code)
 		}
@@ -176,7 +177,7 @@ TODO: 2 of 5 tasks shown`
 
 	t.Run("listpri A-", func(t *testing.T) {
 		output, code := env.RunCommand("-p", "listpri", "A-")
-		expectedOutput := `5 (X) this should show up for priority x
+		expectedOutput := `2 (X) clean the house from A-Z
 --
 TODO: 1 of 5 tasks shown`
 		if code != 0 {
@@ -201,7 +202,7 @@ TODO: 0 of 5 tasks shown`
 
 	t.Run("listpri X A-Z", func(t *testing.T) {
 		output, code := env.RunCommand("-p", "listpri", "X", "A-Z")
-		expectedOutput := `5 (X) this should show up for priority x
+		expectedOutput := `2 (X) clean the house from A-Z
 --
 TODO: 1 of 5 tasks shown`
 		if code != 0 {
@@ -217,18 +218,19 @@ TODO: 1 of 5 tasks shown`
 // Ported from: t1250-listpri.sh "concatenation of priorities and ranges"
 func TestFilteringConcatenation(t *testing.T) {
 	env := SetupTestEnv(t)
-	env.WriteTodoFile(`(B) one should be here
-(C) two should be here also
-(n) three should NOT be here
-(n)(C) four should NOT be here either
-(X) this should show up for priority x`)
+	env.WriteTodoFile(`(B) smell the uppercase Roses +flowers @outside
+(X) clean the house from A-Z
+(C) notice the sunflowers
+(X) listen to music
+buy more records from artists A-Z`)
 
 	t.Run("listpri CX", func(t *testing.T) {
 		output, code := env.RunCommand("-p", "listpri", "CX")
-		expectedOutput := `2 (C) two should be here also
-5 (X) this should show up for priority x
+		expectedOutput := `3 (C) notice the sunflowers
+2 (X) clean the house from A-Z
+4 (X) listen to music
 --
-TODO: 2 of 5 tasks shown`
+TODO: 3 of 5 tasks shown`
 		if code != 0 {
 			t.Errorf("Expected exit code 0, got %d", code)
 		}
@@ -239,9 +241,9 @@ TODO: 2 of 5 tasks shown`
 
 	t.Run("listpri ABR-Y", func(t *testing.T) {
 		output, code := env.RunCommand("-p", "listpri", "ABR-Y")
-		expectedOutput := `1 (B) one should be here
-2 (C) two should be here also
-5 (X) this should show up for priority x
+		expectedOutput := `1 (B) smell the uppercase Roses +flowers @outside
+2 (X) clean the house from A-Z
+4 (X) listen to music
 --
 TODO: 3 of 5 tasks shown`
 		if code != 0 {
@@ -254,7 +256,7 @@ TODO: 3 of 5 tasks shown`
 
 	t.Run("listpri A-", func(t *testing.T) {
 		output, code := env.RunCommand("-p", "listpri", "A-")
-		expectedOutput := `5 (X) this should show up for priority x
+		expectedOutput := `2 (X) clean the house from A-Z
 --
 TODO: 1 of 5 tasks shown`
 		if code != 0 {
@@ -270,19 +272,20 @@ TODO: 1 of 5 tasks shown`
 // Ported from: t1250-listpri.sh "filtering of TERM"
 func TestFilteringOfTERM(t *testing.T) {
 	env := SetupTestEnv(t)
-	env.WriteTodoFile(`(A) the first should be here
-(B) one should be here
-(C) two should be here also
-(n) three should NOT be here
-(n)(C) four should NOT be here either
-(X) this should show up for priority x`)
+	env.WriteTodoFile(`(B) ccc xxx this line should be third.
+ccc xxx this line should be third.
+(A) aaa zzz this line should be first.
+aaa zzz this line should be first.
+(B) bbb yyy this line should be second.
+bbb yyy this line should be second.`)
 
 	t.Run("listpri with search term", func(t *testing.T) {
 		output, code := env.RunCommand("-p", "listpri", "should be")
-		expectedOutput := `2 (B) one should be here
-3 (C) two should be here also
+		expectedOutput := `3 (A) aaa zzz this line should be first.
+5 (B) bbb yyy this line should be second.
+1 (B) ccc xxx this line should be third.
 --
-TODO: 2 of 6 tasks shown`
+TODO: 3 of 6 tasks shown`
 		if code != 0 {
 			t.Errorf("Expected exit code 0, got %d", code)
 		}
@@ -293,7 +296,7 @@ TODO: 2 of 6 tasks shown`
 
 	t.Run("listpri a with search term", func(t *testing.T) {
 		output, code := env.RunCommand("-p", "listpri", "a", "should be")
-		expectedOutput := `1 (A) the first should be here
+		expectedOutput := `3 (A) aaa zzz this line should be first.
 --
 TODO: 1 of 6 tasks shown`
 		if code != 0 {
@@ -306,8 +309,9 @@ TODO: 1 of 6 tasks shown`
 
 	t.Run("listpri b second", func(t *testing.T) {
 		output, code := env.RunCommand("-p", "listpri", "b", "second")
-		expectedOutput := `--
-TODO: 0 of 6 tasks shown`
+		expectedOutput := `5 (B) bbb yyy this line should be second.
+--
+TODO: 1 of 6 tasks shown`
 		if code != 0 {
 			t.Errorf("Expected exit code 0, got %d", code)
 		}
