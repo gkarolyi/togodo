@@ -18,7 +18,7 @@ four`)
 
 	t.Run("archive done tasks", func(t *testing.T) {
 		output, code := env.RunCommand("archive")
-		expectedOutput := "x done\nTODO: todo.txt archived."
+		expectedOutput := "x done\nTODO: $HOME/todo.txt archived."
 		if code != 0 {
 			t.Errorf("Expected exit code 0, got %d", code)
 		}
@@ -76,7 +76,7 @@ three`)
 
 	t.Run("archive with no done tasks", func(t *testing.T) {
 		output, code := env.RunCommand("archive")
-		expectedOutput := "TODO: todo.txt does not contain any done tasks."
+		expectedOutput := "TODO: $HOME/todo.txt does not contain any done tasks."
 		if code != 0 {
 			t.Errorf("Expected exit code 0, got %d", code)
 		}
