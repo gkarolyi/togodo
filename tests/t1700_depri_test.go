@@ -5,30 +5,43 @@ import (
 )
 
 // TestDepriUsage tests depri command usage errors
-// Ported from: t1700-depri.sh
+// Ported from: t1700-depri.sh "depri usage"
 func TestDepriUsage(t *testing.T) {
 	env := SetupTestEnv(t)
 
 	t.Run("depri with invalid args", func(t *testing.T) {
-		_, exitCode := env.RunCommand("depri", "B", "B")
-		if exitCode != 1 {
-			t.Errorf("Expected exit code 1, got %d", exitCode)
+		output, code := env.RunCommand("depri", "B", "B")
+		expectedCode := 1
+		expectedOutput := "usage: togodo depri NR [NR ...]"
+		if code != expectedCode {
+			t.Errorf("Expected exit code %d, got %d", expectedCode, code)
 		}
-		// TODO: Check error message matches "usage: togodo depri NR [NR ...]"
+		if output != expectedOutput {
+			t.Errorf("Output mismatch\nExpected:\n%s\n\nGot:\n%s", expectedOutput, output)
+		}
 	})
+}
+
+// TestDepriNonexistent tests depri with non-existent task
+// Ported from: t1700-depri.sh "depri nonexistent item"
+func TestDepriNonexistent(t *testing.T) {
+	env := SetupTestEnv(t)
 
 	t.Run("depri nonexistent item", func(t *testing.T) {
-		output, exitCode := env.RunCommand("depri", "42")
-		if exitCode != 1 {
-			t.Errorf("Expected exit code 1, got %d", exitCode)
+		output, code := env.RunCommand("depri", "42")
+		expectedCode := 1
+		expectedOutput := "TODO: No task 42."
+		if code != expectedCode {
+			t.Errorf("Expected exit code %d, got %d", expectedCode, code)
 		}
-		// TODO: Check error message "TODO: No task 42."
-		_ = output
+		if output != expectedOutput {
+			t.Errorf("Output mismatch\nExpected:\n%s\n\nGot:\n%s", expectedOutput, output)
+		}
 	})
 }
 
 // TestBasicDepriority tests basic depriority functionality
-// Ported from: t1700-depri.sh
+// Ported from: t1700-depri.sh "basic depriority"
 func TestBasicDepriority(t *testing.T) {
 	env := SetupTestEnv(t)
 
@@ -37,10 +50,9 @@ func TestBasicDepriority(t *testing.T) {
 stop`)
 
 	t.Run("list before depri", func(t *testing.T) {
-		output, code := env.RunCommand("list")
-		// Should show priority-sorted order
-		expectedOutput := `2 (A) notice the sunflowers
-1 (B) smell the uppercase Roses +flowers @outside
+		output, code := env.RunCommand("-p", "list")
+		expectedOutput := `1 (B) smell the uppercase Roses +flowers @outside
+2 (A) notice the sunflowers
 3 stop
 --
 TODO: 3 of 3 tasks shown`
@@ -64,7 +76,7 @@ TODO: 3 of 3 tasks shown`
 	})
 
 	t.Run("list after depri", func(t *testing.T) {
-		output, code := env.RunCommand("list")
+		output, code := env.RunCommand("-p", "list")
 		expectedOutput := `2 (A) notice the sunflowers
 1 smell the uppercase Roses +flowers @outside
 3 stop
@@ -80,7 +92,7 @@ TODO: 3 of 3 tasks shown`
 }
 
 // TestMultipleDepriority tests deprioritizing multiple tasks
-// Ported from: t1700-depri.sh
+// Ported from: t1700-depri.sh "multiple depriority"
 func TestMultipleDepriority(t *testing.T) {
 	env := SetupTestEnv(t)
 
@@ -103,7 +115,7 @@ TODO: 2 deprioritized.`
 	})
 
 	t.Run("list after multiple depri", func(t *testing.T) {
-		output, code := env.RunCommand("list")
+		output, code := env.RunCommand("-p", "list")
 		expectedOutput := `1 (B) smell the uppercase Roses +flowers @outside
 2 notice the sunflowers
 3 stop
@@ -119,7 +131,7 @@ TODO: 3 of 3 tasks shown`
 }
 
 // TestDepriUnprioritized tests deprioritizing an unprioritized task
-// Ported from: t1700-depri.sh
+// Ported from: t1700-depri.sh "depriority of unprioritized task"
 func TestDepriUnprioritized(t *testing.T) {
 	env := SetupTestEnv(t)
 
@@ -129,14 +141,15 @@ stop`)
 
 	t.Run("depri unprioritized task should error", func(t *testing.T) {
 		output, code := env.RunCommand("depri", "3", "2")
-		// First command (task 3) should error with exit code 1
-		// Second command (task 2) should succeed
-		// Overall exit code should be 1 due to first failure
-		if code != 1 {
-			t.Errorf("Expected exit code 1, got %d", code)
+		expectedCode := 1
+		expectedOutput := `TODO: 3 is not prioritized.
+2 notice the sunflowers
+TODO: 2 deprioritized.`
+		if code != expectedCode {
+			t.Errorf("Expected exit code %d, got %d", expectedCode, code)
 		}
-		// TODO: Should show "TODO: 3 is not prioritized."
-		// TODO: Should still process task 2 and show "2 notice the sunflowers\nTODO: 2 deprioritized."
-		_ = output
+		if output != expectedOutput {
+			t.Errorf("Output mismatch\nExpected:\n%s\n\nGot:\n%s", expectedOutput, output)
+		}
 	})
 }
