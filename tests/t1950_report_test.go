@@ -22,7 +22,7 @@ visit http://example.com`)
 
 	t.Run("report creates new report file", func(t *testing.T) {
 		output, code := env.RunCommand("report")
-		expectedOutput := "TODO: todo.txt does not contain any done tasks.\n2009-02-13T00:00:00 5 0\nTODO: Report file updated."
+		expectedOutput := "TODO: $HOME/todo.txt does not contain any done tasks.\n2009-02-13T00:00:00 5 0\nTODO: Report file updated."
 		if code != 0 {
 			t.Errorf("Expected exit code 0, got %d", code)
 		}
@@ -85,7 +85,7 @@ visit http://example.com`)
 
 	t.Run("report after done task", func(t *testing.T) {
 		output, code := env.RunCommand("report")
-		expectedOutput := "TODO: todo.txt does not contain any done tasks.\n2009-02-13T00:00:00 4 1\nTODO: Report file updated."
+		expectedOutput := "TODO: $HOME/todo.txt does not contain any done tasks.\n2009-02-13T00:00:00 4 1\nTODO: Report file updated."
 		if code != 0 {
 			t.Errorf("Expected exit code 0, got %d", code)
 		}
@@ -141,7 +141,7 @@ visit http://example.com`)
 
 	t.Run("report performs archiving", func(t *testing.T) {
 		output, code := env.RunCommand("report")
-		expectedOutput := "x 2009-02-13 make the coffee +wakeup\nTODO: todo.txt archived.\n2009-02-13T00:00:00 3 2\nTODO: Report file updated."
+		expectedOutput := "x 2009-02-13 make the coffee +wakeup\nTODO: $HOME/todo.txt archived.\n2009-02-13T00:00:00 3 2\nTODO: Report file updated."
 		if code != 0 {
 			t.Errorf("Expected exit code 0, got %d", code)
 		}
@@ -167,7 +167,7 @@ visit http://example.com`)
 
 	t.Run("generate initial report", func(t *testing.T) {
 		output, code := env.RunCommand("report")
-		expectedOutput := "TODO: todo.txt does not contain any done tasks.\n2009-02-13T00:00:00 3 0\nTODO: Report file updated."
+		expectedOutput := "TODO: $HOME/todo.txt does not contain any done tasks.\n2009-02-13T00:00:00 3 0\nTODO: Report file updated."
 		if code != 0 {
 			t.Errorf("Expected exit code 0, got %d", code)
 		}
@@ -178,7 +178,7 @@ visit http://example.com`)
 
 	t.Run("report again without changes", func(t *testing.T) {
 		output, code := env.RunCommand("report")
-		expectedOutput := "TODO: todo.txt does not contain any done tasks.\n2009-02-13T00:00:00 3 0\nTODO: Report file is up-to-date."
+		expectedOutput := "TODO: $HOME/todo.txt does not contain any done tasks.\n2009-02-13T00:00:00 3 0\nTODO: Report file is up-to-date."
 		if code != 0 {
 			t.Errorf("Expected exit code 0, got %d", code)
 		}
