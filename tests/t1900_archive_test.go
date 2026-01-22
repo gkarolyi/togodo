@@ -4,8 +4,8 @@ import (
 	"testing"
 )
 
-// TestArchiveWithDuplicates tests archiving done tasks
-// Ported from: t1900-archive.sh
+// TestArchiveWithDuplicates tests archiving done tasks with duplicates preserved
+// Ported from: t1900-archive.sh "archive with duplicates" and "list after archive"
 func TestArchiveWithDuplicates(t *testing.T) {
 	env := SetupFileBasedTestEnv(t)
 
@@ -18,7 +18,6 @@ four`)
 
 	t.Run("archive done tasks", func(t *testing.T) {
 		output, code := env.RunCommand("archive")
-		// Should show archived task and confirmation
 		expectedOutput := "x done\nTODO: todo.txt archived."
 		if code != 0 {
 			t.Errorf("Expected exit code 0, got %d", code)
@@ -67,7 +66,7 @@ TODO: 5 of 5 tasks shown`
 }
 
 // TestArchiveWarning tests archive when no done tasks exist
-// Ported from: t1900-archive.sh
+// Ported from: t1900-archive.sh "archive warning message"
 func TestArchiveWarning(t *testing.T) {
 	env := SetupFileBasedTestEnv(t)
 
