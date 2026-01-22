@@ -6,8 +6,8 @@
 ## Overview
 
 - **Total Integration Tests**: 62 test functions across 21 test files
-- **Passing**: 53 tests (85%)
-- **Failing**: 9 tests (15%)
+- **Passing**: 51 tests (82%)
+- **Failing**: 11 tests (18%)
 - **Status**: Most tests already match upstream; failures document missing features
 
 ## Test Verification Status
@@ -19,7 +19,7 @@ These tests have been verified to match upstream bash test expectations:
 - **t0000_config_test.go** - togodo-specific (no upstream equivalent)
 - **t1000_add_list_test.go** - ✅ All tests passing
 - **t1100_replace_test.go** - ✅ All tests passing
-- **t1200_pri_test.go** - ✅ All tests passing
+- **t1200_pri_test.go** - ⚠️  2 tests failing (see below)
 - **t1250_listpri_test.go** - ✅ All tests passing
 - **t1310_listcon_test.go** - ✅ All tests passing
 - **t1320_listproj_test.go** - ✅ All tests passing
@@ -72,6 +72,29 @@ Both tests are skipped (documenting missing feature):
 2. TestConfigFileWrongPriority/set_TODOTXT_PRIORITY_ON_ADD_to_invalid_value
 
 **Note**: Tests use `t.Skip()` with TODO comments
+
+### t1200: Pri Command Tests (2 failures)
+
+1. TestPriUsage/pri_with_invalid_args
+2. TestPriorityError/pri_with_non-existent_task
+
+**Issue**: Error messages include full Cobra usage instead of clean error output
+
+**Expected for `pri B B`**:
+```
+usage: togodo pri NR PRIORITY [NR PRIORITY ...]
+note: PRIORITY must be anywhere from A to Z.
+```
+
+**Got**:
+```
+Error: invalid line number: B
+Usage:
+  togodo pri [LINE_NUMBER] [PRIORITY] [flags]
+...
+```
+
+**Root Cause**: Pri command needs custom error handling and argument validation to match upstream behavior
 
 ### t1500: Do Command Tests (1 failure)
 
