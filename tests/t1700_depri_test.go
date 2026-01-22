@@ -51,8 +51,8 @@ stop`)
 
 	t.Run("list before depri", func(t *testing.T) {
 		output, code := env.RunCommand("-p", "list")
-		expectedOutput := `1 (B) smell the uppercase Roses +flowers @outside
-2 (A) notice the sunflowers
+		expectedOutput := `2 (A) notice the sunflowers
+1 (B) smell the uppercase Roses +flowers @outside
 3 stop
 --
 TODO: 3 of 3 tasks shown`
