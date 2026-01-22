@@ -63,8 +63,8 @@ stop`)
 
 	t.Run("list before delete", func(t *testing.T) {
 		output, code := env.RunCommand("-p", "list")
-		expectedOutput := `1 (B) smell the uppercase Roses +flowers @outside
-2 (A) notice the sunflowers
+		expectedOutput := `2 (A) notice the sunflowers
+1 (B) smell the uppercase Roses +flowers @outside
 3 stop
 --
 TODO: 3 of 3 tasks shown`
@@ -219,8 +219,8 @@ func TestBasicDelTerm(t *testing.T) {
 (A) notice the sunflowers
 stop`)
 		output, code := env.RunCommand("-p", "list")
-		expectedOutput := `1 (B) smell the uppercase Roses +flowers @outside
-2 (A) notice the sunflowers
+		expectedOutput := `2 (A) notice the sunflowers
+1 (B) smell the uppercase Roses +flowers @outside
 3 stop
 --
 TODO: 3 of 3 tasks shown`
@@ -234,7 +234,7 @@ TODO: 3 of 3 tasks shown`
 
 	t.Run("remove word 'uppercase'", func(t *testing.T) {
 		output, code := env.RunCommand("del", "1", "uppercase")
-		expectedOutput := "1 (B) smell the Roses +flowers @outside\nTODO: Removed 'uppercase' from task."
+		expectedOutput := "1 (B) smell the uppercase Roses +flowers @outside\nTODO: Removed 'uppercase' from task.\n1 (B) smell the Roses +flowers @outside"
 		if code != 0 {
 			t.Errorf("Expected exit code 0, got %d", code)
 		}
@@ -245,7 +245,7 @@ TODO: 3 of 3 tasks shown`
 
 	t.Run("remove phrase 'the Roses'", func(t *testing.T) {
 		output, code := env.RunCommand("del", "1", "the Roses")
-		expectedOutput := "1 (B) smell +flowers @outside\nTODO: Removed 'the Roses' from task."
+		expectedOutput := "1 (B) smell the Roses +flowers @outside\nTODO: Removed 'the Roses' from task.\n1 (B) smell +flowers @outside"
 		if code != 0 {
 			t.Errorf("Expected exit code 0, got %d", code)
 		}
@@ -256,7 +256,7 @@ TODO: 3 of 3 tasks shown`
 
 	t.Run("remove single character 'm'", func(t *testing.T) {
 		output, code := env.RunCommand("del", "1", "m")
-		expectedOutput := "1 (B) sell +flowers @outside\nTODO: Removed 'm' from task."
+		expectedOutput := "1 (B) smell +flowers @outside\nTODO: Removed 'm' from task.\n1 (B) sell +flowers @outside"
 		if code != 0 {
 			t.Errorf("Expected exit code 0, got %d", code)
 		}
@@ -267,7 +267,7 @@ TODO: 3 of 3 tasks shown`
 
 	t.Run("remove context @outside", func(t *testing.T) {
 		output, code := env.RunCommand("del", "1", "@outside")
-		expectedOutput := "1 (B) sell +flowers\nTODO: Removed '@outside' from task."
+		expectedOutput := "1 (B) sell +flowers @outside\nTODO: Removed '@outside' from task.\n1 (B) sell +flowers"
 		if code != 0 {
 			t.Errorf("Expected exit code 0, got %d", code)
 		}
@@ -278,7 +278,7 @@ TODO: 3 of 3 tasks shown`
 
 	t.Run("remove 'sell' (changes to 'l')", func(t *testing.T) {
 		output, code := env.RunCommand("del", "1", "sell")
-		expectedOutput := "1 (B) l +flowers\nTODO: Removed 'sell' from task."
+		expectedOutput := "1 (B) sell +flowers\nTODO: Removed 'sell' from task.\n1 (B) +flowers"
 		if code != 0 {
 			t.Errorf("Expected exit code 0, got %d", code)
 		}
@@ -299,7 +299,7 @@ stop`)
 	t.Run("remove nonexistent term", func(t *testing.T) {
 		output, code := env.RunCommand("del", "1", "dung")
 		expectedCode := 1
-		expectedOutput := "TODO: 'dung' not found; no removal done."
+		expectedOutput := "1 (B) smell the uppercase Roses +flowers @outside\nTODO: 'dung' not found; no removal done."
 		if code != expectedCode {
 			t.Errorf("Expected exit code %d, got %d", expectedCode, code)
 		}
