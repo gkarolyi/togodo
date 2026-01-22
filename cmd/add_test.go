@@ -1,9 +1,12 @@
 package cmd
 
 import (
+	"bytes"
 	"regexp"
 	"strings"
 	"testing"
+
+	"github.com/gkarolyi/togodo/todotxtlib"
 )
 
 func TestAddCmd_SingleTask(t *testing.T) {
@@ -209,5 +212,70 @@ func TestAddCreationDate(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestAdd(t *testing.T) {
+	t.Run("adds single task", func(t *testing.T) {
+		// Setup
+		var buf bytes.Buffer
+		reader := todotxtlib.NewBufferReader(&buf)
+		writer := todotxtlib.NewBufferWriter(&buf)
+		repo, _ := todotxtlib.NewFileRepository(reader, writer)
+
+		// Execute
+		result, err := Add(repo, []string{"test", "task"}, false)
+
+		// Assert
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if result.Todo.Text != "test task" {
+			t.Errorf("expected 'test task', got '%s'", result.Todo.Text)
+		}
+		if result.LineNumber != 1 {
+			t.Errorf("expected line number 1, got %d", result.LineNumber)
+		}
+	})
+}
+
+func TestAddMultiple(t *testing.T) {
+	repo, _ := setupEmptyTestRepository(t)
+
+	// Add multiple tasks from text with newlines
+	text := "task one\ntask two\ntask three"
+	result, err := AddMultiple(repo, text, false)
+	if err != nil {
+		t.Fatalf("AddMultiple failed: %v", err)
+	}
+
+	// Should have added 3 tasks
+	if len(result.Todos) != 3 {
+		t.Errorf("Expected 3 todos, got %d", len(result.Todos))
+	}
+
+	// Verify tasks in repository
+	todos, _ := repo.ListAll()
+	if len(todos) != 3 {
+		t.Errorf("Expected 3 todos in repository, got %d", len(todos))
+		for i, todo := range todos {
+			t.Logf("Todo %d: %s", i, todo.Text)
+		}
+	}
+
+	// Check task texts
+	texts := make(map[string]bool)
+	for _, todo := range todos {
+		texts[todo.Text] = true
+	}
+
+	if !texts["task one"] {
+		t.Error("Expected 'task one' in repository")
+	}
+	if !texts["task two"] {
+		t.Error("Expected 'task two' in repository")
+	}
+	if !texts["task three"] {
+		t.Error("Expected 'task three' in repository")
 	}
 }
