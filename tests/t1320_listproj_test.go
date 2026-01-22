@@ -8,8 +8,9 @@ import (
 // Ported from: t1320-listproj.sh "listproj no projects"
 func TestListprojNoProjects(t *testing.T) {
 	env := SetupTestEnv(t)
-	env.WriteTodoFile(`(A) email test@example.com today
-(B) no project here @context`)
+	env.WriteTodoFile(`item 1
+item 2
+item 3`)
 
 	t.Run("listproj with no projects", func(t *testing.T) {
 		output, code := env.RunCommand("listproj")
@@ -79,11 +80,12 @@ func TestListprojEmbeddedPlus(t *testing.T) {
 	env := SetupTestEnv(t)
 	env.WriteTodoFile(`+prj01 -- Some project 1 task
 +prj02 -- Some project 2 task
-call +1 today`)
++prj02 ginatrapani+todo@gmail.com -- Some project 2 task`)
 
-	t.Run("listproj ignores embedded plus signs", func(t *testing.T) {
+	t.Run("listproj ignores embedded plus in email", func(t *testing.T) {
 		output, code := env.RunCommand("listproj")
-		// "call +1 today" should NOT be detected as a project
+		// "ginatrapani+todo@gmail.com" has + but should NOT be detected as project
+		// +prj02 appears twice but should only be listed once
 		expectedOutput := `+prj01
 +prj02`
 		if code != 0 {
@@ -99,9 +101,9 @@ call +1 today`)
 // Ported from: t1320-listproj.sh "basic listproj"
 func TestBasicListproj(t *testing.T) {
 	env := SetupTestEnv(t)
-	env.WriteTodoFile(`smell the +roses
-stop and smell +sunflowers @garden +shared
-mow the +landscape +shared`)
+	env.WriteTodoFile(`(B) smell the uppercase Roses +roses @outside +shared
+(C) notice the sunflowers +sunflowers @garden +shared +landscape
+stop`)
 
 	t.Run("basic listproj", func(t *testing.T) {
 		output, code := env.RunCommand("listproj")
@@ -122,9 +124,9 @@ mow the +landscape +shared`)
 // Ported from: t1320-listproj.sh "listproj with context"
 func TestListprojWithContext(t *testing.T) {
 	env := SetupTestEnv(t)
-	env.WriteTodoFile(`smell the +roses
-stop and smell +sunflowers @garden +shared
-mow the +landscape +shared @garden`)
+	env.WriteTodoFile(`(B) smell the uppercase Roses +roses @outside +shared
+(C) notice the sunflowers +sunflowers @garden +shared +landscape
+stop`)
 
 	t.Run("listproj filtered by context", func(t *testing.T) {
 		output, code := env.RunCommand("listproj", "@garden")
@@ -144,8 +146,16 @@ mow the +landscape +shared @garden`)
 // Ported from: t1320-listproj.sh "listproj of projects at various positions"
 func TestListprojVariousPositions(t *testing.T) {
 	env := SetupTestEnv(t)
-	env.WriteTodoFile(`+flowers smell the roses
-notice +roses the sunflowers`)
+	env.WriteTodoFile(`+roses +flowers
++roses and only +flowers
+(B) +roses prioritized +flowers
+(B) 2024-02-21 +roses prioritized +flowers
+x 2024-02-21 2024-02-19 +roses done +flowers
++roses +flowers at the front
+  +roses +flowers at the front with leading space
+my +flowers are +roses in the middle
+at the back pick the +roses +flowers
+at the back with trailing space +flowers +roses `)
 
 	t.Run("listproj at various positions", func(t *testing.T) {
 		output, code := env.RunCommand("listproj")
@@ -164,8 +174,9 @@ notice +roses the sunflowers`)
 // Ported from: t1320-listproj.sh "listproj with default configuration"
 func TestListprojDefault(t *testing.T) {
 	env := SetupTestEnv(t)
-	env.WriteTodoFile(`stop and smell +sunflowers @garden +1
-mow the lawn`)
+	env.WriteTodoFile(`(B) give a +1 to this project
+(C) notice the sunflowers +sunflowers [+gardening] [+landscape]
+stop`)
 
 	t.Run("listproj with default config", func(t *testing.T) {
 		output, code := env.RunCommand("listproj")
@@ -186,8 +197,9 @@ func TestListprojLimitingAlphabetic(t *testing.T) {
 	t.Skip("TODO: Implement TODOTXT_SIGIL_VALID_PATTERN configuration")
 
 	env := SetupTestEnv(t)
-	env.WriteTodoFile(`stop and smell +sunflowers @garden +1
-mow the lawn`)
+	env.WriteTodoFile(`(B) give a +1 to this project
+(C) notice the sunflowers +sunflowers [+gardening] [+landscape]
+stop`)
 
 	t.Run("listproj with alphabetic pattern", func(t *testing.T) {
 		// TODO: Set TODOTXT_SIGIL_VALID_PATTERN='[a-zA-Z]\{1,\}'
@@ -208,9 +220,9 @@ func TestListprojAllowingBrackets(t *testing.T) {
 	t.Skip("TODO: Implement TODOTXT_SIGIL_BEFORE_PATTERN and TODOTXT_SIGIL_AFTER_PATTERN configuration")
 
 	env := SetupTestEnv(t)
-	env.WriteTodoFile(`stop and smell +sunflowers @garden +1
-mow the [+landscape]
-do some [+gardening]`)
+	env.WriteTodoFile(`(B) give a +1 to this project
+(C) notice the sunflowers +sunflowers [+gardening] [+landscape]
+stop`)
 
 	t.Run("listproj with brackets patterns", func(t *testing.T) {
 		// TODO: Set TODOTXT_SIGIL_BEFORE_PATTERN='\[\{0,1\}' TODOTXT_SIGIL_AFTER_PATTERN='\]\{0,1\}'
@@ -234,9 +246,9 @@ func TestListprojWithContextSpecialCases(t *testing.T) {
 	t.Skip("TODO: Implement -+ and -d flags for custom todo file")
 
 	env := SetupTestEnv(t)
-	env.WriteTodoFile(`smell the +roses
-stop and smell +sunflowers @garden +shared
-mow the +landscape +shared @garden`)
+	env.WriteTodoFile(`(B) smell the uppercase Roses +roses @outside +shared
+(C) notice the sunflowers +sunflowers @garden +shared +landscape
+stop`)
 
 	t.Run("listproj with -+ -d flags", func(t *testing.T) {
 		// TODO: Support -+ and -d flags
